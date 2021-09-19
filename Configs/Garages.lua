@@ -29,7 +29,7 @@ Config.Garages = {
 		-- },
 		SpawnPoint = {
             Name = _U('garage_name'),
-			Pos = {x=-324.56, y= -686.83, z=33.00},
+			Pos = {x=-324.71, y= -682.81, z=32.95},
 			Heading = 360.0,
 			Marker = { w= 1.5, h= 1.0,r=0,g=255,b=0},
 			NumSpawns = 5,
@@ -134,14 +134,14 @@ Config.Garages = {
 		-- },
 		SpawnPoint = {
             Name = _U('garage_name'),
-			Pos = {x = -3135.25,y = 1119.82,z = 20.70},
-			Heading = 181.0,
+			Pos = {x = -1140.63, y = 2671.77, z = 18.09},
+			Heading = 310.5,
 			Marker = { w= 1.5, h= 1.0,r=0,g=255,b=0},
-			NumSpawns = 2,
+			NumSpawns = 3,
 			HelpPrompt = _U('spawn_car')
 		},
 		DeletePoint = {
-			Pos = {x = -3136.902,y = 1102.685,z = 20.654},
+			Pos = {x = -1155.01, y = 2666.6,z = 18.09},
 			Marker = { w= 1.5, h= 1.0,r=255,g=0,b=0},
 			HelpPrompt = _U('store_car')
 		}
@@ -231,21 +231,16 @@ Config.Garages = {
 	},
 	Garage_Groove = {
 		Type = 'car',
-		-- Impound = {
-		-- 	Pos = {x = -22.49,y = -1729.71,z = 29.3 },
-		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
-		-- 	HelpPrompt = _U('open_car_garage')
-		-- },
 		SpawnPoint = {
             Name = _U('garage_name'),
-			Pos = {x = -25.15,y = -1745.91,z = 29.3 },
-			Heading = 51.51,
+			Pos = {x = -73.27, y = -2000.03, z = 18.02 },
+			Heading = 263.43,
 			Marker = { w= 1.5, h= 1.0,r=0,g=255,b=0},
-			NumSpawns = 7,
+			NumSpawns = 5,
 			HelpPrompt = _U('spawn_car')
 		},
 		DeletePoint = {
-			Pos = {x = -35.15,y = -1732.61,z = 29.3 },
+			Pos = {x = -78.54, y = -2011.25, z = 18.02 },
 			Marker = { w= 1.5, h= 1.0,r=255,g=0,b=0},
 			HelpPrompt = _U('store_car')
 		}
@@ -342,14 +337,14 @@ Config.Garages = {
 		-- },
 		SpawnPoint = {
             Name = _U('garage_name'),
-			Pos = {x = -46.11, y = -269.59, z = 35.78 },
+			Pos = {x = -462.22, y = -269.34, z = 35.78 },
 			Heading = 25.0,
 			Marker = { w= 1.0, h= 1.0,r=0,g=255,b=0},
 			NumSpawns = 1,
 			HelpPrompt = _U('spawn_car')
 	    },
 	    DeletePoint = {
-			 Pos = {x = -459.79,y = -274.83,z = 35.79 },
+			 Pos = {x = -460.62,y = -273.04,z = 35.79 },
 			 Marker = { w= 1.0, h= 1.0,r=255,g=0,b=0},
 			 HelpPrompt = _U('store_car')
         }

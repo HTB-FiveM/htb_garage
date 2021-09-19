@@ -94,7 +94,10 @@
                                                 Select a buyer...
                                             </button>
                                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                              <a class="dropdown-item" href="#" v-for="item in nearbyPlayers">{{ item.player.name }}</a>
+                                              <a class="dropdown-item"
+                                                @click="veh.selectedNewOwner = { serverId: item.player.serverId, identifier: item.player.identifier }"
+                                                href="#"
+                                                v-for="item in nearbyPlayers">{{ item.player.name }}</a>
                                             </div>
                                         </div>
 

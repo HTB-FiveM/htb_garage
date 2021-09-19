@@ -74,15 +74,15 @@ function SetBaseVehicleProperties(vehicle, props)
 			SetVehicleNeonLightEnabled(vehicle, 3, props.neonEnabled[4])
 		end
 
-		-- if props.extras then
-		-- 	for extraId,enabled in pairs(props.extras) do
-		-- 		if enabled then
-		-- 			SetVehicleExtra(vehicle, tonumber(extraId), 0)
-		-- 		else
-		-- 			SetVehicleExtra(vehicle, tonumber(extraId), 1)
-		-- 		end
-		-- 	end
-		-- end
+		if props.extras then
+			for extraId,enabled in pairs(props.extras) do
+				if enabled then
+					SetVehicleExtra(vehicle, tonumber(extraId), 0)
+				else
+					SetVehicleExtra(vehicle, tonumber(extraId), 1)
+				end
+			end
+		end
 
 		if props.neonColor then SetVehicleNeonLightsColour(vehicle, props.neonColor[1], props.neonColor[2], props.neonColor[3]) end
 		if props.xenonColor then SetVehicleXenonLightsColour(vehicle, props.xenonColor) end
