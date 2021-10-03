@@ -39,11 +39,16 @@ Config.AllowedImpoundJobs = {
 --		steam
 --		ip
 --		discord
---		license
---		license2
+--		license (Rockstar License)
+--		license2 (Stray Rockstar License which I've seen appear, not sure why but allowing it here if it means anything to anyone)
 --		xbl
 --		live
-Config.PlayerIdentifierType = 'license' -- Very easy to switch your identifier for your platform
+Config.PlayerIdentifierType = 'license' -- Very easy to switch your identifier type for your platform
+
+-- By default ESX only uses the value of the identifer (after the : symbol) in the users table.
+-- FiveM required
+Config.ExcludeIdentifierPrefix = false
+
 
 Config.MaxPlayersInTransferList = 5
 

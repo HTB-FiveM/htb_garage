@@ -1,44 +1,22 @@
 function PlayerIdentifiers(serverId)
-    -- local identifiers = {
-    --     steam = "",
-    --     ip = "",
-    --     discord = "",
-    --     license = "",
-    --     license2 = "",
-    --     xbl = "",
-    --     live = ""
-    -- }
-    
     -- Sometimes license2: comes up so it's important to add the : suffix
-    local idType = Config.PlayerIdentifierType .. ":"
+    local idPrefix = Config.PlayerIdentifierType .. ":"
     local identifier = nil
 
     -- Loop over all identifiers
     for k,id in pairs(GetPlayerIdentifiers(serverId)) do
-      if string.match(id, idType) then
+      if string.match(id, idPrefix) then
         identifier = id
         break
       end
 
-        -- -- Convert it to a nice table.
-        -- if string.find(id, "steam:") then
-        --     identifiers.steam = id
-        -- elseif string.find(id, "ip:") then
-        --     identifiers.ip = id
-        -- elseif string.find(id, "discord:") then
-        --     identifiers.discord = id
-        -- elseif string.find(id, "license:") then
-        --     identifiers.license = id
-        -- elseif string.find(id, "license2:") then
-        --     identifiers.license2 = id
-        -- elseif string.find(id, "xbl:") then
-        --     identifiers.xbl = id
-        -- elseif string.find(id, "live:") then
-        --     identifiers.live = id
-        -- end
     end
 
-    -- return identifiers
+
+    if ExcludeIdentifierPrefix == true then
+      identifier = identifier:gsub(idPrefix, "")
+    end
+
     return identifier
 end
 
