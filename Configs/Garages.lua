@@ -32,7 +32,7 @@ Config.Garages = {
 			Pos = {x=-324.71, y= -682.81, z=32.95},
 			Heading = 360.0,
 			Marker = { w= 1.5, h= 1.0,r=0,g=255,b=0},
-			NumSpawns = 5,
+			NumSpawns = 4,
 			HelpPrompt = _U('spawn_car')
 		},
 		DeletePoint = {

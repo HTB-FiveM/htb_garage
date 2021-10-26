@@ -19,16 +19,17 @@ end
 function SpawnVehicle(vehicle, coords, heading, cb, networked)
 	local model = (type(vehicle) == 'number' and vehicle or GetHashKey(vehicle))
 	local vector = type(coords) == "vector3" and coords or vec(coords.x, coords.y, coords.z)
-	networked = networked == nil and true or networked
+	networked = networked ~= nil and networked ~= false -- Ensure networked will never be nil
 	Citizen.CreateThread(function()
 		ESX.Streaming.RequestModel(model)
 
-		local vehicle = CreateVehicle(model, vector.xyz, heading, networked, false)
+		local vehicle = CreateVehicle(model, vector.x, vector.y, vector.z, heading, networked, false)
 
-		if networked then
-			local id = NetworkGetNetworkIdFromEntity(vehicle)
-			SetNetworkIdCanMigrate(id, true)
-			SetEntityAsMissionEntity(vehicle, true, false)
+		local networkId = nil
+		if networked == true then
+			networkId = NetworkGetNetworkIdFromEntity(vehicle)
+			SetNetworkIdCanMigrate(networkId, true) -- Allow player interaction
+			SetEntityAsMissionEntity(vehicle, true, false) -- Ensure no automatic despawn
 		end
 		SetVehicleHasBeenOwnedByPlayer(vehicle, true)
 		SetVehicleNeedsToBeHotwired(vehicle, false)
@@ -41,7 +42,7 @@ function SpawnVehicle(vehicle, coords, heading, cb, networked)
 		end
 
 		if cb then
-			cb(vehicle)
+			cb(vehicle, networkId)
 		end
 	end)
 end

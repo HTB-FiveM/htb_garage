@@ -8,6 +8,9 @@ frameworkFunctionMappings = {
     custom = {
         runStartupStuff = RunStartupStuffCustom,
         showNotification = ShowNotificationCustom
+    },
+    none = {
+        runStartupStuff = RunStartupStuffNone
     }
 }
 

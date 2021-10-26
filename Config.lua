@@ -55,6 +55,7 @@ Config.MaxPlayersInTransferList = 5
 -- Set the RP framework, supported values are:
 --      none
 --      esx
+--      qbcore
 --      custom
 Config.RolePlayFramework = 'esx'
 

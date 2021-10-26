@@ -1,15 +1,11 @@
-function trim(s)
-    return (string.gsub(s, "^%s*(.-)%s*$", "%1"))
-end
 
 if Config.Debug then debugPostList = {} end
 local isVisible = false
-local carInstances = {}
+local vehicleInstances = {}
 
 -------------------------------------------------------------------------------------------
-if Config.RolePlayFramework == nil or Config.RolePlayFramework ~= 'none' then    
-    frameworkFunctionMappings[Config.RolePlayFramework]['runStartupStuff']()
-end
+   
+frameworkFunctionMappings[Config.RolePlayFramework]['runStartupStuff']()
 
 
 -------------------------------------------------------------------------------------------
@@ -73,6 +69,12 @@ function HandleVehicleSpecifics(vehicleEntity, vehicleType, deleteZone)
     end
 end
 
+RegisterNetEvent('htb_garage:UpdateLocalVehicleInstances')
+AddEventHandler('htb_garage:UpdateLocalVehicleInstances', function(vehicles)
+    vehicleInstances = vehicles
+--print(json.encode(vehicleInstances))
+end)
+
 RegisterNetEvent('htb_garage:HandleWarpToDock')
 AddEventHandler('htb_garage:HandleWarpToDock', function(pos)
     local ped = PlayerPedId()
@@ -97,7 +99,7 @@ end)
 function StoreVehicle(vehicleType, deleteZone)
     local playerPed  = PlayerPedId()
 	if IsPedInAnyVehicle(playerPed, false) then
-		local vehicle = GetVehiclePedIsIn(playerPed,false)
+		local vehicle = GetVehiclePedIsIn(playerPed,false)        
 		if GetPedInVehicleSeat(vehicle, -1) == playerPed then
 			local GotTrailer, TrailerHandle = GetVehicleTrailerVehicle(vehicle)
 			if GotTrailer then
@@ -105,7 +107,7 @@ function StoreVehicle(vehicleType, deleteZone)
 				if trailerProps ~= nil then
 					ESX.TriggerServerCallback('eden_garage:stockv',function(valid)
 						if(valid) then
-                            carInstances[trim(trailerProps.plate)] = nil
+                            --local networkId = NetworkGetNetworkIdFromEntity(TrailerHandle)
 							DeleteEntity(TrailerHandle)
 							TriggerServerEvent('htb_garage:SetVehicleStored', trailerProps.plate, 1)
 
@@ -118,9 +120,10 @@ function StoreVehicle(vehicleType, deleteZone)
 					ShowNotification(_U('vehicle_error'))
 				end
 			else
+                local networkId = NetworkGetNetworkIdFromEntity(vehicle)
 				local vehicleProps = GetVehicleProperties(vehicle)
 				if vehicleProps ~= nil then
-                    TriggerServerEvent('htb_garage:SaveAndStoreVehicle', vehicleProps, vehicle, vehicleType, deleteZone)
+                    TriggerServerEvent('htb_garage:SaveAndStoreVehicle', vehicleProps, networkId, vehicleType, deleteZone)
 				else
 					ShowNotification(_U('vehicle_error'))
 				end
@@ -205,12 +208,13 @@ function DoesVehicleExist(plate)
     local doesVehicleExist = false
 
     plate = trim(plate)
-    local instance = carInstances[plate]
+    local instance = vehicleInstances[plate]
     if instance then
-        if DoesEntityExist(instance.vehicleentity) then
+        local vehicleEntity = NetworkGetEntityFromNetworkId(instance.networkId)
+        if DoesEntityExist(vehicleEntity) then
             doesVehicleExist = true
         else
-            carInstances[plate] = nil
+            TriggerServerEvent('htb_garage:StopTrackingEntity', plate)
             doesVehicleExist = false
         end
     end
@@ -334,11 +338,12 @@ function PayForRetrieve(vehicle)
                 ShowNotification(_U('retrieval_fee_paid'))
                 
                 local plate = trim(vehicle.plate)
-                local instance = carInstances[plate]
+                local instance = vehicleInstances[plate]
                 if instance then
-                    if DoesEntityExist(instance.vehicleentity) then
-                        DeleteEntity(instance.vehicleentity)
-                        carInstances[plate] = nil
+                    local vehicleEntity = NetworkGetEntityFromNetworkId(instance.networkId)
+                    if DoesEntityExist(vehicleEntity) then
+                        DeleteEntity(vehicleEntity)
+                        TriggerServerEvent('htb_garage:StopTrackingEntity', plate)
                     end
                 end
                 return true
@@ -385,8 +390,9 @@ end)
 
 RegisterNUICallback('setGpsMarker', function(data, cb)
     local vehicle = data.vehicle
-    local instance = carInstances[trim(vehicle.plate)]
-    local coords = GetEntityCoords(instance.vehicleentity)
+    local instance = vehicleInstances[trim(vehicle.plate)]
+    local vehicleEntity = NetworkGetEntityFromNetworkId(instance.networkId)
+    local coords = GetEntityCoords(vehicleEntity)
 
     SetNewWaypoint(coords.x, coords.y)
 
@@ -523,7 +529,7 @@ function DoTheSpawn(vehicle, spawnPoint)
 		x = spawnPoint.Pos.x,
 		y = spawnPoint.Pos.y,
 		z = spawnPoint.Pos.z + 1											
-		}, spawnPoint.Heading, function(callback_vehicle)
+		}, spawnPoint.Heading, function(callback_vehicle, networkId)
 			SetVehicleProperties(callback_vehicle, vehicleProps)
 
             if Config.TeleportToVehicleOnSpawn then
@@ -531,13 +537,11 @@ function DoTheSpawn(vehicle, spawnPoint)
             end
 
 			local carplate = GetVehicleNumberPlateText(callback_vehicle)
-			carInstances[trim(carplate)] = {
-                vehicleentity = callback_vehicle,
-                plate = carplate
-            }
 
             TriggerServerEvent('htb_garage:SetVehicleStored', carplate, 0)
-		end
+            TriggerServerEvent('htb_garage:StartTrackingEntity', carplate, networkId)
+		end,
+        true
     )
 
 end
@@ -568,9 +572,9 @@ AddEventHandler('htb_garage:ResultsForVehicleSpawn', function(vehicle, garageNam
 end)
 
 RegisterNetEvent('htb_garage:VehicleSaveAndStored')
-AddEventHandler('htb_garage:VehicleSaveAndStored', function(vehicleEntity, plate, vehicleType, deleteZone)
-    carInstances[trim(plate)] = nil
-
+AddEventHandler('htb_garage:VehicleSaveAndStored', function(networkId, plate, vehicleType, deleteZone)
+    local vehicleEntity = NetworkGetEntityFromNetworkId(networkId)
+    
     local playerPed = PlayerPedId()
     if vehicleType ~= 'boat' and Config.AnimateExitOnStore then
         TaskLeaveVehicle(
@@ -585,8 +589,10 @@ AddEventHandler('htb_garage:VehicleSaveAndStored', function(vehicleEntity, plate
         Citizen.Wait(1000)
     end
 
-    HandleVehicleSpecifics(vehicleEntity, vehicleType, deleteZone)    
+    HandleVehicleSpecifics(vehicleEntity, vehicleType, deleteZone)
     DeleteEntity(vehicleEntity)
+
+    TriggerServerEvent('htb_garage:StopTrackingEntity', plate)
 
     ShowNotification(_U('vehicle_in_garage'))
 
@@ -645,25 +651,6 @@ if Config.Debug then
     end)
 end
 
-RegisterNetEvent('htb_garage:SetVehicleInstance')
-AddEventHandler('htb_garage:SetVehicleInstance', function(vehicleInstance, carplate)
-	local plate = trim(carplate)
-	if carInstances[plate] == nil then
-        carInstances[plate] = {
-            vehicleentity = vehicleInstance,
-            plate = carplate
-        }
-	end
-
-end)
-
-RegisterNetEvent('htb_garage:UnsetVehicleInstance')
-AddEventHandler('htb_garage:UnsetVehicleInstance', function(carplate)
-	local plate = trim(carplate)
-	carInstances[plate] = nil
-
-end)
-
 RegisterNetEvent('htb_garage:Impounded')
 AddEventHandler('htb_garage:Impounded', function(message)
     ShowNotification(message)
@@ -697,8 +684,8 @@ end)
 
 -- end)
 
--- RegisterCommand('carInst', function(source, args, raw)
---     print(json.encode(carInstances))
+-- RegisterCommand('aaaaa', function(source, args, raw)
+--     print(json.encode(vehicleInstances))
 -- end, false)
 
 

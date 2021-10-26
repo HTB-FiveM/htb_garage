@@ -1,3 +1,5 @@
+local vehicleInstances = {}
+
 local SqlGetAllVehicles = -1
 local SqlGetVehicle = -1
 local SqlSetVehicleStored = -1
@@ -5,6 +7,8 @@ local SqlSaveAndStoreVehicle = -1
 local SqlSetVehicleName = -1
 local SqlTransferOwnership = -1
 local SqlImpoundVehicle = -1
+
+local garageDebug = false
 
 MySQL.ready(function()
     MySQL.Async.store([[
@@ -141,11 +145,45 @@ AddEventHandler('htb_garage:SetVehicleStored', function(plate, stored)
         ['@identifier'] = identifier,
         ['@plate'] = plate
     })
+end)
+
+-- When players login we need to send them a copy of the vehicleInstances
+RegisterNetEvent('htb_garage:playerLoaded')
+AddEventHandler('htb_garage:playerLoaded', function()
+    TriggerClientEvent('htb_garage:UpdateLocalVehicleInstances', source, vehicleInstances)
+end)
+
+
+RegisterNetEvent('htb_garage:StartTrackingEntity')
+AddEventHandler('htb_garage:StartTrackingEntity', function(plate, networkId)
+    if networkId then
+        vehicleInstances[trim(plate)] = {
+            networkId = networkId
+        }
+        TriggerClientEvent('htb_garage:UpdateLocalVehicleInstances', -1, vehicleInstances)
+        
+        if garageDebug then
+            Citizen.Trace(json.encode(vehicleInstances))
+        end
+    else
+        Citizen.Trace('No networkId provided for plate: ' .. plate)
+    end
+end)
+
+RegisterNetEvent('htb_garage:StopTrackingEntity')
+AddEventHandler('htb_garage:StopTrackingEntity', function(plate)
+    vehicleInstances[trim(plate)] = nil
+
+    if garageDebug then
+        Citizen.Trace(json.encode(vehicleInstances))
+    end
+
+    TriggerClientEvent('htb_garage:UpdateLocalVehicleInstances', -1, vehicleInstances)
 
 end)
 
 RegisterNetEvent('htb_garage:SaveAndStoreVehicle')
-AddEventHandler('htb_garage:SaveAndStoreVehicle', function(vehicleProps, vehicleEntity, vehicleType, deleteZone)
+AddEventHandler('htb_garage:SaveAndStoreVehicle', function(vehicleProps, networkId, vehicleType, deleteZone)
     local _source = source
     
     -- No need to track the owner of the vehicle. This way anyone can return vehicles and 
@@ -158,7 +196,7 @@ AddEventHandler('htb_garage:SaveAndStoreVehicle', function(vehicleProps, vehicle
         ['@plate'] = vehicleProps.plate
     })
 
-    TriggerClientEvent('htb_garage:VehicleSaveAndStored', _source, vehicleEntity, vehicleProps.plate, vehicleType, deleteZone)
+    TriggerClientEvent('htb_garage:VehicleSaveAndStored', _source, networkId, vehicleProps.plate, vehicleType, deleteZone)
 
 end)
 
@@ -276,3 +314,14 @@ AddEventHandler('htb_garage:ReleaseVehicle', function(plate)
     })
     TriggerClientEvent('htb_garage:Released', source, "Vehicle '" .. plate .. "' has been released", plate)
 end)
+
+RegisterCommand('garageToggleDebug', function(source, args, raw)
+    garageDebug = not garageDebug
+end, false)
+
+RegisterCommand('dumpVehicleInstances', function(source, args, raw)
+    if garageDebug then        
+        Citizen.Trace(json.encode(vehicleInstances))
+    end
+end, false)
+

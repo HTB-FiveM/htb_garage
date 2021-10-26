@@ -13,7 +13,7 @@ function PlayerIdentifiers(serverId)
     end
 
 
-    if ExcludeIdentifierPrefix == true then
+    if Config.ExcludeIdentifierPrefix == true then
       identifier = identifier:gsub(idPrefix, "")
     end
 
