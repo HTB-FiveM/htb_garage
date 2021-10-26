@@ -27,3 +27,13 @@ The design isn't perfect as this is only a first rough cut. I intend apply some 
 I plan to be actively maintaining this project and I'm open to suggestions and pull requests to merge back any fixes to issues that people with to contribute.
 
 If you need any assistance feel free to reach out at https://discord.gg/Ngg75byBbB
+
+**Sample Screenshots**
+![image](https://user-images.githubusercontent.com/6404476/138875460-cdc771df-56cc-4ef2-bf1e-f810a01df2a4.png)
+
+![image](https://user-images.githubusercontent.com/6404476/138875085-e65c395e-9083-4452-98d9-aee56dc9275e.png)
+
+![image](https://user-images.githubusercontent.com/6404476/138875659-dcb9efa5-065e-463f-aeb8-5d1e1b2db2c9.png)
+
+
+
