@@ -13,17 +13,11 @@ CREATE TABLE owned_vehicles (
   type varchar(10) NOT NULL DEFAULT 'car',
   job varchar(50) DEFAULT NULL,
   PRIMARY KEY (plate)
-)
-
---
--- Create index `vehsowned` on table `owned_vehicles`
---
-ALTER TABLE owned_vehicles
-ADD INDEX vehsowned (owner);
+);
 
 --
 -- Create foreign key
 --
 ALTER TABLE owned_vehicles
-ADD CONSTRAINT FK_ownedvehiclesowner_users FOREIGN KEY (owner)
+ADD CONSTRAINT FK_ownedvehicles_users FOREIGN KEY (owner)
 REFERENCES users (identifier) ON DELETE CASCADE ON UPDATE CASCADE;
