@@ -11,6 +11,16 @@ html, body{
 body {
     display: none;
 }
+
+/* .centred { */
+    /* Centering code found https://css-tricks.com/quick-css-trick-how-to-center-an-object-exactly-in-the-center/ */
+/*    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+} */
+
 #app{
     position:absolute;
     top:50.5%;

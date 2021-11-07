@@ -25,3 +25,15 @@ function ShowNotificationEsx(msg)
     ESX.ShowNotification(msg)
 end
 
+function RequestModelEsx(modelHash, cb)
+    ESX.Streaming.RequestModel(modelHash, cb)
+
+end
+
+function SetBaseVehiclePropertiesEsx(vehicle, props)
+    ESX.Game.SetVehicleProperties(vehicle, props)
+end
+
+function GetBaseVehiclePropertiesEsx(vehicle)
+    return ESX.Game.GetVehicleProperties(vehicle)
+end

@@ -23,10 +23,23 @@ var app = new Vue({
             
             // this.$refs.vehicleDetailsPanel -- Need to think about how to collapse all items at once with Vue.js, as in remove the 'show' class
             // But using jQuery here does actually work so using it for now
-            $('.collapse').collapse('hide');
+            this.hide();
 
             this.search = '';
-            $.post('https://htb_garage/close', JSON.stringify({}));
+
+            const requestOptions = {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({})
+                
+            };
+            fetch("https://htb_garage/close", requestOptions)
+                .then(response => response.json())
+                .then(data => (this.postId = data.id));
+
+        },
+        hide() {
+            document.body.style.display = "none";
         },
         modelName(vehicle) {
             if(!vehicle.modelName || vehicle.modelName === 'NULL') {

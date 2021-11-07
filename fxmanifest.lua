@@ -9,26 +9,30 @@ ui_page 'ui/index.html'
 
 files {
     'UI/index.html',
-	'UI/css/bootstrap-4.6.css',
+	'UI/css/bootstrap-5.1.3.css',
 	'UI/css/stylesheet.css',
-	'UI/js/bootstrap.bundle-4.6.js',
-	'UI/js/jquery-3.5.1.js',
+	'UI/js/bootstrap.bundle-5.1.3.js',
 	'UI/js/script.js',
 	'UI/js/vue.min.js'
 }
 
 shared_scripts {
 	-- Uncomment if you're using ESX-Legacy
-    '@es_extended/imports.lua',
-	'common.lua'
+    --'@es_extended/imports.lua',
+	'common.lua',
+	'Config.lua',
+
+	-- Uncomment if you're using QBCore
+	'@qb-core/import.lua'
 
 }
 
 server_scripts {
-	'@mysql-async/lib/MySQL.lua',
-	'@es_extended/locale.lua',
-	'locales/en.lua',
-	'Config.lua',
+	--'@mysql-async/lib/MySQL.lua',
+	--'@oxmysql/lua/lib/MySQL.lua',
+	'@oxmysql/lib/MySQL.lua',
+	'locale.lua',
+	'locales/*',
 	'Server/utils.lua',
 	'FrameworkSpecific/Server/*.lua',
 	--'FrameworkSpecific/server_setup.lua',
@@ -36,9 +40,8 @@ server_scripts {
 }
 
 client_scripts {
-	'@es_extended/locale.lua',
-	'locales/en.lua',
-	'Config.lua',
+	'locale.lua',
+	'locales/*',
 	'Configs/*.lua',
 	'VehicleStuff.lua',
 	'FrameworkSpecific/Client/*.lua',

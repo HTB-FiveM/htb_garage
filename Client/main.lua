@@ -4,19 +4,11 @@ local isVisible = false
 local vehicleInstances = {}
 
 -------------------------------------------------------------------------------------------
-   
 frameworkFunctionMappings[Config.RolePlayFramework]['runStartupStuff']()
-
 
 -------------------------------------------------------------------------------------------
 function ShowNotification(msg)
-    if Config.RolePlayFramework == nil or Config.RolePlayFramework == 'none' then
-        SetNotificationTextEntry('STRING')
-        AddTextComponentString(msg)
-        DrawNotification(0,1)
-    else
-        frameworkFunctionMappings[Config.RolePlayFramework]['showNotification'](msg)
-    end
+    frameworkFunctionMappings[Config.RolePlayFramework]['showNotification'](msg)
 end
 
 function ToggleGUI(explicit_status)
@@ -242,7 +234,7 @@ end
 
 function GetVehicleProperties(vehicle)
     if DoesEntityExist(vehicle) then
-        local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
+        local vehicleProps = frameworkFunctionMappings[Config.RolePlayFramework]['getBaseVehicleProperties'](vehicle)
 
         vehicleProps["tyres"] = {}
         vehicleProps["windows"] = {}
@@ -291,7 +283,7 @@ function GetVehicleProperties(vehicle)
 end
 
 function SetVehicleProperties(vehicle, vehicleProps)
-    SetBaseVehicleProperties(vehicle, vehicleProps)
+    frameworkFunctionMappings[Config.RolePlayFramework]['setBaseVehicleProperties'](vehicle, vehicleProps)
 
     if vehicleProps["windows"] then
         for windowId = 1, 9, 1 do
@@ -375,7 +367,7 @@ RegisterNUICallback('takeOut', function(data, cb)
     if getTheVehicle then
         if DoesVehicleExist(vehicle.plate) or IsPlayerDrivingVehicle(vehicle.plate) then
             ShowNotification(_U('cannot_take_out'))
-        elseif (vehicle.pound) then
+        elseif vehicle.pound ~= 0 and vehicle.pound ~= nil then
             ShowNotification(_U('vehicle_in_pound'))
         elseif (vehicle.stored or overrideStored) then
             TriggerServerEvent('htb_garage:GetVehicleForSpawn', vehicle.plate, vehicle.garage)        
@@ -418,6 +410,14 @@ RegisterNUICallback('fetchNearbyPlayers', function(data, cb)
     cb('ok')
 end)
 
+function ConvertDistance(distance)
+    if Config.DistanceUnits == 'm' or Config.DistanceUnits == 'M' then
+        return round(distance / 1.609)
+    end
+
+    return distance
+end
+
 RegisterNetEvent('htb_garage:GetPlayerVehiclesResults')
 AddEventHandler('htb_garage:GetPlayerVehiclesResults', function(vehicles, garageName)
     local data = {}
@@ -431,12 +431,12 @@ AddEventHandler('htb_garage:GetPlayerVehiclesResults', function(vehicles, garage
             body = veh.body,
             engine = veh.engine,
             fuel = veh.fuel,
+            drivingdistance = ConvertDistance(veh.drivingdistance),
+            distanceUnits = Config.DistanceUnits,
             stored = veh.stored,
             pound = veh.pound,
             displayName = veh.vehiclename,
-            plate = veh.plate,
-            htmlId = string.gsub(veh.plate, "%s+", ""),
-            href = '#' .. string.gsub(veh.plate, "%s+", ""),
+            plate = string.gsub(veh.plate, "%s+", ""),
             tempNickName = '',
             selectedNewOwner = '',
             transferOwnership = false,
@@ -521,8 +521,6 @@ function DetermineSpawnPosition(vehicleType, spawnPoint, heading, numSpawns)
 end
 
 function DoTheSpawn(vehicle, spawnPoint)
-
-    --local vehicleProps = ESX.Game.GetVehicleProperties()
     local vehicleProps = json.decode(vehicle)
 
 	SpawnVehicle(vehicleProps.model, {
@@ -531,6 +529,10 @@ function DoTheSpawn(vehicle, spawnPoint)
 		z = spawnPoint.Pos.z + 1											
 		}, spawnPoint.Heading, function(callback_vehicle, networkId)
 			SetVehicleProperties(callback_vehicle, vehicleProps)
+
+print('bodyHealth: ' .. round(GetVehicleBodyHealth(callback_vehicle), 1))
+print('engineHealth: ' .. round(GetVehicleEngineHealth(callback_vehicle), 1))
+print('fuelLevel: ' .. round(GetVehicleFuelLevel(callback_vehicle), 1))
 
             if Config.TeleportToVehicleOnSpawn then
 			    TaskWarpPedIntoVehicle(PlayerPedId(), callback_vehicle, -1)
@@ -689,3 +691,29 @@ end)
 -- end, false)
 
 
+Citizen.CreateThread(function()
+    while true do
+        local ped = PlayerPedId()
+        local vehicle = GetVehiclePedIsIn(ped,false)     
+        if vehicle and vehicle ~= 0 then
+            local bodyHealth        = round(GetVehicleBodyHealth(vehicle), 1)
+            local engineHealth      = round(GetVehicleEngineHealth(vehicle), 1)
+            local tankHealth        = round(GetVehiclePetrolTankHealth(vehicle), 1)
+            local fuelLevel         = round(GetVehicleFuelLevel(vehicle), 1)
+
+            SetTextFont(0)
+            SetTextProportional(1)
+            SetTextScale(0.0, 0.3)
+            SetTextColour(128, 128, 128, 255)
+            SetTextDropshadow(0, 0, 0, 0, 255)
+            SetTextEdge(1, 0, 0, 0, 255)
+            SetTextDropShadow()
+            SetTextOutline()
+            SetTextEntry("STRING")
+            AddTextComponentString("Body: " .. bodyHealth .. ", Engine: " .. engineHealth .. ", Tank: " .. tankHealth .. ", Fuel: " .. fuelLevel)
+            DrawText(0.015, 0.005)
+        end
+
+        Citizen.Wait(0)
+    end
+end)

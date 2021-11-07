@@ -3,11 +3,21 @@
 frameworkFunctionMappings = {
     esx = {
         runStartupStuff = RunStartupStuffEsx,
-        getAllPlayerNames = GetAllPlayerNamesEsx
+        getAllPlayerNames = GetAllPlayerNamesEsx,
+        registerDatabase = RegisterDatabaseQueriesEsx,
+        identifierFromServerId = IdentifierFromServerIdEsx
+    },
+    qbcore = {
+        runStartupStuff = RunStartupStuffQbCore,
+        getAllPlayerNames = GetAllPlayerNamesQbCore,
+        registerDatabase = RegisterDatabaseQueriesQbCore,
+        identifierFromServerId = IdentifierFromServerIdQbCore
     },
     custom = {
         runStartupStuff = RunStartupStuffCustom,
-        getAllPlayerNames = GetAllPlayerNamesCustom
+        getAllPlayerNames = GetAllPlayerNamesCustom,
+        registerDatabase = RegisterDatabaseQueriesCustom,
+        identifierFromServerId = IdentifierFromServerIdCustom
     }
 }
 

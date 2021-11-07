@@ -3,14 +3,33 @@
 frameworkFunctionMappings = {
     esx = {
         runStartupStuff = RunStartupStuffEsx,
-        showNotification = ShowNotificationEsx
+        showNotification = ShowNotificationEsx,
+        requestModel = RequestModelEsx,
+        setBaseVehicleProperties = SetBaseVehiclePropertiesEsx,
+        getBaseVehicleProperties = GetBaseVehiclePropertiesEsx
+
+    },
+    qbcore = {
+        runStartupStuff = RunStartupStuffQbCore,
+        showNotification = ShowNotificationQbCore,
+        requestModel = RequestModelQbCore,
+        setBaseVehicleProperties = SetBaseVehiclePropertiesQbCore,
+        getBaseVehicleProperties = GetBaseVehiclePropertiesQbCore
+
     },
     custom = {
         runStartupStuff = RunStartupStuffCustom,
-        showNotification = ShowNotificationCustom
+        showNotification = ShowNotificationCustom,
+        requestModel = RequestModelCustom,
+        setBaseVehicleProperties = SetBaseVehiclePropertiesCustom,
+        getBaseVehicleProperties = GetBaseVehiclePropertiesCustom
     },
     none = {
-        runStartupStuff = RunStartupStuffNone
+        runStartupStuff = RunStartupStuffNone,
+        showNotification = ShowNotificationNone,
+        requestModel = RequestModelNone,
+        setBaseVehicleProperties = SetBaseVehiclePropertiesNone,
+        getBaseVehicleProperties = GetBaseVehiclePropertiesNone
     }
 }
 

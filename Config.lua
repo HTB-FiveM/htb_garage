@@ -1,6 +1,8 @@
 Config = {}
 Config.Debug = false
 
+Config.Locale = 'en'
+
 Config.MinSpawns = 2
 Config.Blips = {
     car = { sprite = 524, color = 30 },
@@ -25,6 +27,8 @@ Config.AnimateExitOnStore = true
 Config.DisplayFuel = true
 Config.DisplayEngine = true
 Config.DisplayBody = true
+
+Config.DistanceUnits = 'km'
 
 -- Impound
 Config.ImpoundEnabled = true
@@ -57,6 +61,6 @@ Config.MaxPlayersInTransferList = 5
 --      esx
 --      qbcore
 --      custom
-Config.RolePlayFramework = 'esx'
+Config.RolePlayFramework = 'qbcore'
 
-Config.UsingEsxLegacy = true
+Config.UsingEsxLegacy = false
