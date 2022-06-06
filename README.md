@@ -37,7 +37,7 @@ If you need any assistance feel free to reach out at https://discord.gg/Ngg75byB
 ![image](https://user-images.githubusercontent.com/6404476/138875659-dcb9efa5-065e-463f-aeb8-5d1e1b2db2c9.png)
 
 **Installation**
-Install ft_libs https://github.com/FivemTools/ft_libs if you don't already have it and add the ensure statement to your server.cfg
-Install htb_garage and add the ensure statement after ft_libs in the server.cfg
-Run the SQL script according to whether you already have the owned_vehicles table. If you have a stock ESX Legacy setup from the fxserver recipe deployer then run alter owned_vehicles file.
+* Install ft_libs https://github.com/FivemTools/ft_libs if you don't already have it and add the ensure statement to your server.cfg
+* Install htb_garage and add the ensure statement after ft_libs in the server.cfg
+* Run the SQL script according to whether you already have the owned_vehicles table. If you have a stock ESX Legacy setup from the fxserver recipe deployer then run alter owned_vehicles file.
 
