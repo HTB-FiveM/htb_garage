@@ -1,4 +1,5 @@
-﻿
+﻿-- Use this script if you do NOT have the owned_vehicles table already.
+
 --
 -- Create table `owned_vehicles`
 --
