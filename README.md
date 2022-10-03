@@ -50,4 +50,5 @@ Whilst my current system does allow specific RP framework core functions to be s
 * Run the SQL script according to whether you already have the owned_vehicles table. If you have a stock ESX Legacy setup from the fxserver recipe deployer then run alter owned_vehicles file.
 
 **Note regarding ESX-Legacy**
-There's bee some changes to ESX and they now have a built in garage system that uses a column named *pound* that's a varchar which clashes with mine. I've adjusted the database column name to be pound_htb. If you've been running an old version my this resource please add that column to your database. You can take the update SQL and just comment out the other columns so you only add the pound_htb one.
+
+There's been some changes to ESX and they now have a built in garage system that uses a column named *pound* that's a varchar which clashes with mine. I've adjusted the database column name to be pound_htb. If you've been running an old version my this resource please add that column to your database. You can take the update SQL and just comment out the other columns so you only add the pound_htb one.
