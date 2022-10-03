@@ -2,8 +2,9 @@ fx_version("cerulean")
 game("gta5")
 
 author("Harry The Bastard")
-version("1.0.0")
+version("1.0.1")
 description("A better garage system")
+lua54 'yes'
 
 ui_page("ui/index.html")
 
@@ -45,3 +46,5 @@ client_scripts({
 	"Impound.lua",
 	"Client/main.lua",
 })
+
+dependency 'es_extended'

@@ -18,7 +18,7 @@ SELECT
     CAST(json_value(vehicle, '$.bodyHealth') AS INTEGER) body,
     CAST(json_value(vehicle, '$.engineHealth') AS INTEGER) engine,
     CAST(json_value(vehicle, '$.fuelLevel') AS INTEGER) fuel
-    , stored, pound, vehiclename, plate FROM owned_vehicles
+    , stored, pound_htb AS pound, vehiclename, plate FROM owned_vehicles
 WHERE owner = @identifier AND type = @type AND job IS NULL
     ]],
 		function(storeId)
@@ -28,7 +28,7 @@ WHERE owner = @identifier AND type = @type AND job IS NULL
 
 	MySQL.Async.store(
 		[[
-SELECT vehicle, stored, pound, vehiclename, plate, type
+SELECT vehicle, stored, pound_htb AS pound, vehiclename, plate, type
 FROM owned_vehicles
 WHERE owner = @identifier AND plate = @plate
         ]],
@@ -84,7 +84,7 @@ WHERE owner = @currentOwner AND plate = @plate
 	MySQL.Async.store(
 		[[
 UPDATE owned_vehicles
-SET pound = @pound
+SET pound_htb = @pound
         ]],
 		function(storeId)
 			SqlImpoundVehicle = storeId
@@ -114,7 +114,8 @@ end
 RegisterNetEvent("htb_garage:SetVehicleName")
 AddEventHandler("htb_garage:SetVehicleName", function(plate, newName)
 	local _source = source
-	local identifier = ESX.Players[_source].identifier
+	local xPlayer  = ESX.GetPlayerFromId(source)
+	local identifier = xPlayer.identifier
 
 	MySQL.Sync.execute(SqlSetVehicleName, {
 		["@newName"] = newName,
@@ -126,7 +127,8 @@ end)
 RegisterNetEvent("htb_garage:GetPlayerVehicles")
 AddEventHandler("htb_garage:GetPlayerVehicles", function(type, garageName)
 	local _source = source
-	local identifier = ESX.Players[_source].identifier
+	local xPlayer  = ESX.GetPlayerFromId(source)
+	local identifier = xPlayer.identifier
 
 	local results = MySQL.Sync.fetchAll(SqlGetAllVehicles, {
 		["@identifier"] = identifier,
@@ -139,7 +141,8 @@ end)
 RegisterNetEvent("htb_garage:GetVehicleForSpawn")
 AddEventHandler("htb_garage:GetVehicleForSpawn", function(plate, garage)
 	local _source = source
-	local identifier = ESX.Players[_source].identifier
+	local xPlayer  = ESX.GetPlayerFromId(source)
+	local identifier = xPlayer.identifier
 
 	local results = MySQL.Sync.fetchAll(SqlGetVehicle, {
 		["@identifier"] = identifier,
@@ -151,7 +154,8 @@ end)
 RegisterNetEvent("htb_garage:SetVehicleStored")
 AddEventHandler("htb_garage:SetVehicleStored", function(plate, stored)
 	local _source = source
-	local identifier = ESX.Players[_source].identifier
+	local xPlayer  = ESX.GetPlayerFromId(source)
+	local identifier = xPlayer.identifier
 
 	MySQL.Sync.execute(SqlSetVehicleStored, {
 		["@stored"] = stored,
