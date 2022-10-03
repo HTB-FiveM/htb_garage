@@ -36,8 +36,18 @@ If you need any assistance feel free to reach out at https://discord.gg/Ngg75byB
 
 ![image](https://user-images.githubusercontent.com/6404476/138875659-dcb9efa5-065e-463f-aeb8-5d1e1b2db2c9.png)
 
+**Important note regarding MySQL**
+
+The SQL I'm using is using some specific JSON fetch functions which aren't available in MySQL and therefore at this time you must be running MariaDB. I've tested with 10.7 so use that as a minimum. There'll be an update at some point once I work out how to implement a decent factory pattern to make the specific platform plugin code a little better.
+
+**My quasi 'Factory Pattern'**
+
+Whilst my current system does allow specific RP framework core functions to be switched in, the current system is a little too cryptic and even I struggle to think through problems with it when they arise. In any real language these days implementing a decent Factory Pattern with object orientation is straight forward, so I need to invest time time working out a better way to do it in LUA. This will then make it cleaner to swap in different database specific code as well as RP specific code. Once that's done MySQL support will be easier to drop in.
+
 **Installation**
 * Install ft_libs https://github.com/FivemTools/ft_libs if you don't already have it and add the ensure statement to your server.cfg
 * Install htb_garage and add the ensure statement after ft_libs in the server.cfg
 * Run the SQL script according to whether you already have the owned_vehicles table. If you have a stock ESX Legacy setup from the fxserver recipe deployer then run alter owned_vehicles file.
 
+**Note regarding ESX-Legacy**
+There's bee some changes to ESX and they now have a built in garage system that uses a column named *pound* that's a varchar which clashes with mine. I've adjusted the database column name to be pound_htb. If you've been running an old version my this resource please add that column to your database. You can take the update SQL and just comment out the other columns so you only add the pound_htb one.
