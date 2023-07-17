@@ -14,11 +14,11 @@ MySQL.ready(function()
 	MySQL.Async.store(
 		[[
 SELECT 
-    CAST(json_value(vehicle, '$.model') AS INTEGER) model,
-    CAST(json_value(vehicle, '$.bodyHealth') AS INTEGER) body,
-    CAST(json_value(vehicle, '$.engineHealth') AS INTEGER) engine,
-    CAST(json_value(vehicle, '$.fuelLevel') AS INTEGER) fuel
-    , stored, pound_htb AS pound, vehiclename, plate FROM owned_vehicles
+	CAST(json_value(vehicle, '$.model') AS SIGNED) model,
+	CAST(json_value(vehicle, '$.bodyHealth') AS SIGNED) body,
+	CAST(json_value(vehicle, '$.engineHealth') AS SIGNED) engine,
+	CAST(json_value(vehicle, '$.fuelLevel') AS SIGNED) fuel
+	, `stored`, pound_htb AS pound, vehiclename, plate FROM owned_vehicles
 WHERE owner = @identifier AND type = @type AND job IS NULL
     ]],
 		function(storeId)
@@ -28,7 +28,7 @@ WHERE owner = @identifier AND type = @type AND job IS NULL
 
 	MySQL.Async.store(
 		[[
-SELECT vehicle, stored, pound_htb AS pound, vehiclename, plate, type
+SELECT vehicle, `stored`, pound_htb AS pound, vehiclename, plate, type
 FROM owned_vehicles
 WHERE owner = @identifier AND plate = @plate
         ]],
@@ -40,7 +40,7 @@ WHERE owner = @identifier AND plate = @plate
 	MySQL.Async.store(
 		[[
 UPDATE owned_vehicles
-SET stored = @stored
+SET `stored` = @stored
 WHERE owner = @identifier AND plate = @plate
         ]],
 		function(storeId)
@@ -51,7 +51,7 @@ WHERE owner = @identifier AND plate = @plate
 	MySQL.Async.store(
 		[[
 UPDATE owned_vehicles
-SET vehicle = @vehicle, stored = @stored
+SET vehicle = @vehicle, `stored` = @stored
 WHERE plate = @plate
         ]],
 		function(storeId)
