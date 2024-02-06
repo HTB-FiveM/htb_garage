@@ -25,3 +25,7 @@ function ShowNotificationEsx(msg)
     ESX.ShowNotification(msg)
 end
 
+function GetPlayerDataEsx()
+    return ESX.GetPlayerData()
+end
+

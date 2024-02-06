@@ -3,11 +3,18 @@
 frameworkFunctionMappings = {
     esx = {
         runStartupStuff = RunStartupStuffEsx,
-        showNotification = ShowNotificationEsx
+        showNotification = ShowNotificationEsx,
+        getPlayerData = GetPlayerDataEsx
+    },
+    qbcore = {
+        runStartupStuff = RunStartupStuffQbCore,
+        showNotification = ShowNotificationQbCore,
+        getPlayerData = GetPlayerDataQbCore
     },
     custom = {
         runStartupStuff = RunStartupStuffCustom,
-        showNotification = ShowNotificationCustom
+        showNotification = ShowNotificationCustom,
+        getPlayerData = GetPlayerDataCustom
     },
     none = {
         runStartupStuff = RunStartupStuffNone

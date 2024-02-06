@@ -3,11 +3,23 @@
 frameworkFunctionMappings = {
     esx = {
         runStartupStuff = RunStartupStuffEsx,
-        getAllPlayerNames = GetAllPlayerNamesEsx
+        getAllPlayerNames = GetAllPlayerNamesEsx,
+        getPlayerIdentifierFromId = GetPlayerIdentifierFromIdEsx,
+        makePayment = MakePaymentEsx
+    },
+    qbcore = {
+        runStartupStuff = RunStartupStuffQbCore,
+        showNotification = GetAllPlayerNamesQbCore,
+        getPlayerIdentifierFromId = GetPlayerIdentifierFromIdQbCore,
+        makePayment = MakePaymentQbCore
     },
     custom = {
         runStartupStuff = RunStartupStuffCustom,
-        getAllPlayerNames = GetAllPlayerNamesCustom
+        getAllPlayerNames = GetAllPlayerNamesCustom,
+        getPlayerIdentifierFromId = getPlayerIdentifierFromIdCustom,
+        makePayment = MakePaymentCustom
     }
 }
+
+SQL = {}
 

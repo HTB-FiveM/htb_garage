@@ -57,6 +57,6 @@ Config.MaxPlayersInTransferList = 5
 --      esx
 --      qbcore
 --      custom
-Config.RolePlayFramework = 'esx'
+Config.RolePlayFramework = 'qbcore'
 
 Config.UsingEsxLegacy = true

@@ -19,6 +19,10 @@ function ShowNotification(msg)
 	end
 end
 
+function GetPlayerData()
+	frameworkFunctionMappings[Config.RolePlayFramework]["getPlayerData"](msg)
+end
+
 function ToggleGUI(explicit_status)
 	if explicit_status ~= nil then
 		isVisible = explicit_status
@@ -99,6 +103,8 @@ function StoreVehicle(vehicleType, deleteZone)
 			if GotTrailer then
 				local trailerProps = GetVehicleProperties(TrailerHandle)
 				if trailerProps ~= nil then
+					-- TODO:
+					-- eden_garage:stockv isn't anywere in the Server code. Work out what to do here
 					ESX.TriggerServerCallback("eden_garage:stockv", function(valid)
 						if valid then
 							--local networkId = NetworkGetNetworkIdFromEntity(TrailerHandle)
@@ -242,7 +248,7 @@ end
 
 function GetVehicleProperties(vehicle)
 	if DoesEntityExist(vehicle) then
-		local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
+		local vehicleProps = EsxGetVehicleProperties(vehicle)
 
 		vehicleProps["tyres"] = {}
 		vehicleProps["windows"] = {}
@@ -329,13 +335,21 @@ RegisterNUICallback("close", function(data, cb)
 end)
 
 function PayForRetrieve(vehicle)
-	local playerData = ESX.GetPlayerData()
+	local playerData = GetPlayerData()
+	
+	-- TODO: Should move this to a factory generated class
+	local accountName = ""
+  if Config.RolePlayFramework == "esx" then
+		accountName = "money"
+	elseif Config.RolePlayFramework == "qbcore" then
+			accountName = "cash"
+	end
 
 	for _, account in pairs(playerData.accounts) do
-		if account.name == "money" then
+		if account.name == accountName then
 			if account.money >= Config.ImpoundPrice then
 				-- Pay the fee and notify the player
-				TriggerServerEvent("htb_garage:MakePayment", "money", Config.ImpoundPrice)
+				TriggerServerEvent("htb_garage:MakePayment", accountName, Config.ImpoundPrice)
 				ShowNotification(_U("retrieval_fee_paid"))
 
 				local plate = trim(vehicle.plate)
@@ -356,7 +370,7 @@ function PayForRetrieve(vehicle)
 	end
 
 	Citizen.Trace(
-		"function PayForRetrieve: Unable to find account 'money' for player " .. playerData.identifier .. "\n"
+		"function PayForRetrieve: Unable to find account '" .. accountName .. "' for player " .. playerData.identifier .. "\n"
 	)
 	return false
 end
@@ -519,7 +533,6 @@ function DetermineSpawnPosition(vehicleType, spawnPoint, heading, numSpawns)
 end
 
 function DoTheSpawn(vehicle, spawnPoint)
-	--local vehicleProps = ESX.Game.GetVehicleProperties()
 	local vehicleProps = json.decode(vehicle)
 
 	SpawnVehicle(

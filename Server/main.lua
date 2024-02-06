@@ -12,80 +12,49 @@ local garageDebug = false
 
 MySQL.ready(function()
 	MySQL.Async.store(
-		[[
-SELECT 
-	CAST(json_value(vehicle, '$.model') AS SIGNED) model,
-	CAST(json_value(vehicle, '$.bodyHealth') AS SIGNED) body,
-	CAST(json_value(vehicle, '$.engineHealth') AS SIGNED) engine,
-	CAST(json_value(vehicle, '$.fuelLevel') AS SIGNED) fuel
-	, `stored`, pound_htb AS pound, vehiclename, plate FROM owned_vehicles
-WHERE owner = @identifier AND type = @type AND job IS NULL
-    ]],
+		SQL[Config.RolePlayFramework].SqlGetAllVehicles,
 		function(storeId)
 			SqlGetAllVehicles = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-SELECT vehicle, `stored`, pound_htb AS pound, vehiclename, plate, type
-FROM owned_vehicles
-WHERE owner = @identifier AND plate = @plate
-        ]],
+		SQL[Config.RolePlayFramework].SqlGetVehicle,
 		function(storeId)
 			SqlGetVehicle = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-UPDATE owned_vehicles
-SET `stored` = @stored
-WHERE owner = @identifier AND plate = @plate
-        ]],
+		SQL[Config.RolePlayFramework].SqlSetVehicleStored,
 		function(storeId)
 			SqlSetVehicleStored = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-UPDATE owned_vehicles
-SET vehicle = @vehicle, `stored` = @stored
-WHERE plate = @plate
-        ]],
+		SQL[Config.RolePlayFramework].SqlSaveAndStoreVehicle,
 		function(storeId)
 			SqlSaveAndStoreVehicle = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-UPDATE owned_vehicles
-SET vehiclename = @newName
-WHERE owner = @identifier AND plate = @plate
-        ]],
+		SQL[Config.RolePlayFramework].SqlSetVehicleName,
 		function(storeId)
 			SqlSetVehicleName = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-UPDATE owned_vehicles
-SET owner = @newOwner
-WHERE owner = @currentOwner AND plate = @plate
-        ]],
+		SQL[Config.RolePlayFramework].SqlTransferOwnership,
 		function(storeId)
 			SqlTransferOwnership = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-UPDATE owned_vehicles
-SET pound_htb = @pound
-        ]],
+		SQL[Config.RolePlayFramework].SqlImpoundVehicle,
 		function(storeId)
 			SqlImpoundVehicle = storeId
 		end
@@ -95,6 +64,14 @@ end)
 -------------------------------------------------------------------------------------------
 if Config.RolePlayFramework == nil or Config.RolePlayFramework ~= "none" then
 	frameworkFunctionMappings[Config.RolePlayFramework]["runStartupStuff"]()
+end
+
+function GetPlayerIdentifierFromId(source)
+	return frameworkFunctionMappings[Config.RolePlayFramework]["getPlayerIdentifierFromId"](source)
+end
+
+function MakePayment(source, account, amount)
+	frameworkFunctionMappings[Config.RolePlayFramework]["makePayment"](source, account, amount)
 end
 
 -------------------------------------------------------------------------------------------
@@ -114,8 +91,7 @@ end
 RegisterNetEvent("htb_garage:SetVehicleName")
 AddEventHandler("htb_garage:SetVehicleName", function(plate, newName)
 	local _source = source
-	local xPlayer  = ESX.GetPlayerFromId(source)
-	local identifier = xPlayer.identifier
+	local identifier = GetPlayerIdentifierFromId(_source)
 
 	MySQL.Sync.execute(SqlSetVehicleName, {
 		["@newName"] = newName,
@@ -127,8 +103,7 @@ end)
 RegisterNetEvent("htb_garage:GetPlayerVehicles")
 AddEventHandler("htb_garage:GetPlayerVehicles", function(type, garageName)
 	local _source = source
-	local xPlayer  = ESX.GetPlayerFromId(source)
-	local identifier = xPlayer.identifier
+	local identifier = GetPlayerIdentifierFromId(_source)
 
 	local results = MySQL.Sync.fetchAll(SqlGetAllVehicles, {
 		["@identifier"] = identifier,
@@ -141,8 +116,7 @@ end)
 RegisterNetEvent("htb_garage:GetVehicleForSpawn")
 AddEventHandler("htb_garage:GetVehicleForSpawn", function(plate, garage)
 	local _source = source
-	local xPlayer  = ESX.GetPlayerFromId(source)
-	local identifier = xPlayer.identifier
+	local identifier = GetPlayerIdentifierFromId(_source)
 
 	local results = MySQL.Sync.fetchAll(SqlGetVehicle, {
 		["@identifier"] = identifier,
@@ -154,8 +128,7 @@ end)
 RegisterNetEvent("htb_garage:SetVehicleStored")
 AddEventHandler("htb_garage:SetVehicleStored", function(plate, stored)
 	local _source = source
-	local xPlayer  = ESX.GetPlayerFromId(source)
-	local identifier = xPlayer.identifier
+	local identifier = GetPlayerIdentifierFromId(_source)
 
 	MySQL.Sync.execute(SqlSetVehicleStored, {
 		["@stored"] = stored,
@@ -224,8 +197,8 @@ end)
 RegisterNetEvent("htb_garage:MakePayment")
 AddEventHandler("htb_garage:MakePayment", function(account, amount)
 	local _source = source
-	local xPlayer = ESX.GetPlayerFromId(_source)
-	xPlayer.removeAccountMoney(account, amount)
+	MakePayment(_source, account, amount)
+	
 end)
 
 RegisterNetEvent("htb_garage:fetchNearbyPlayers")

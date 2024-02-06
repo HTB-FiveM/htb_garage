@@ -21,7 +21,7 @@ function SpawnVehicle(vehicle, coords, heading, cb, networked)
 	local vector = type(coords) == "vector3" and coords or vec(coords.x, coords.y, coords.z)
 	networked = networked ~= nil and networked ~= false -- Ensure networked will never be nil
 	Citizen.CreateThread(function()
-		ESX.Streaming.RequestModel(model)
+		HtbRequestModel(model)
 
 		local vehicle = CreateVehicle(model, vector.x, vector.y, vector.z, heading, networked, false)
 

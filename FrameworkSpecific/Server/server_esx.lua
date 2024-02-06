@@ -26,3 +26,12 @@ function GetAllPlayerNamesEsx()
 
     return playerNames
 end
+
+function GetPlayerIdentifierFromIdEsx(source)
+    return ESX.GetPlayerFromId(source).identifier
+end
+
+function MakePaymentEsx(source, account, amount)
+	local xPlayer = ESX.GetPlayerFromId(source)
+	xPlayer.removeAccountMoney(account, amount)
+end
