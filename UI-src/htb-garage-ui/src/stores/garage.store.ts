@@ -1,17 +1,38 @@
+import { Player } from './../types/garageTypes';
 import { defineStore } from "pinia";
-import { Vehicle, Player, GarageStore } from '../types/garageTypes';
+import { Vehicle, GarageStore } from '../types/garageTypes';
 import { NuiMessageData } from '../types/nuiMessageTypes';
 
 export const useGarageStore = defineStore('garage', {
   state: () => ({
     isVisible: false,
-    vehicles: [] as Vehicle[],
+    vehicles: [],
     showFuel: false,
     showEngine: false,
     showBody: false,
-    nearbyPlayers: [] as Player[]
+    nearbyPlayers: [],
 
   } as GarageStore),
+  getters: {
+    vehicleCount: (state) => state.vehicles.length,
+    filteredVehicles: (state) => {
+        return (searchTerm: string) => {
+            if(searchTerm === '') {
+                return state.vehicles;
+            }
+
+            return state.vehicles.filter(veh => {
+                const searchLower = searchTerm.toLowerCase();
+                    return veh.plate.toLowerCase().indexOf(searchLower) > -1
+                        || veh.spawnName !== undefined && veh.spawnName.toLowerCase().indexOf(searchLower) > -1
+                        || veh.modelName !== undefined && veh.modelName.toLowerCase().indexOf(searchLower) > -1
+                        || veh.displayName !== undefined && veh.displayName.toLowerCase().indexOf(searchLower) > -1
+                        || veh.vehicleName !== undefined && veh.vehicleName.toLowerCase().indexOf(searchLower) > -1
+            });
+
+        };
+    }
+  },
   actions: {
     initStore(data: unknown) {
       const messageData = data as NuiMessageData;
@@ -33,95 +54,99 @@ export const useGarageStore = defineStore('garage', {
       }
       // Handle other types as needed
     },
-    close() {
-      // this.vehicles.forEach(vehicle => {
-      //     this.hideTransfer(vehicle);
-      //     this.hideSetName(vehicle);
-      // });
-      
+    async close() {      
       // this.$refs.vehicleDetailsPanel -- Need to think about how to collapse all items at once with Vue.js, as in remove the 'show' class
       // But using jQuery here does actually work so using it for now
       // $('.collapse').collapse('hide');
 
-      // this.search = '';
-      // $.post('https://htb_garage/close', JSON.stringify({}));
+      await fetch("https://htb_garage/close");
+      
     },
-    takeOut(vehicle: Vehicle) {
+    async takeOut(vehicle: Vehicle) {
         const requestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({vehicle: vehicle, payForRetrieve: false})
             
         };
-        fetch("https://htb_garage/takeOut", requestOptions)
-            .then(response => response.json())
-            .then(data => (this.postId = data.id));
+        const response = await fetch("https://htb_garage/takeOut", requestOptions);
+        const resp = response.json();
+            //.then(data => (this.postId = data.id));
 
-        this.close(vehicle);
+        this.close();
     },
-    retrieve(vehicle: Vehicle) {
+    async retrieve(vehicle: Vehicle) {
         const requestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({vehicle: vehicle, payForRetrieve: true})
             
         };
-        fetch("https://htb_garage/takeOut", requestOptions)
-            .then(response => response.json())
-            .then(data => (this.postId = data.id));
+        var response = await fetch("https://htb_garage/takeOut", requestOptions);
+        var resp = response.json();
+            // .then(response => response.json())
+            // .then(data => (this.postId = data.id));
 
-        this.close(vehicle);
+        this.close();
     },
-    setGpsMarker(vehicle: Vehicle) {
+    async setGpsMarker(vehicle: Vehicle) {
         const requestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({vehicle: vehicle})
             
         };
-        fetch("https://htb_garage/setGpsMarker", requestOptions)
-            .then(response => response.json())
-            .then(data => (this.postId = data.id));
+        var response = await fetch("https://htb_garage/setGpsMarker", requestOptions);
+        var resp = response.json();
+        //     .then(response => response.json())
+        //     .then(data => (this.postId = data.id));
     },
-    setVehicleName(vehicle: Vehicle) {
+    async setVehicleName(vehicle: Vehicle, nickName: string) {
         const requestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({plate: vehicle.plate, newName: vehicle.tempNickName})
+            body: JSON.stringify({plate: vehicle.plate, newName: nickName})
             
         };
-        fetch("https://htb_garage/setVehicleName", requestOptions)
-            .then(response => response.json())
-            .then(data => {
-                (this.postId = data.id);
-                vehicle.displayName = vehicle.tempNickName;
-                this.hideSetName(vehicle);
-            });
+        const response = await fetch("https://htb_garage/setVehicleName", requestOptions);
+        const resp = response.json();
+
+            // .then(data => {
+            //     (this.postId = data.id);
+            //     vehicle.displayName = vehicle.tempNickName;
+            //     this.hideSetName(vehicle);
+            // });
+
+        // TODO: Might not need this
+        let theVehicle = this.vehicles.find(veh => veh.plate === vehicle.plate);
+        if(theVehicle) {
+            theVehicle = {...vehicle, vehicleName: nickName};
+        }
     },
-    fetchNearbyPlayers() {
+    async fetchNearbyPlayers() {
         const requestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" }                
         };
-        fetch("https://htb_garage/fetchNearbyPlayers", requestOptions)
-            .then(response => response.json())
-            .then(data => (this.postId = data.id));
+        var response = await fetch("https://htb_garage/fetchNearbyPlayers", requestOptions);
+        var resp = response.json();
+            // .then(response => response.json())
+            // .then(data => (this.postId = data.id));
     },
-    transferVehicleOwnership(vehicle: Vehicle) {
+    async transferVehicleOwnership(vehicle: Vehicle, newOwner: Player) {
         const requestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 plate: vehicle.plate,
-                newOwner: vehicle.selectedNewOwner
+                newOwner: newOwner
             })
             
         };
-        fetch("https://htb_garage/transferOwnership", requestOptions)
-            .then(response => response.json())
-            .then(data => (this.postId = data.id));
-
-        //this.hideTransfer(vehicle);
+        var response = await fetch("https://htb_garage/transferOwnership", requestOptions);
+        var resp = response.json();
+            // .then(response => response.json())
+            // .then(data => (this.postId = data.id));
 
     }
   }

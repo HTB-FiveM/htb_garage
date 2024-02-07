@@ -1,10 +1,11 @@
-export interface Vehicle {
+export interface Vehicle{
   type: string;
   plate: string;
   displayName: string;
+  vehicleName: string;
   modelName: string;
   spawnName: string;
-  import: string;
+  import: boolean;
   pound: boolean;
   stored: boolean;
   htmlId: string;
@@ -12,11 +13,13 @@ export interface Vehicle {
   fuel: number;
   engine: number;
   body: number;
-};
+}
 
 export interface Player {
-
-};
+  serverId: string;
+  identifier: string;
+  name: string | null;
+}
 
 export interface GarageStore {
   isVisible: boolean;
@@ -28,4 +31,5 @@ export interface GarageStore {
   showBody: boolean;
 
   nearbyPlayers: Player[];
-};
+
+}
