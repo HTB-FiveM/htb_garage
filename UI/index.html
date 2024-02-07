@@ -34,7 +34,7 @@
                 <ul class="list-group">
                     <li v-for="veh in filteredVehicles" class="list-group-item garageListItem">
                         <div class="garageItemPanel">
-                            <div class="vehicleListItem" v-bind:href="veh.href" data-toggle="collapse"  data-animated="0"><!-- Can remove data-animated? -->
+                            <div class="vehicleListItem" v-bind:href="veh.href" data-toggle="collapse" data-animated="0"><!-- Can remove data-animated? -->
                                 <span>{{ modelName(veh) }} - </span>
                                 <span v-if="veh.plate" class="badge badge-light">{{ veh.plate }}</span>
                                 <span v-if="veh.displayName"> - {{ veh.displayName }}</span>
