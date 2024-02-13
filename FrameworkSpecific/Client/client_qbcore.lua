@@ -19,10 +19,10 @@ function GetPlayerDataQbCore()
     local playerData = QBCore.Functions.GetPlayerData()
 
     return {
-        identifier = citizenid,
+        identifier = playerData.citizenid,
         accounts = {
-            bank = playerData.accounts.bank,
-            money = playerData.accounts.cash
+            { name = "bank", money = playerData.money.bank },
+            { name = "money", money = playerData.money.cash }
         }
     }
 end

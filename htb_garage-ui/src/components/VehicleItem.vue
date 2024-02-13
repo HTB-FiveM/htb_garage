@@ -24,14 +24,12 @@ const modelName = (vehicle: Vehicle) => {
   return vehicle.modelName;
 };
 
-// const takeout = (vehicle: Vehicle) => {};
-
-// const retrieve = (vehicle: Vehicle) => {};
-
-// const setGpsMarker = (vehicle: Vehicle) => {};
+const setGpsMarker = async (vehicle: Vehicle) => {
+  await store.setGpsMarker(vehicle);
+};
 
 const transferVehicleOwnership = async (vehicle: Vehicle) => {
-  if(newOwner.value) {
+  if (newOwner.value) {
     await store.transferVehicleOwnership(vehicle, newOwner.value);
     hideTransferOwnership();
   }
@@ -42,10 +40,18 @@ const setVehicleName = async (vehicle: Vehicle) => {
   hideSetName();
 };
 
+const takeOutVehicle = async (vehicle: Vehicle) => {
+  await store.takeOut(vehicle, false);
+};
+
+const retrieveVehicle = async (vehicle: Vehicle) => {
+  await store.takeOut(vehicle, true);
+};
+
 const showTransferOwnershipPanel = async () => {
   await store.fetchNearbyPlayers();
   showTransferOwnership.value = true;
-}
+};
 
 const hideTransferOwnership = () => {
   showTransferOwnership.value = false;
@@ -60,10 +66,9 @@ const setNewOwner = (serverId: string, identifier: string) => {
   newOwner.value = {
     serverId: serverId,
     identifier: identifier,
-    name: null
+    name: null,
   };
-}
-
+};
 </script>
 
 <template>
@@ -81,29 +86,29 @@ const setNewOwner = (serverId: string, identifier: string) => {
         <a
           v-if="veh.pound"
           type="button"
-          class="vehicle-options btn btn-dark btn-sm w-100 mb-1 mt-1 p-0 disabled"
+          class="vehicle-options btn btn-dark btn-sm disabled"
           >Impounded
         </a>
         <div v-else>
           <button
             v-if="veh.stored"
             type="button"
-            class="vehicle-options btn btn-success btn-sm w-100 mb-1 p-0"
-            @click="store.takeOut(veh)"
+            class="vehicle-options btn btn-success btn-sm"
+            @click="takeOutVehicle(veh)"
           >
             Take out
           </button>
           <button
             v-if="veh.stored === false"
             type="button"
-            class="vehicle-options btn btn-warning btn-sm w-100 mb-1 p-0"
-            @click="store.retrieve(veh)"
+            class="vehicle-options btn btn-warning btn-sm"
+            @click="retrieveVehicle(veh)"
           >
             Pay for retrieve
           </button>
           <button
             type="button"
-            class="btn btn-info btn-sm w-100 mb-1 p-0"
+            class="btn btn-info btn-sm"
             @click="showTransferOwnershipPanel()"
           >
             Transfer
@@ -111,14 +116,14 @@ const setNewOwner = (serverId: string, identifier: string) => {
           <button
             v-if="veh.stored === false"
             type="button"
-            class="vehicle-options btn btn-warning btn-sm w-100 mb-1 p-0"
-            @click="store.setGpsMarker(veh)"
+            class="vehicle-options btn btn-warning btn-sm"
+            @click="setGpsMarker(veh)"
           >
             Set GPS marker
           </button>
           <button
             type="button"
-            class="vehicle-options btn btn-primary btn-sm w-100 mb-1 p-0"
+            class="vehicle-options btn btn-primary btn-sm"
             @click="showSetName = true"
           >
             Set Name
@@ -153,30 +158,43 @@ const setNewOwner = (serverId: string, identifier: string) => {
     <div class="row transfer-ownership" v-if="showTransferOwnership">
       <div class="row dd">
         <div class="dropdown buyer">
-          <button class="btn btn-secondary dropdown-toggle col-12"
+          <button
+            class="btn btn-secondary dropdown-toggle col-12"
             type="button"
             id="dropdownMenuButton"
             data-toggle="dropdown"
             aria-haspopup="true"
-            aria-expanded="false">
+            aria-expanded="false"
+          >
             Select a buyer...
           </button>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item"
+            <a
+              class="dropdown-item"
               @click="setNewOwner(item.serverId, item.identifier)"
               href="#"
-              v-for="item in store.nearbyPlayers">{{ item.name }}</a>
+              v-for="item in store.nearbyPlayers"
+              >{{ item.name }}</a
+            >
           </div>
         </div>
-
       </div>
       <div class="row">
-        <button type="button" class="btn btn-secondary modal-default-button" @click="hideTransferOwnership()">Close</button>
+        <button
+          type="button"
+          class="btn btn-secondary modal-default-button"
+          @click="hideTransferOwnership()"
+        >
+          Close
+        </button>
         <button
           type="button"
           class="btn btn-warning"
           @click="transferVehicleOwnership(veh)"
-          :disabled="!newOwner">Transfer</button>
+          :disabled="!newOwner"
+        >
+          Transfer
+        </button>
       </div>
     </div>
 
@@ -223,7 +241,7 @@ const setNewOwner = (serverId: string, identifier: string) => {
   -ms-flex: 1 1 auto;
   flex: 1 1 auto;
   min-height: 1px;
-  padding: .5rem 0 0 0;
+  padding: 0.5rem 0 0 0;
 }
 
 .details-panel {
@@ -256,34 +274,35 @@ const setNewOwner = (serverId: string, identifier: string) => {
 VehicleAttribute {
   margin-bottom: 10px; /* Adds some space between the elements */
   /* Style your VehicleAttribute elements here */
-}.nick-buttons {
-  margin-top: .5rem;
+}
+.nick-buttons {
+  margin-top: 0.5rem;
 }
 
 .transfer-ownership {
-    margin-left: 15px;
+  margin-left: 15px;
 }
 
 .transfer-ownership .dd {
-    width: 100%;
+  width: 100%;
 }
 
 .transfer-ownership .buyer {
-    width: 100%;
-    margin-top: .5rem;
-    margin-bottom: .5rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .transfer-ownership .buyer .button {
-    width: 100%;
+  width: 100%;
 }
 
-.transfer-ownership .dropdown-item, .dropdown-menu {
-    width: 100%;
+.transfer-ownership .dropdown-item,
+.dropdown-menu {
+  width: 100%;
 }
 
 .transfer-ownership button {
-    margin-right: 10px;
+  margin-right: 10px;
 }
-
 </style>

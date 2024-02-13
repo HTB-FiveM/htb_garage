@@ -10,12 +10,6 @@ ui_page("ui/index.html")
 
 files({
 	"UI/index.html",
-	"UI/css/bootstrap-4.6.css",
-	"UI/css/stylesheet.css",
-	"UI/js/bootstrap.bundle-4.6.js",
-	"UI/js/jquery-3.5.1.js",
-	"UI/js/script.js",
-	"UI/js/vue.min.js",
 })
 
 shared_scripts({

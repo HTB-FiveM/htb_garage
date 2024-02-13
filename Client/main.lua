@@ -20,7 +20,7 @@ function ShowNotification(msg)
 end
 
 function GetPlayerData()
-	frameworkFunctionMappings[Config.RolePlayFramework]["getPlayerData"](msg)
+	return frameworkFunctionMappings[Config.RolePlayFramework]["getPlayerData"](msg)
 end
 
 function ToggleGUI(explicit_status)
@@ -343,10 +343,10 @@ function PayForRetrieve(vehicle)
 		accountName = "money"
 	elseif Config.RolePlayFramework == "qbcore" then
 			accountName = "cash"
-	end
+	end    
 
 	for _, account in pairs(playerData.accounts) do
-		if account.name == accountName then
+		if account.name == "money" then
 			if account.money >= Config.ImpoundPrice then
 				-- Pay the fee and notify the player
 				TriggerServerEvent("htb_garage:MakePayment", accountName, Config.ImpoundPrice)

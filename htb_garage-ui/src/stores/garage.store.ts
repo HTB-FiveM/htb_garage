@@ -62,30 +62,24 @@ export const useGarageStore = defineStore('garage', {
       await fetch("https://htb_garage/close");
       
     },
-    async takeOut(vehicle: Vehicle) {
+    async takeOut(vehicle: Vehicle, payForRetrieve: boolean) {
         const requestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({vehicle: vehicle, payForRetrieve: false})
+            body: JSON.stringify({
+                vehicle: {
+                    ...vehicle,
+                    stored: vehicle.stored === true ? 1 : 0,
+                    pound: vehicle.pound === true ? 1 : 0
+                },
+                payForRetrieve: payForRetrieve
+            })
             
         };
-        const response = await fetch("https://htb_garage/takeOut", requestOptions);
-        const resp = response.json();
+        await fetch("https://htb_garage/takeOut", requestOptions);
+        // const response = await fetch("https://htb_garage/takeOut", requestOptions);
+        //const resp = response.json();
             //.then(data => (this.postId = data.id));
-
-        this.close();
-    },
-    async retrieve(vehicle: Vehicle) {
-        const requestOptions = {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({vehicle: vehicle, payForRetrieve: true})
-            
-        };
-        var response = await fetch("https://htb_garage/takeOut", requestOptions);
-        var resp = response.json();
-            // .then(response => response.json())
-            // .then(data => (this.postId = data.id));
 
         this.close();
     },
@@ -93,11 +87,16 @@ export const useGarageStore = defineStore('garage', {
         const requestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({vehicle: vehicle})
+            body: JSON.stringify({
+                ...vehicle,
+                stored: vehicle.stored === true ? 1 : 0,
+                pound: vehicle.pound === true ? 1 : 0
+            })
             
         };
-        var response = await fetch("https://htb_garage/setGpsMarker", requestOptions);
-        var resp = response.json();
+        await fetch("https://htb_garage/setGpsMarker", requestOptions);
+        // var response = await fetch("https://htb_garage/setGpsMarker", requestOptions);
+        //var resp = response.json();
         //     .then(response => response.json())
         //     .then(data => (this.postId = data.id));
     },
@@ -108,8 +107,10 @@ export const useGarageStore = defineStore('garage', {
             body: JSON.stringify({plate: vehicle.plate, newName: nickName})
             
         };
-        const response = await fetch("https://htb_garage/setVehicleName", requestOptions);
-        const resp = response.json();
+
+        await fetch("https://htb_garage/setVehicleName", requestOptions);
+        // const response = await fetch("https://htb_garage/setVehicleName", requestOptions);
+        //const resp = response.json();
 
             // .then(data => {
             //     (this.postId = data.id);
@@ -120,7 +121,10 @@ export const useGarageStore = defineStore('garage', {
         // TODO: Might not need this
         let theVehicle = this.vehicles.find(veh => veh.plate === vehicle.plate);
         if(theVehicle) {
-            theVehicle = {...vehicle, vehicleName: nickName};
+            theVehicle = {
+                ...vehicle,
+                vehicleName: nickName
+            };
         }
     },
     async fetchNearbyPlayers() {
@@ -128,8 +132,9 @@ export const useGarageStore = defineStore('garage', {
             method: "POST",
             headers: { "Content-Type": "application/json" }                
         };
-        var response = await fetch("https://htb_garage/fetchNearbyPlayers", requestOptions);
-        var resp = response.json();
+        await fetch("https://htb_garage/fetchNearbyPlayers", requestOptions);
+        // var response = await fetch("https://htb_garage/fetchNearbyPlayers", requestOptions);
+        //var resp = response.json();
             // .then(response => response.json())
             // .then(data => (this.postId = data.id));
     },
@@ -143,8 +148,9 @@ export const useGarageStore = defineStore('garage', {
             })
             
         };
-        var response = await fetch("https://htb_garage/transferOwnership", requestOptions);
-        var resp = response.json();
+        await fetch("https://htb_garage/transferOwnership", requestOptions);
+        // var response = await fetch("https://htb_garage/transferOwnership", requestOptions);
+        //var resp = response.json();
             // .then(response => response.json())
             // .then(data => (this.postId = data.id));
 
