@@ -27,7 +27,6 @@ export const useGarageStore = defineStore('garage', {
                         || veh.spawnName !== undefined && veh.spawnName.toLowerCase().indexOf(searchLower) > -1
                         || veh.modelName !== undefined && veh.modelName.toLowerCase().indexOf(searchLower) > -1
                         || veh.displayName !== undefined && veh.displayName.toLowerCase().indexOf(searchLower) > -1
-                        || veh.vehicleName !== undefined && veh.vehicleName.toLowerCase().indexOf(searchLower) > -1
             });
 
         };
@@ -77,9 +76,6 @@ export const useGarageStore = defineStore('garage', {
             
         };
         await fetch("https://htb_garage/takeOut", requestOptions);
-        // const response = await fetch("https://htb_garage/takeOut", requestOptions);
-        //const resp = response.json();
-            //.then(data => (this.postId = data.id));
 
         this.close();
     },
@@ -95,10 +91,6 @@ export const useGarageStore = defineStore('garage', {
             
         };
         await fetch("https://htb_garage/setGpsMarker", requestOptions);
-        // var response = await fetch("https://htb_garage/setGpsMarker", requestOptions);
-        //var resp = response.json();
-        //     .then(response => response.json())
-        //     .then(data => (this.postId = data.id));
     },
     async setVehicleName(vehicle: Vehicle, nickName: string) {
         const requestOptions = {
@@ -109,23 +101,17 @@ export const useGarageStore = defineStore('garage', {
         };
 
         await fetch("https://htb_garage/setVehicleName", requestOptions);
-        // const response = await fetch("https://htb_garage/setVehicleName", requestOptions);
-        //const resp = response.json();
 
-            // .then(data => {
-            //     (this.postId = data.id);
-            //     vehicle.displayName = vehicle.tempNickName;
-            //     this.hideSetName(vehicle);
-            // });
+        // Update the vehicle name
+        this.vehicles = this.vehicles.map((veh: Vehicle) => 
+            veh.plate === vehicle.plate
+                ? {
+                    ...veh,
+                    displayName: nickName
+                } as Vehicle
+                : veh
+        );
 
-        // TODO: Might not need this
-        let theVehicle = this.vehicles.find(veh => veh.plate === vehicle.plate);
-        if(theVehicle) {
-            theVehicle = {
-                ...vehicle,
-                vehicleName: nickName
-            };
-        }
     },
     async fetchNearbyPlayers() {
         const requestOptions = {
@@ -133,10 +119,10 @@ export const useGarageStore = defineStore('garage', {
             headers: { "Content-Type": "application/json" }                
         };
         await fetch("https://htb_garage/fetchNearbyPlayers", requestOptions);
-        // var response = await fetch("https://htb_garage/fetchNearbyPlayers", requestOptions);
-        //var resp = response.json();
-            // .then(response => response.json())
-            // .then(data => (this.postId = data.id));
+
+    },
+    clearNearbyPlayers() {
+        this.nearbyPlayers = [];
     },
     async transferVehicleOwnership(vehicle: Vehicle, newOwner: Player) {
         const requestOptions = {
@@ -149,10 +135,6 @@ export const useGarageStore = defineStore('garage', {
             
         };
         await fetch("https://htb_garage/transferOwnership", requestOptions);
-        // var response = await fetch("https://htb_garage/transferOwnership", requestOptions);
-        //var resp = response.json();
-            // .then(response => response.json())
-            // .then(data => (this.postId = data.id));
 
     }
   }

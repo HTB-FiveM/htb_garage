@@ -2,7 +2,6 @@ export interface Vehicle{
   type: string;
   plate: string;
   displayName: string;
-  vehicleName: string;
   modelName: string;
   spawnName: string;
   import: boolean;

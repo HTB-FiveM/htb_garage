@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Vehicle, Player } from "../types/garageTypes";
 import VehicleAttribute from "./VehicleAttribute.vue";
 
@@ -10,11 +10,15 @@ const store = useGarageStore();
 defineProps<{ veh: Vehicle }>();
 
 const showDetails = ref(false);
-const showTransferOwnership = ref(false);
 const showSetName = ref(false);
 const tempNickName = ref("");
 
 const newOwner = ref(null as Player | null);
+
+const showTransferOwnership = computed(() =>
+  store.nearbyPlayers &&
+  store.nearbyPlayers.length > 0
+);
 
 const modelName = (vehicle: Vehicle) => {
   if (!vehicle.modelName || vehicle.modelName === "null") {
@@ -50,11 +54,17 @@ const retrieveVehicle = async (vehicle: Vehicle) => {
 
 const showTransferOwnershipPanel = async () => {
   await store.fetchNearbyPlayers();
-  showTransferOwnership.value = true;
+  hideSetName();
 };
 
 const hideTransferOwnership = () => {
-  showTransferOwnership.value = false;
+  store.clearNearbyPlayers();
+  newOwner.value = null;
+};
+
+const showSetNamePanel = () => {
+  showSetName.value = true;
+  hideTransferOwnership();
 };
 
 const hideSetName = () => {
@@ -62,17 +72,18 @@ const hideSetName = () => {
   tempNickName.value = "";
 };
 
-const setNewOwner = (serverId: string, identifier: string) => {
-  newOwner.value = {
-    serverId: serverId,
-    identifier: identifier,
-    name: null,
-  };
+const toggleDetailsPanel = () => {
+  showDetails.value = !showDetails.value;
+  if(!showDetails.value) {
+    hideTransferOwnership();
+    hideSetName();
+  }
 };
+
 </script>
 
 <template>
-  <div class="garageItemPanel" @click="showDetails = !showDetails">
+  <div class="garageItemPanel" @click="toggleDetailsPanel">
     <div class="vehicleListItem">
       <span>{{ modelName(veh) }} - </span>
       <span v-if="veh.plate" class="badge badge-light">{{ veh.plate }}</span>
@@ -124,7 +135,7 @@ const setNewOwner = (serverId: string, identifier: string) => {
           <button
             type="button"
             class="vehicle-options btn btn-primary btn-sm"
-            @click="showSetName = true"
+            @click="showSetNamePanel"
           >
             Set Name
           </button>
@@ -158,25 +169,18 @@ const setNewOwner = (serverId: string, identifier: string) => {
     <div class="row transfer-ownership" v-if="showTransferOwnership">
       <div class="row dd">
         <div class="dropdown buyer">
-          <button
-            class="btn btn-secondary dropdown-toggle col-12"
-            type="button"
-            id="dropdownMenuButton"
-            data-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="false"
-          >
-            Select a buyer...
-          </button>
-          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a
-              class="dropdown-item"
-              @click="setNewOwner(item.serverId, item.identifier)"
-              href="#"
-              v-for="item in store.nearbyPlayers"
-              >{{ item.name }}</a
-            >
-          </div>
+          <v-select
+            class="the-dropdown"
+            :options="store.nearbyPlayers"
+            placeholder="Select a buyer..."
+            v-model="newOwner">
+            <template #option="option">
+              <span>{{ option.name }}</span>
+            </template>
+            <template #selected-option="{name}">
+              <strong>{{ name }}</strong>
+            </template>
+          </v-select>
         </div>
       </div>
       <div class="row">
@@ -304,5 +308,13 @@ VehicleAttribute {
 
 .transfer-ownership button {
   margin-right: 10px;
+}
+
+.the-dropdown {
+  --vs-border-color: #444;  
+  --vs-dropdown-bg: #696969;
+  --vs-selected-color: #fff;
+
+  
 }
 </style>

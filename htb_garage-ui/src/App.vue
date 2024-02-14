@@ -34,56 +34,58 @@ onMounted(() => {
 });
 
 const initialise = () => {
-  // console.log(window.location.protocol);
-  // if (window.location.protocol.startsWith("http")) {
-  //   // Development mode initialisation
-  //   store.initStore({
-  //     type: "enable",
-  //     isVisible: true,
-  //     showFuel: true,
-  //     showEngine: true,
-  //     showBody: true,
-  //   });
-
-  //   store.initStore({
-  //     type: "setVehicles",
-  //     vehicles: JSON.stringify([
-  //       {
-  //         type: "adder",
-  //         plate: "abc123",
-  //         displayName: "Bob",
-  //         modelName: "adssadads",
-  //         spawnName: "34534543",
-  //         import: false,
-  //         pound: false,
-  //         stored: true,
-  //         htmlId: "adsadad",
-  //         fuel: 80,
-  //         engine: 243,
-  //         body: 675,
-  //       },
-  //       {
-  //         type: "zentorno",
-  //         plate: "def567",
-  //         displayName: "Snoogans",
-  //         modelName: "dsfgsdfg",
-  //         spawnName: "657457",
-  //         import: true,
-  //         pound: false,
-  //         stored: false,
-  //         htmlId: "sdfg",
-  //         fuel: 59,
-  //         engine: 567,
-  //         body: 567,
-  //       },
-  //     ]),
-  //   });
-  // } else {
+  //console.log(window);
+  if (window.location.host.startsWith("cfx-nui-")) {
     // Running in FiveM initialisation
     window.addEventListener("message", (event) => {
       store.initStore(event.data);
     });
-  //}
+    
+  } else {
+    // Development mode initialisation
+    store.initStore({
+      type: "enable",
+      isVisible: true,
+      showFuel: true,
+      showEngine: true,
+      showBody: true,
+    });
+
+    store.initStore({
+      type: "setVehicles",
+      vehicles: JSON.stringify([
+        {
+          type: "adder",
+          plate: "abc123",
+          displayName: "Bob",
+          modelName: "adssadads",
+          spawnName: "34534543",
+          import: false,
+          pound: false,
+          stored: true,
+          htmlId: "adsadad",
+          fuel: 80,
+          engine: 243,
+          body: 675,
+        },
+        {
+          type: "zentorno",
+          plate: "def567",
+          displayName: "Snoogans",
+          modelName: "dsfgsdfg",
+          spawnName: "657457",
+          import: true,
+          pound: false,
+          stored: false,
+          htmlId: "sdfg",
+          fuel: 59,
+          engine: 567,
+          body: 567,
+        },
+      ]),
+    });
+    
+  }
 };
 
 const close = async () => {
