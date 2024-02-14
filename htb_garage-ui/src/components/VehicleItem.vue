@@ -306,7 +306,8 @@ VehicleAttribute {
   width: 100%;
 }
 
-.transfer-ownership button {
+.transfer-ownership button,
+.setVehicleName button {
   margin-right: 10px;
 }
 
