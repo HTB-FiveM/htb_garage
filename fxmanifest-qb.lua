@@ -13,11 +13,6 @@ files({
 })
 
 shared_scripts({
-	-- Uncomment if you're using ESX-Legacy
-	-- "@es_extended/imports.lua",
-	-- "@es_extended/locale.lua",
-
-	-- Uncomment if you're using QB Core
 	"@qb-core/shared/locale.lua",
 
 	"locales/locale.lua",
@@ -45,5 +40,4 @@ client_scripts({
 	"Client/main.lua",
 })
 
---dependency 'es_extended'
 dependency 'qb-core'
