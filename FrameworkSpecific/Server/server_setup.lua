@@ -9,7 +9,7 @@ frameworkFunctionMappings = {
     },
     qbcore = {
         runStartupStuff = RunStartupStuffQbCore,
-        showNotification = GetAllPlayerNamesQbCore,
+        getAllPlayerNames = GetAllPlayerNamesQbCore,
         getPlayerIdentifierFromId = GetPlayerIdentifierFromIdQbCore,
         makePayment = MakePaymentQbCore
     },
