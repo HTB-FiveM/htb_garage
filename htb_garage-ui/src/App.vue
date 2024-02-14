@@ -18,6 +18,8 @@ onMounted(() => {
 
   initialise();
 
+  window.addEventListener('keydown', store.close);
+
   const unwatch = watch(
     () => store.isVisible,
     (newValue) => {
@@ -30,11 +32,13 @@ onMounted(() => {
 
   onUnmounted(() => {
     unwatch();
+    window.removeEventListener('keydown', store.close);
   });
 });
 
+
+
 const initialise = () => {
-  //console.log(window);
   if (window.location.host.startsWith("cfx-nui-")) {
     // Running in FiveM initialisation
     window.addEventListener("message", (event) => {
@@ -84,7 +88,7 @@ const initialise = () => {
         },
       ]),
     });
-    
+
   }
 };
 
@@ -159,24 +163,28 @@ const filteredVehicles = computed(() => {
 
 .car-list /*You could also use an ID*/ {
   height: 50vh;
+  overflow-y: auto;
 }
 
-.scrollbar::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  border-radius: 2px;
-  background-color: #f5f5f5;
+.car-list::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	border-radius: 2px;
+	background-color: #F5F5F5;
 }
 
-.scrollbar::-webkit-scrollbar {
-  width: 12px;
-  background-color: #f5f5f5;
-  border-radius: 2px;
+.car-list::-webkit-scrollbar
+{
+	width: 12px;
+    background-color: #F5F5F5;
+    border-radius:2px;
 }
 
-.scrollbar::-webkit-scrollbar-thumb {
-  border-radius: 2px;
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  background-color: #999;
+.car-list::-webkit-scrollbar-thumb
+{
+	border-radius: 2px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+	background-color: #999;
 }
 
 .garage-list-item {

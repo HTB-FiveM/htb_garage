@@ -54,10 +54,6 @@ export const useGarageStore = defineStore('garage', {
       // Handle other types as needed
     },
     async close() {      
-      // this.$refs.vehicleDetailsPanel -- Need to think about how to collapse all items at once with Vue.js, as in remove the 'show' class
-      // But using jQuery here does actually work so using it for now
-      // $('.collapse').collapse('hide');
-
       await fetch("https://htb_garage/close");
       
     },
