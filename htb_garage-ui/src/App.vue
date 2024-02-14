@@ -18,7 +18,7 @@ onMounted(() => {
 
   initialise();
 
-  window.addEventListener('keydown', store.close);
+  window.addEventListener('keydown', onEscKey);
 
   const unwatch = watch(
     () => store.isVisible,
@@ -32,11 +32,15 @@ onMounted(() => {
 
   onUnmounted(() => {
     unwatch();
-    window.removeEventListener('keydown', store.close);
+    window.removeEventListener('keydown', onEscKey);
   });
 });
 
-
+const onEscKey = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    store.close();
+  }
+};
 
 const initialise = () => {
   if (window.location.host.startsWith("cfx-nui-")) {
