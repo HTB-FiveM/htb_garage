@@ -80,9 +80,11 @@ export const useGarageStore = defineStore('garage', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                ...vehicle,
-                stored: vehicle.stored === true ? 1 : 0,
-                pound: vehicle.pound === true ? 1 : 0
+                vehicle: {
+                    ...vehicle,
+                    stored: vehicle.stored === true ? 1 : 0,
+                    pound: vehicle.pound === true ? 1 : 0
+                }
             })
             
         };
