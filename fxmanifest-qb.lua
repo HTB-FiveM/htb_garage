@@ -24,18 +24,20 @@ server_scripts({
 	"@mysql-async/lib/MySQL.lua",
 	"Config.lua",
 	"Server/utils.lua",
+	"FrameworkSpecific/Interfaces.lua",
 	"FrameworkSpecific/Server/*.lua",
+	"FrameworkSpecific/Setup_Server.lua",
 	"FrameworkSpecific/SQL/*.lua",
-	--'FrameworkSpecific/server_setup.lua',
 	"Server/main.lua",
 })
 
 client_scripts({
 	"Config.lua",
 	"Configs/*.lua",
+	"FrameworkSpecific/Interfaces.lua";
 	"VehicleStuff.lua",
 	"FrameworkSpecific/Client/*.lua",
-	--'FrameworkSpecific/client_setup.lua',
+	"FrameworkSpecific/Setup_Client.lua",
 	"Impound.lua",
 	"Client/main.lua",
 })

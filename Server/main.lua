@@ -63,16 +63,13 @@ end)
 
 -------------------------------------------------------------------------------------------
 if Config.RolePlayFramework == nil or Config.RolePlayFramework ~= "none" then
-	frameworkFunctionMappings[Config.RolePlayFramework]["runStartupStuff"]()
+	FrameworkCtx:RunStartupStuff()
 end
 
 function GetPlayerIdentifierFromId(source)
-	return frameworkFunctionMappings[Config.RolePlayFramework]["getPlayerIdentifierFromId"](source)
+	return FrameworkCtx:GetPlayerIdentifierFromId(source)
 end
 
-function MakePayment(source, account, amount)
-	frameworkFunctionMappings[Config.RolePlayFramework]["makePayment"](source, account, amount)
-end
 
 -------------------------------------------------------------------------------------------
 function GetAllPlayerNames()
@@ -84,14 +81,14 @@ function GetAllPlayerNames()
 		end
 		return playerNames
 	else
-		return frameworkFunctionMappings[Config.RolePlayFramework]["getAllPlayerNames"]()
+		return FrameworkCtx:GetAllPlayerNames()
 	end
 end
 
 RegisterNetEvent("htb_garage:SetVehicleName")
 AddEventHandler("htb_garage:SetVehicleName", function(plate, newName)
 	local _source = source
-	local identifier = GetPlayerIdentifierFromId(_source)
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
 
 	MySQL.Sync.execute(SqlSetVehicleName, {
 		["@newName"] = newName,
@@ -103,20 +100,20 @@ end)
 RegisterNetEvent("htb_garage:GetPlayerVehicles")
 AddEventHandler("htb_garage:GetPlayerVehicles", function(type, garageName)
 	local _source = source
-	local identifier = GetPlayerIdentifierFromId(_source)
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
 
 	local results = MySQL.Sync.fetchAll(SqlGetAllVehicles, {
 		["@identifier"] = identifier,
 		["@type"] = type,
-	})
-
+	}) 
+	
 	TriggerClientEvent("htb_garage:GetPlayerVehiclesResults", _source, results, garageName)
 end)
 
 RegisterNetEvent("htb_garage:GetVehicleForSpawn")
 AddEventHandler("htb_garage:GetVehicleForSpawn", function(plate, garage)
 	local _source = source
-	local identifier = GetPlayerIdentifierFromId(_source)
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
 
 	local results = MySQL.Sync.fetchAll(SqlGetVehicle, {
 		["@identifier"] = identifier,
@@ -128,7 +125,7 @@ end)
 RegisterNetEvent("htb_garage:SetVehicleStored")
 AddEventHandler("htb_garage:SetVehicleStored", function(plate, stored)
 	local _source = source
-	local identifier = GetPlayerIdentifierFromId(_source)
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
 
 	MySQL.Sync.execute(SqlSetVehicleStored, {
 		["@stored"] = stored,
@@ -197,7 +194,7 @@ end)
 RegisterNetEvent("htb_garage:MakePayment")
 AddEventHandler("htb_garage:MakePayment", function(account, amount)
 	local _source = source
-	MakePayment(_source, account, amount)
+	FrameworkCtx:MakePayment(_source, account, amount)
 	
 end)
 

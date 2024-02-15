@@ -1,17 +1,19 @@
-function RunStartupStuffCustom(msg)
-    -- Call your custom notification function here
-    
-end
+CustomStrategy = {
+    RunStartupStuff = Strategy:new(function(msg)
+        -- Call your custom notification function here
+        
+    end),
 
-function GetAllPlayerNamesCustom()
-    -- Call your custom player name fetching code here
+    GetAllPlayerNames = Strategy:new(function()
+        -- Call your custom player name fetching code here
 
-end
+    end),
 
-function getPlayerIdentifierFromIdCustom(source)
-    
-end
+    GetPlayerIdentifierFromId = Strategy:new(function(source)
+        
+    end),
 
-function MakePaymentCustom(source, account, amount)
+    MakePayment = Strategy:new(function(source, account, amount)
 
-end
+    end)
+}

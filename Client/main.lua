@@ -6,23 +6,9 @@ local vehicleInstances = {}
 
 -------------------------------------------------------------------------------------------
 
-frameworkFunctionMappings[Config.RolePlayFramework]["runStartupStuff"]()
+FrameworkCtx:RunStartupStuff()
 
 -------------------------------------------------------------------------------------------
-function ShowNotification(msg)
-	if Config.RolePlayFramework == nil or Config.RolePlayFramework == "none" then
-		SetNotificationTextEntry("STRING")
-		AddTextComponentString(msg)
-		DrawNotification(0, 1)
-	else
-		frameworkFunctionMappings[Config.RolePlayFramework]["showNotification"](msg)
-	end
-end
-
-function GetPlayerData()
-	return frameworkFunctionMappings[Config.RolePlayFramework]["getPlayerData"](msg)
-end
-
 function ToggleGUI(explicit_status)
 	if explicit_status ~= nil then
 		isVisible = explicit_status
@@ -105,19 +91,19 @@ function StoreVehicle(vehicleType, deleteZone)
 				if trailerProps ~= nil then
 					-- TODO:
 					-- eden_garage:stockv isn't anywere in the Server code. Work out what to do here
-					ESX.TriggerServerCallback("eden_garage:stockv", function(valid)
-						if valid then
-							--local networkId = NetworkGetNetworkIdFromEntity(TrailerHandle)
-							DeleteEntity(TrailerHandle)
-							TriggerServerEvent("htb_garage:SetVehicleStored", trailerProps.plate, 1)
+					-- -- -- ESX.TriggerServerCallback("eden_garage:stockv", function(valid)
+					-- -- -- 	if valid then
+					-- -- -- 		--local networkId = NetworkGetNetworkIdFromEntity(TrailerHandle)
+					-- -- -- 		DeleteEntity(TrailerHandle)
+					-- -- -- 		TriggerServerEvent("htb_garage:SetVehicleStored", trailerProps.plate, 1)
 
-							ShowNotification(_U("trailer_in_garage"))
-						else
-							ShowNotification(_U("cannot_store_vehicle"))
-						end
-					end, trailerProps, KindOfVehicle, garage_name, vehicle_type)
+					-- -- -- 		ShowNotification(_U("trailer_in_garage"))
+					-- -- -- 	else
+					-- -- -- 		ShowNotification(_U("cannot_store_vehicle"))
+					-- -- -- 	end
+					-- -- -- end, trailerProps, KindOfVehicle, garage_name, vehicle_type)
 				else
-					ShowNotification(_U("vehicle_error"))
+					FrameworkCtx:ShowNotification(_U("vehicle_error"))
 				end
 			else
 				local networkId = NetworkGetNetworkIdFromEntity(vehicle)
@@ -131,14 +117,14 @@ function StoreVehicle(vehicleType, deleteZone)
 						deleteZone
 					)
 				else
-					ShowNotification(_U("vehicle_error"))
+					FrameworkCtx:ShowNotification(_U("vehicle_error"))
 				end
 			end
 		else
-			ShowNotification(_U("not_driver"))
+			FrameworkCtx:ShowNotification(_U("not_driver"))
 		end
 	else
-		ShowNotification(_U("no_vehicle_to_enter"))
+		FrameworkCtx:ShowNotification(_U("no_vehicle_to_enter"))
 	end
 end
 
@@ -335,7 +321,7 @@ RegisterNUICallback("close", function(data, cb)
 end)
 
 function PayForRetrieve(vehicle)
-	local playerData = GetPlayerData()
+	local playerData = FrameworkCtx:GetPlayerData()
 	
 	-- TODO: Should move this to a factory generated class
 	local accountName = ""
@@ -350,7 +336,7 @@ function PayForRetrieve(vehicle)
 			if account.money >= Config.ImpoundPrice then
 				-- Pay the fee and notify the player
 				TriggerServerEvent("htb_garage:MakePayment", accountName, Config.ImpoundPrice)
-				ShowNotification(_U("retrieval_fee_paid"))
+				FrameworkCtx:ShowNotification(_U("retrieval_fee_paid"))
 
 				local plate = trim(vehicle.plate)
 				local instance = vehicleInstances[plate]
@@ -363,7 +349,7 @@ function PayForRetrieve(vehicle)
 				end
 				return true
 			else
-				ShowNotification(_U("retrieve_not_enough"))
+				FrameworkCtx:ShowNotification(_U("retrieve_not_enough"))
 				return false
 			end
 		end
@@ -390,14 +376,14 @@ RegisterNUICallback("takeOut", function(data, cb)
 
 	if getTheVehicle then
 		if DoesVehicleExist(vehicle.plate) or IsPlayerDrivingVehicle(vehicle.plate) then
-			ShowNotification(_U("cannot_take_out"))
+			FrameworkCtx:ShowNotification(_U("cannot_take_out"))
 		elseif vehicle.pound == 1 then
-			ShowNotification(_U("vehicle_in_pound"))
+			FrameworkCtx:ShowNotification(_U("vehicle_in_pound"))
 		elseif vehicle.stored == 1 or overrideStored then
 			TriggerServerEvent("htb_garage:GetVehicleForSpawn", vehicle.plate, vehicle.garage)
 			ToggleGUI(false)
 		else
-			ShowNotification(_U("vehicle_already_out"))
+			FrameworkCtx:ShowNotification(_U("vehicle_already_out"))
 		end
 	end
 
@@ -578,7 +564,7 @@ AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageNam
 		garage.SpawnPoint.NumSpawns
 	)
 	if spawnPoint == nil then
-		ShowNotification(_U("spawn_point_occupied"))
+		FrameworkCtx:ShowNotification(_U("spawn_point_occupied"))
 	else
 		-- May want to call through to server here depending on how things go with OneSync Infinity and vehicle duplication
 		DoTheSpawn(vehicle.vehicle, spawnPoint)
@@ -604,7 +590,7 @@ AddEventHandler("htb_garage:VehicleSaveAndStored", function(networkId, plate, ve
 
 	TriggerServerEvent("htb_garage:StopTrackingEntity", plate)
 
-	ShowNotification(_U("vehicle_in_garage"))
+	FrameworkCtx:ShowNotification(_U("vehicle_in_garage"))
 end)
 
 RegisterNetEvent("htb_garage:nearbyPlayersList")
@@ -617,7 +603,7 @@ end)
 
 RegisterNetEvent("htb_garage:TransferOwnershipResult")
 AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSeller)
-	ShowNotification(outcome)
+	FrameworkCtx:ShowNotification(outcome)
 
 	if amITheSeller then
 		SendNUIMessage({
@@ -672,12 +658,12 @@ end
 
 RegisterNetEvent("htb_garage:Impounded")
 AddEventHandler("htb_garage:Impounded", function(message)
-	ShowNotification(message)
+	FrameworkCtx:ShowNotification(message)
 end)
 
 RegisterNetEvent("htb_garage:Released")
 AddEventHandler("htb_garage:Released", function(message, carplate)
-	ShowNotification(message)
+	FrameworkCtx:ShowNotification(message)
 
 	-- Charge the player
 

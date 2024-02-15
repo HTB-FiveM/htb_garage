@@ -196,3 +196,8 @@ function HTB.Math.Trim(value)
         return nil
     end
 end
+
+function GetFunctionName(level)
+    local info = debug.getinfo(level, "n")
+    return (info.name or "anonymous")
+  end
