@@ -51,9 +51,23 @@ const retrieveVehicle = async (vehicle: Vehicle) => {
   await store.takeOut(vehicle, true);
 };
 
+const showNoPlayersMessage = ref(false);
 const showTransferOwnershipPanel = async () => {
-  await store.fetchNearbyPlayers();
   hideSetName();
+  await store.fetchNearbyPlayers();
+
+  checkIfPlayersNearby();
+};
+
+const checkIfPlayersNearby = () => {
+  if (store.nearbyPlayers.length === 0) {
+    showNoPlayersMessage.value = true; // Show the message
+
+    // Set a timeout to hide the message after 3 seconds
+    setTimeout(() => {
+      showNoPlayersMessage.value = false; // This will trigger the fade-out transition
+    }, 3000);
+  }
 };
 
 const hideTransferOwnership = () => {
@@ -78,6 +92,7 @@ const toggleDetailsPanel = () => {
     hideSetName();
   }
 };
+
 </script>
 
 <template>
@@ -161,6 +176,11 @@ const toggleDetailsPanel = () => {
           :value="veh.body / 10"
           :percentage="veh.body"
         ></VehicleAttribute>
+        <transition name="fade">
+          <div v-if="showNoPlayersMessage" class="no-players">
+            No players near you to transfer ownership
+          </div>
+        </transition>
       </div>
     </div>
 
@@ -315,4 +335,33 @@ VehicleAttribute {
   --vs-dropdown-bg: #696969;
   --vs-selected-color: #fff;
 }
+
+.no-players {
+  border-radius: 5px;
+  border-color: #444;
+  border-width: 1px;
+  background-color: orangered;
+  padding: .5rem;
+  font-size: .7rem;
+  text-align: center;
+  margin: .5rem .3rem 0 .3rem;
+  
+}
+
+.fade-enter-active {
+  transition: opacity 0s;
+}
+
+.fade-leave-active {
+  transition: opacity 1s;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-to, .fade-leave-from {
+  opacity: 1;
+}
+
 </style>
