@@ -22,7 +22,7 @@ I've been developing for FiveM for almost 12 months now. I had never worked with
  * If the vehicle is marked as impounded you won't be able to spawn it.
  * Transfer ownership to another player.
  * All players occupying seats of a boat will be spawned on the dock rather than dropped in the water where the boat was prior to despawn.
- * Event handlers provided to allow vehicles instances to be tracked to avoid vehicle duplication. eg, esx_vehicle shop adds an owned_vehicle record but if you don't put the vehicle away first you can get the vehicle out and have a duplicate, at least with some garages. So you can Trigger these events passing the vehicle instance and plate to allow tracking. This could also be useful if using an external vehicle impound system where you want to mark a vehicle as disposed when impounded or to track it again once released from impound.
+ * Event handlers provided to allow vehicles instances to be tracked to avoid vehicle duplication. eg, esx_vehicle shop adds an owned_vehicles record but if you don't put the vehicle away first you can get the vehicle out and have a duplicate, at least with some garages. So you can Trigger these events passing the vehicle instance and plate to allow tracking. This could also be useful if using an external vehicle impound system where you want to mark a vehicle as disposed when impounded or to track it again once released from impound.
 
 **Future Direction**
 
