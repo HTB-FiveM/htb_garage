@@ -5,12 +5,11 @@ QBCoreStrategy = {
 
 
     GetAllPlayerNames = Strategy:new(function()
-        local qbPlayers = QBCore.Functions.GetPlayers()
+        local qbPlayers = QBCore.Functions.GetQBPlayers()
         local playerNames = {}
-        for _, playerIdStr in pairs(GetPlayers()) do
-            local playerId = tonumber(playerIdStr)
-            if qbPlayers[playerId] ~= nil then
-                playerNames[playerId] = qbPlayers[playerId].name
+        for _, player in pairs(qbPlayers) do
+            if player ~= nil then
+                playerNames[player.PlayerData.source] = string.format("%s %s", player.PlayerData.charinfo.firstname, player.PlayerData.charinfo.lastname)
             end
         end
 
