@@ -62,29 +62,10 @@ MySQL.ready(function()
 end)
 
 -------------------------------------------------------------------------------------------
-if Config.RolePlayFramework == nil or Config.RolePlayFramework ~= "none" then
-	FrameworkCtx:RunStartupStuff()
-end
 
-function GetPlayerIdentifierFromId(source)
-	return FrameworkCtx:GetPlayerIdentifierFromId(source)
-end
-
+FrameworkCtx:RunStartupStuff()
 
 -------------------------------------------------------------------------------------------
-function GetAllPlayerNames()
-	if Config.RolePlayFramework == nil or Config.RolePlayFramework == "none" then
-		local playerNames = {}
-		for _, playerIdStr in pairs(GetPlayers()) do
-			local playerId = tonumber(playerIdStr)
-			playerNames[playerId] = GetPlayerName(playerId)
-		end
-		return playerNames
-	else
-		return FrameworkCtx:GetAllPlayerNames()
-	end
-end
-
 RegisterNetEvent("htb_garage:SetVehicleName")
 AddEventHandler("htb_garage:SetVehicleName", function(plate, newName)
 	local _source = source
@@ -211,7 +192,7 @@ AddEventHandler("htb_garage:fetchNearbyPlayers", function(maxPlayers)
 	local tree = nil
 	local players = {}
 
-	local allPlayerNames = GetAllPlayerNames()
+	local allPlayerNames = FrameworkCtx:GetAllPlayerNames()
 
 	for _, playerIdStr in pairs(GetPlayers()) do
 		local playerId = tonumber(playerIdStr)
