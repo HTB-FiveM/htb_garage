@@ -315,7 +315,6 @@ end
 
 ---------------------
 RegisterNUICallback("close", function(data, cb)
-	local playerPed = PlayerPedId()
 	ToggleGUI(false)
 	cb("ok")
 end)
@@ -422,6 +421,7 @@ end)
 RegisterNetEvent("htb_garage:GetPlayerVehiclesResults")
 AddEventHandler("htb_garage:GetPlayerVehiclesResults", function(vehicles, garageName)
 	local data = {}
+
 	for a, veh in pairs(vehicles) do
 		table.insert(data, {
 			garage = garageName,
