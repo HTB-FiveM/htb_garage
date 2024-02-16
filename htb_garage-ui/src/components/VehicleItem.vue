@@ -81,12 +81,12 @@ const toggleDetailsPanel = () => {
 </script>
 
 <template>
-  <div class="garageItemPanel" @click="toggleDetailsPanel">
+  <div  @click="toggleDetailsPanel">
     <div class="vehicleListItem">
       <span>{{ modelName(veh) }} - </span>
       <span v-if="veh.plate" class="badge badge-light">{{ veh.plate }}</span>
       <span v-if="veh.displayName"> - {{ veh.displayName }}</span>
-      <small v-if="veh.import" class="carMake text-uppercase">, import</small>
+      <small v-if="veh.import">, import</small>
     </div>
   </div>
   <div v-if="showDetails" class="details-body" :id="veh.htmlId">
@@ -95,14 +95,14 @@ const toggleDetailsPanel = () => {
         <a
           v-if="veh.pound"
           type="button"
-          class="vehicle-options btn btn-dark btn-sm disabled"
+          class="btn btn-dark btn-sm disabled"
           >Impounded
         </a>
         <div v-else>
           <button
             v-if="veh.stored"
             type="button"
-            class="vehicle-options btn btn-success btn-sm"
+            class="btn btn-success btn-sm"
             @click="takeOutVehicle(veh)"
           >
             Take out
@@ -110,7 +110,7 @@ const toggleDetailsPanel = () => {
           <button
             v-if="!veh.stored"
             type="button"
-            class="vehicle-options btn btn-warning btn-sm"
+            class="btn btn-warning btn-sm"
             @click="retrieveVehicle(veh)"
           >
             Pay for retrieve
@@ -125,14 +125,14 @@ const toggleDetailsPanel = () => {
           <button
             v-if="!veh.stored"
             type="button"
-            class="vehicle-options btn btn-warning btn-sm"
+            class="btn btn-warning btn-sm"
             @click="setGpsMarker(veh)"
           >
             Set GPS marker
           </button>
           <button
             type="button"
-            class="vehicle-options btn btn-primary btn-sm"
+            class="btn btn-primary btn-sm"
             @click="showSetNamePanel"
           >
             Set Name
@@ -164,8 +164,8 @@ const toggleDetailsPanel = () => {
       </div>
     </div>
 
-    <div class="row transfer-ownership" v-if="showTransferOwnership">
-      <div class="row dd">
+    <div class="transfer-ownership" v-if="showTransferOwnership">
+      <div class="dd">
         <div class="dropdown buyer">
           <v-select
             class="the-dropdown"
@@ -182,10 +182,10 @@ const toggleDetailsPanel = () => {
           </v-select>
         </div>
       </div>
-      <div class="row">
+      <div>
         <button
           type="button"
-          class="btn btn-secondary modal-default-button"
+          class="btn btn-secondary"
           @click="hideTransferOwnership()"
         >
           Close
@@ -202,7 +202,7 @@ const toggleDetailsPanel = () => {
     </div>
 
     <div class="setVehicleName" v-if="showSetName">
-      <div class="nameField">
+      <div>
         <input
           slot="body"
           type="text"
@@ -215,14 +215,14 @@ const toggleDetailsPanel = () => {
       <div class="nick-buttons">
         <button
           type="button"
-          class="btn btn-secondary modal-default-button"
+          class="btn btn-secondary"
           @click="hideSetName()"
         >
           Close
         </button>
         <button
           type="button"
-          class="btn btn-primary modal-default-button"
+          class="btn btn-primary"
           @click="setVehicleName(veh)"
         >
           Save

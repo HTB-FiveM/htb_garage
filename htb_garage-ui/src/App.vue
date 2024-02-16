@@ -127,7 +127,7 @@ const filteredVehicles = computed(() => {
       />
     </div>
 
-    <div class="overflow-auto car-list">
+    <div class="car-list">
       <li v-for="vehicle in filteredVehicles" class="garage-list-item">
         <VehicleItem :veh="vehicle"></VehicleItem>
       </li>
