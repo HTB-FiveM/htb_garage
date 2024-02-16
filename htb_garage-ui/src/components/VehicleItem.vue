@@ -15,9 +15,8 @@ const tempNickName = ref("");
 
 const newOwner = ref(null as Player | null);
 
-const showTransferOwnership = computed(() =>
-  store.nearbyPlayers &&
-  store.nearbyPlayers.length > 0
+const showTransferOwnership = computed(
+  () => store.nearbyPlayers && store.nearbyPlayers.length > 0
 );
 
 const modelName = (vehicle: Vehicle) => {
@@ -74,12 +73,11 @@ const hideSetName = () => {
 
 const toggleDetailsPanel = () => {
   showDetails.value = !showDetails.value;
-  if(!showDetails.value) {
+  if (!showDetails.value) {
     hideTransferOwnership();
     hideSetName();
   }
 };
-
 </script>
 
 <template>
@@ -110,7 +108,7 @@ const toggleDetailsPanel = () => {
             Take out
           </button>
           <button
-            v-if="veh.stored === false"
+            v-if="!veh.stored"
             type="button"
             class="vehicle-options btn btn-warning btn-sm"
             @click="retrieveVehicle(veh)"
@@ -125,7 +123,7 @@ const toggleDetailsPanel = () => {
             Transfer
           </button>
           <button
-            v-if="veh.stored === false"
+            v-if="!veh.stored"
             type="button"
             class="vehicle-options btn btn-warning btn-sm"
             @click="setGpsMarker(veh)"
@@ -173,11 +171,12 @@ const toggleDetailsPanel = () => {
             class="the-dropdown"
             :options="store.nearbyPlayers"
             placeholder="Select a buyer..."
-            v-model="newOwner">
+            v-model="newOwner"
+          >
             <template #option="option">
               <span>{{ option.name }}</span>
             </template>
-            <template #selected-option="{name}">
+            <template #selected-option="{ name }">
               <strong>{{ name }}</strong>
             </template>
           </v-select>
@@ -312,10 +311,8 @@ VehicleAttribute {
 }
 
 .the-dropdown {
-  --vs-border-color: #444;  
+  --vs-border-color: #444;
   --vs-dropdown-bg: #696969;
   --vs-selected-color: #fff;
-
-  
 }
 </style>

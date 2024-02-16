@@ -4,9 +4,9 @@ export interface Vehicle{
   displayName: string;
   modelName: string;
   spawnName: string;
-  import: boolean;
-  pound: boolean;
-  stored: boolean;
+  import: number; // used as a booelan
+  pound: number; // used as a booelan
+  stored: number; // used as a booelan
   htmlId: string;
 
   fuel: number;

@@ -62,12 +62,8 @@ export const useGarageStore = defineStore('garage', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                vehicle: {
-                    ...vehicle,
-                    stored: vehicle.stored === true ? 1 : 0,
-                    pound: vehicle.pound === true ? 1 : 0
-                },
-                payForRetrieve: payForRetrieve
+                vehicle,
+                payForRetrieve
             })
             
         };
@@ -79,13 +75,13 @@ export const useGarageStore = defineStore('garage', {
         const requestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                vehicle: {
-                    ...vehicle,
-                    stored: vehicle.stored === true ? 1 : 0,
-                    pound: vehicle.pound === true ? 1 : 0
-                }
-            })
+            body: JSON.stringify({ vehicle })
+                // vehicle: {
+                //     ...vehicle,
+                //     stored: vehicle.stored === true ? 1 : 0,
+                //     pound: vehicle.pound === true ? 1 : 0
+                // }
+            //})
             
         };
         await fetch("https://htb_garage/setGpsMarker", requestOptions);
