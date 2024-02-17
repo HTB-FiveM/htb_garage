@@ -87,7 +87,7 @@ AddEventHandler("htb_garage:GetPlayerVehicles", function(type, garageName)
 		["@identifier"] = identifier,
 		["@type"] = type,
 	}) 
-	
+
 	TriggerClientEvent("htb_garage:GetPlayerVehiclesResults", _source, results, garageName)
 end)
 

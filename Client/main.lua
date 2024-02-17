@@ -217,7 +217,7 @@ end
 function IsPlayerDrivingVehicle(plate)
 	local isVehicleTaken = false
 	local players = GetActivePlayers()
-	local thisPlayer = PlayerPedId(-1)
+	local thisPlayer = PlayerPedId()
 	for i = 1, #players, 1 do
 		local target = GetPlayerPed(players[i])
 		if target ~= thisPlayer then
