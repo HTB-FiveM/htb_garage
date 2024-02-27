@@ -197,7 +197,7 @@ AddEventHandler("htb_garage:fetchNearbyPlayers", function(maxPlayers)
 	for _, playerIdStr in pairs(GetPlayers()) do
 		local playerId = tonumber(playerIdStr)
 		if playerId ~= _source then -- Ignore the player selling the vehicle
-			local player = GetPlayerPed(playerId)
+			local player = GetPlayerPed(playerIdStr)
 			local playerCoords = GetEntityCoords(player)
 			local distance = #(playerCoords - myCoords)
 			local name = allPlayerNames[playerId]
@@ -216,7 +216,7 @@ AddEventHandler("htb_garage:fetchNearbyPlayers", function(maxPlayers)
 	-- Retrieve btree items in order and build standard ordered lua table
 	if tree ~= nil then
 		for currPlayer in tree:values() do
-			table.insert(players, currPlayer)
+			table.insert(players, currPlayer.player)
 		end
 	end
 
