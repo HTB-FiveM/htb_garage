@@ -11,6 +11,7 @@ export const useGarageStore = defineStore('garage', {
     showEngine: false,
     showBody: false,
     nearbyPlayers: [],
+    nearbyPlayersLoaded: false,
 
   } as GarageStore),
   getters: {
@@ -30,7 +31,9 @@ export const useGarageStore = defineStore('garage', {
             });
 
         };
-    }
+    },
+    nearbyPlayersReady: (state) => state.nearbyPlayers.length > 0 && state.nearbyPlayersLoaded
+    
   },
   actions: {
     initStore(data: unknown) {
@@ -49,6 +52,7 @@ export const useGarageStore = defineStore('garage', {
 
         case 'setNearbyPlayersList':
           this.nearbyPlayers = JSON.parse(messageData.nearbyPlayers);
+          this.nearbyPlayersLoaded = true;
           break;
       }
       // Handle other types as needed
@@ -110,6 +114,7 @@ export const useGarageStore = defineStore('garage', {
     },
     clearNearbyPlayers() {
         this.nearbyPlayers = [];
+        this.nearbyPlayersLoaded = false;
     },
     async transferVehicleOwnership(vehicle: Vehicle, newOwner: Player) {
         const requestOptions = {

@@ -30,5 +30,6 @@ export interface GarageStore {
   showBody: boolean;
 
   nearbyPlayers: Player[];
+  nearbyPlayersLoaded: boolean;
 
 }

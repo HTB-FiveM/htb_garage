@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { Vehicle, Player } from "../types/garageTypes";
 import VehicleAttribute from "./VehicleAttribute.vue";
 
@@ -15,9 +15,7 @@ const tempNickName = ref("");
 
 const newOwner = ref(null as Player | null);
 
-const showTransferOwnership = computed(
-  () => store.nearbyPlayers && store.nearbyPlayers.length > 0
-);
+const showTransferOwnership = ref(false);
 
 const modelName = (vehicle: Vehicle) => {
   if (!vehicle.modelName || vehicle.modelName === "null") {
@@ -54,13 +52,15 @@ const retrieveVehicle = async (vehicle: Vehicle) => {
 const showNoPlayersMessage = ref(false);
 const showTransferOwnershipPanel = async () => {
   hideSetName();
+  showTransferOwnership.value = true;
   await store.fetchNearbyPlayers();
 
   checkIfPlayersNearby();
 };
 
+//TODO: need to make this work
 const checkIfPlayersNearby = () => {
-  if (store.nearbyPlayers.length === 0) {
+  if (store.nearbyPlayersReady) {
     showNoPlayersMessage.value = true; // Show the message
 
     // Set a timeout to hide the message after 3 seconds
@@ -72,6 +72,7 @@ const checkIfPlayersNearby = () => {
 
 const hideTransferOwnership = () => {
   store.clearNearbyPlayers();
+  showTransferOwnership.value = false;
   newOwner.value = null;
 };
 

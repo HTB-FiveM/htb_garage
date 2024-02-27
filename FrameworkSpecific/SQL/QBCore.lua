@@ -42,8 +42,15 @@ SQL['qbcore'] = {
   SqlTransferOwnership =
   [[
     UPDATE player_vehicles
-    SET owner = @newOwner
-    WHERE owner = @currentOwner AND plate = @plate
+    SET license = @newOwner,
+    citizenid = (
+      SELECT citizenid
+      FROM players
+      WHERE license = @newOwner
+      ORDER BY last_updated
+      DESC LIMIT 1
+    )
+    WHERE license = @currentOwner AND plate = @plate
   ]],
 
   SqlImpoundVehicle =
