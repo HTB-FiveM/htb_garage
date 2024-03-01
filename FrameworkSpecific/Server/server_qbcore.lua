@@ -26,5 +26,9 @@ QBCoreStrategy = {
         if player then
             player.Functions.RemoveMoney(account, amount)
         end
+    end),
+
+    GiveVehicleKeys = Strategy:new(function(serverId, plate)
+        TriggerServerEvent('qb-vehiclekeys:server:GiveVehicleKeys', serverId, plate)
     end)
 }

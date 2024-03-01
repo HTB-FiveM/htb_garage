@@ -236,13 +236,14 @@ AddEventHandler("htb_garage:transferOwnership", function(plate, newOwner)
 	--print('TransferOwnership Result: ' .. json.encode(result))
 
 	if result then
-		TriggerClientEvent("htb_garage:TransferOwnershipResult", oldOwnerServerId, "Sold vehicle " .. plate, true)
+		TriggerClientEvent("htb_garage:TransferOwnershipResult", oldOwnerServerId, "Sold vehicle " .. plate, true, plate)
 		TriggerClientEvent(
 			"htb_garage:TransferOwnershipResult",
 			newOwner.serverId,
 			"Purchased vehicle " .. plate,
 			false
 		)
+		FrameworkCtx:GiveVehicleKeys(newOwner.serverId, plate)
 	else
 		TriggerClientEvent(
 			"htb_garage:TransferOwnershipResult",

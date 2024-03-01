@@ -602,12 +602,13 @@ AddEventHandler("htb_garage:nearbyPlayersList", function(players)
 end)
 
 RegisterNetEvent("htb_garage:TransferOwnershipResult")
-AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSeller)
+AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSeller, plate)
 	FrameworkCtx:ShowNotification(outcome)
 
 	if amITheSeller then
 		SendNUIMessage({
 			type = "transferComplete",
+			plate = plate
 		})
 	end
 end)
