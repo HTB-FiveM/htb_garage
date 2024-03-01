@@ -54,6 +54,16 @@ export const useGarageStore = defineStore('garage', {
           this.nearbyPlayers = JSON.parse(messageData.nearbyPlayers);
           this.nearbyPlayersLoaded = true;
           break;
+
+        case 'transferComplete':
+            if(messageData.plate) {
+                const index = this.vehicles.findIndex(vehicle => vehicle.plate === messageData.plate);
+                if (index !== -1) {
+                    this.vehicles.splice(index, 1);
+                }
+            }
+            break;
+
       }
       // Handle other types as needed
     },

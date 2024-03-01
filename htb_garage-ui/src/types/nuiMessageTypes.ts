@@ -16,5 +16,11 @@ export interface SetNearbyPlayersListData {
   nearbyPlayers: string; // Assuming this is a JSON string that needs parsing
 }
 
+export interface TransferCompleteData {
+  type: 'transferComplete';
+  plate: string; // Assuming this is a JSON string that needs parsing
+}
+
+
 // Union type for all message types
-export type NuiMessageData = EnableData | SetVehiclesData | SetNearbyPlayersListData;
+export type NuiMessageData = EnableData | SetVehiclesData | SetNearbyPlayersListData | TransferCompleteData;
