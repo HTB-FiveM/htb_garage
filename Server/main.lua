@@ -113,8 +113,6 @@ AddEventHandler("htb_garage:SetVehicleStored", function(plate, stored)
 		["@identifier"] = identifier,
 		["@plate"] = plate,
 	})
-
-	FrameworkCtx:GiveVehicleKeys(_source, plate)
 end)
 
 -- When players login we need to send them a copy of the vehicleInstances
@@ -245,7 +243,6 @@ AddEventHandler("htb_garage:transferOwnership", function(plate, newOwner)
 			"Purchased vehicle " .. plate,
 			false
 		)
-		FrameworkCtx:GiveVehicleKeys(newOwner.serverId, plate)
 	else
 		TriggerClientEvent(
 			"htb_garage:TransferOwnershipResult",

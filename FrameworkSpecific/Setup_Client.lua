@@ -22,6 +22,10 @@ function FrameworkContext:GetPlayerData()
   return self.strategies[GetFunctionName(2)].execute()
 end
 
+function FrameworkContext:GiveVehicleKeys(serverId, plate)
+  self.strategies[GetFunctionName(2)].execute(serverId, plate)
+end
+
 --------------------------------------
 -- Wire up the framework functions
 --------------------------------------

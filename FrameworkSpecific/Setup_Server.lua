@@ -45,10 +45,6 @@ function FrameworkContext:MakePayment(source, account, amount)
   self.strategies[GetFunctionName(2)].execute(source, account, amount)
 end
 
-function FrameworkContext:GiveVehicleKeys(serverId, plate)
-  self.strategies[GetFunctionName(2)].execute(serverId, plate)
-end
-
 --------------------------------------
 -- Wire up the framework functions
 --------------------------------------

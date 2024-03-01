@@ -540,6 +540,10 @@ function DoTheSpawn(vehicle, spawnPoint)
 
 			TriggerServerEvent("htb_garage:SetVehicleStored", carplate, 0)
 			TriggerServerEvent("htb_garage:StartTrackingEntity", carplate, networkId)
+			
+			local playerId = PlayerId()
+			local playerServerId = GetPlayerServerId(playerId)
+			FrameworkCtx:GiveVehicleKeys(playerServerId, carplate)
 		end,
 		true
 	)
@@ -610,6 +614,10 @@ AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSe
 			type = "transferComplete",
 			plate = plate
 		})
+	else
+		local playerId = PlayerId()
+		local playerServerId = GetPlayerServerId(playerId)
+		FrameworkCtx:GiveVehicleKeys(playerServerId, plate)
 	end
 end)
 
