@@ -113,6 +113,8 @@ AddEventHandler("htb_garage:SetVehicleStored", function(plate, stored)
 		["@identifier"] = identifier,
 		["@plate"] = plate,
 	})
+
+	FrameworkCtx:GiveVehicleKeys(_source, plate)
 end)
 
 -- When players login we need to send them a copy of the vehicleInstances
