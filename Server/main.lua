@@ -243,6 +243,12 @@ AddEventHandler("htb_garage:transferOwnership", function(plate, newOwner)
 			"Purchased vehicle " .. plate,
 			false
 		)
+
+		-- if the vehicle is out then give the keys to the buyer
+			local theVeh = vehicleInstances[trim(plate)]
+			if theVeh then
+				TriggerClientEvent('qb-vehiclekeys:client:AddKeys', newOwner.serverId, plate)
+			end
 	else
 		TriggerClientEvent(
 			"htb_garage:TransferOwnershipResult",

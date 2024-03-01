@@ -572,6 +572,7 @@ AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageNam
 	else
 		-- May want to call through to server here depending on how things go with OneSync Infinity and vehicle duplication
 		DoTheSpawn(vehicle.vehicle, spawnPoint)
+		TriggerEvent('qb-vehiclekeys:client:AddKeys', vehicle.plate)
 	end
 end)
 
@@ -606,18 +607,15 @@ AddEventHandler("htb_garage:nearbyPlayersList", function(players)
 end)
 
 RegisterNetEvent("htb_garage:TransferOwnershipResult")
-AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSeller, plate)
+AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSeller, plate, receiverServerId)
 	FrameworkCtx:ShowNotification(outcome)
 
 	if amITheSeller then
+		TriggerEvent('qb-vehiclekeys:client:RemoveKeys', plate)
 		SendNUIMessage({
 			type = "transferComplete",
 			plate = plate
 		})
-	else
-		local playerId = PlayerId()
-		local playerServerId = GetPlayerServerId(playerId)
-		FrameworkCtx:GiveVehicleKeys(playerServerId, plate)
 	end
 end)
 

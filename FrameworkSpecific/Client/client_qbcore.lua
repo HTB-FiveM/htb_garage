@@ -25,9 +25,5 @@ QBCoreStrategy = {
                 { name = "money", money = playerData.money.cash }
             }
         }
-    end),
-
-    GiveVehicleKeys = Strategy:new(function(serverId, plate)
-        TriggerServerEvent('qb-vehiclekeys:server:GiveVehicleKeys', serverId, plate)
     end)
 }

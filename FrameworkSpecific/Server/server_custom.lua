@@ -16,8 +16,4 @@ CustomStrategy = {
     MakePayment = Strategy:new(function(source, account, amount)
 
     end),
-
-    GiveVehicleKeys = Strategy:new(function(serverId, plate)
-
-    end)
 }
