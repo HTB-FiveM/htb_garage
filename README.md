@@ -40,14 +40,16 @@ If you need any assistance feel free to reach out at https://discord.gg/Ngg75byB
 
 The SQL I'm using is using some specific JSON fetch functions which aren't available in MySQL and therefore at this time you must be running MariaDB. I've tested with 10.7 so use that as a minimum. There'll be an update at some point once I work out how to implement a decent factory pattern to make the specific platform plugin code a little better.
 
-**My quasi 'Factory Pattern'**
+**My quasi 'Strategy Pattern'**
 
-Whilst my current system does allow specific RP framework core functions to be switched in, the current system is a little too cryptic and even I struggle to think through problems with it when they arise. In any real language these days implementing a decent Factory Pattern with object orientation is straight forward, so I need to invest time time working out a better way to do it in LUA. This will then make it cleaner to swap in different database specific code as well as RP specific code. Once that's done MySQL support will be easier to drop in.
+I've used an implementation of a 'strategy' design pattern to cater for different implementation of functionality for specific functions that are done differently in typical role play frameworks people are using. If you're not using QBCore or ESX Legay then there's stub files there for you to implement the missing functionality. Just follow the pattern.
 
 **Installation**
 * Install ft_libs https://github.com/FivemTools/ft_libs if you don't already have it and add the ensure statement to your server.cfg
+* Install VehicleDeformation https://github.com/Kiminaze/VehicleDeformation if you don't already have it and add the ensure statement to you server.cfg
 * Install htb_garage and add the ensure statement after ft_libs in the server.cfg
 * Run the SQL script according to whether you already have the owned_vehicles table. If you have a stock ESX Legacy setup from the fxserver recipe deployer then run alter owned_vehicles file.
+* Rename the appropriate fxmanifest lua file based on the Role Play framework you're running.
 
 **Note regarding ESX-Legacy**
 
