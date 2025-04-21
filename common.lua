@@ -77,7 +77,11 @@ function EsxGetVehicleProperties(vehicle)
       end
   end
 
-  local deformation = exports['VehicleDeformation']:GetVehicleDeformation(vehicle, deformation)
+  local deformation = nil
+  if GetResourceState('VehicleDeformation') == 'started' then
+    deformation = exports['VehicleDeformation']:GetVehicleDeformation(vehicle, deformation)
+  end
+
   local lightsState = GetLightsHealth(vehicle)
   return {
       model = GetEntityModel(vehicle),

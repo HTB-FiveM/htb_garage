@@ -534,7 +534,9 @@ function DoTheSpawn(vehicle, spawnPoint)
 		},
 		spawnPoint.Heading,
 		function(callback_vehicle, networkId)
-			exports['VehicleDeformation']:SetVehicleDeformation(callback_vehicle, vehicleProps.deformation)
+			if GetResourceState('VehicleDeformation') == 'started' and vehicleProps.deformation ~= nil then
+				exports['VehicleDeformation']:SetVehicleDeformation(callback_vehicle, vehicleProps.deformation)
+			end
 			SetVehicleProperties(callback_vehicle, vehicleProps)			
 
 			if Config.TeleportToVehicleOnSpawn then
