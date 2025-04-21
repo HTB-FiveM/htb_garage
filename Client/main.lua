@@ -6,19 +6,9 @@ local vehicleInstances = {}
 
 -------------------------------------------------------------------------------------------
 
-frameworkFunctionMappings[Config.RolePlayFramework]["runStartupStuff"]()
+FrameworkCtx:RunStartupStuff()
 
 -------------------------------------------------------------------------------------------
-function ShowNotification(msg)
-	if Config.RolePlayFramework == nil or Config.RolePlayFramework == "none" then
-		SetNotificationTextEntry("STRING")
-		AddTextComponentString(msg)
-		DrawNotification(0, 1)
-	else
-		frameworkFunctionMappings[Config.RolePlayFramework]["showNotification"](msg)
-	end
-end
-
 function ToggleGUI(explicit_status)
 	if explicit_status ~= nil then
 		isVisible = explicit_status
@@ -99,19 +89,21 @@ function StoreVehicle(vehicleType, deleteZone)
 			if GotTrailer then
 				local trailerProps = GetVehicleProperties(TrailerHandle)
 				if trailerProps ~= nil then
-					ESX.TriggerServerCallback("eden_garage:stockv", function(valid)
-						if valid then
-							--local networkId = NetworkGetNetworkIdFromEntity(TrailerHandle)
-							DeleteEntity(TrailerHandle)
-							TriggerServerEvent("htb_garage:SetVehicleStored", trailerProps.plate, 1)
+					-- TODO:
+					-- eden_garage:stockv isn't anywere in the Server code. Work out what to do here
+					-- -- -- ESX.TriggerServerCallback("eden_garage:stockv", function(valid)
+					-- -- -- 	if valid then
+					-- -- -- 		--local networkId = NetworkGetNetworkIdFromEntity(TrailerHandle)
+					-- -- -- 		DeleteEntity(TrailerHandle)
+					-- -- -- 		TriggerServerEvent("htb_garage:SetVehicleStored", trailerProps.plate, 1)
 
-							ShowNotification(_U("trailer_in_garage"))
-						else
-							ShowNotification(_U("cannot_store_vehicle"))
-						end
-					end, trailerProps, KindOfVehicle, garage_name, vehicle_type)
+					-- -- -- 		ShowNotification(_U("trailer_in_garage"))
+					-- -- -- 	else
+					-- -- -- 		ShowNotification(_U("cannot_store_vehicle"))
+					-- -- -- 	end
+					-- -- -- end, trailerProps, KindOfVehicle, garage_name, vehicle_type)
 				else
-					ShowNotification(_U("vehicle_error"))
+					FrameworkCtx:ShowNotification(_U("vehicle_error"))
 				end
 			else
 				local networkId = NetworkGetNetworkIdFromEntity(vehicle)
@@ -125,14 +117,14 @@ function StoreVehicle(vehicleType, deleteZone)
 						deleteZone
 					)
 				else
-					ShowNotification(_U("vehicle_error"))
+					FrameworkCtx:ShowNotification(_U("vehicle_error"))
 				end
 			end
 		else
-			ShowNotification(_U("not_driver"))
+			FrameworkCtx:ShowNotification(_U("not_driver"))
 		end
 	else
-		ShowNotification(_U("no_vehicle_to_enter"))
+		FrameworkCtx:ShowNotification(_U("no_vehicle_to_enter"))
 	end
 end
 
@@ -225,7 +217,7 @@ end
 function IsPlayerDrivingVehicle(plate)
 	local isVehicleTaken = false
 	local players = GetActivePlayers()
-	local thisPlayer = PlayerPedId(-1)
+	local thisPlayer = PlayerPedId()
 	for i = 1, #players, 1 do
 		local target = GetPlayerPed(players[i])
 		if target ~= thisPlayer then
@@ -242,7 +234,7 @@ end
 
 function GetVehicleProperties(vehicle)
 	if DoesEntityExist(vehicle) then
-		local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
+		local vehicleProps = EsxGetVehicleProperties(vehicle)
 
 		vehicleProps["tyres"] = {}
 		vehicleProps["windows"] = {}
@@ -319,24 +311,35 @@ function SetVehicleProperties(vehicle, vehicleProps)
 	if vehicleProps.vehicleHeadLight then
 		SetVehicleHeadlightsColour(vehicle, vehicleProps.vehicleHeadLight)
 	end
+
+	if(vehicleProps["lightsState"]) then
+		SetLightsHealth(vehicle, vehicleProps.lightsState)
+	end
 end
 
 ---------------------
 RegisterNUICallback("close", function(data, cb)
-	local playerPed = PlayerPedId()
 	ToggleGUI(false)
 	cb("ok")
 end)
 
 function PayForRetrieve(vehicle)
-	local playerData = ESX.GetPlayerData()
+	local playerData = FrameworkCtx:GetPlayerData()
+	
+	-- TODO: Should move this to a factory generated class
+	local accountName = ""
+  if Config.RolePlayFramework == "esx" then
+		accountName = "money"
+	elseif Config.RolePlayFramework == "qbcore" then
+			accountName = "cash"
+	end    
 
 	for _, account in pairs(playerData.accounts) do
 		if account.name == "money" then
 			if account.money >= Config.ImpoundPrice then
 				-- Pay the fee and notify the player
-				TriggerServerEvent("htb_garage:MakePayment", "money", Config.ImpoundPrice)
-				ShowNotification(_U("retrieval_fee_paid"))
+				TriggerServerEvent("htb_garage:MakePayment", accountName, Config.ImpoundPrice)
+				FrameworkCtx:ShowNotification(_U("retrieval_fee_paid"))
 
 				local plate = trim(vehicle.plate)
 				local instance = vehicleInstances[plate]
@@ -349,14 +352,14 @@ function PayForRetrieve(vehicle)
 				end
 				return true
 			else
-				ShowNotification(_U("retrieve_not_enough"))
+				FrameworkCtx:ShowNotification(_U("retrieve_not_enough"))
 				return false
 			end
 		end
 	end
 
 	Citizen.Trace(
-		"function PayForRetrieve: Unable to find account 'money' for player " .. playerData.identifier .. "\n"
+		"function PayForRetrieve: Unable to find account '" .. accountName .. "' for player " .. playerData.identifier .. "\n"
 	)
 	return false
 end
@@ -376,14 +379,14 @@ RegisterNUICallback("takeOut", function(data, cb)
 
 	if getTheVehicle then
 		if DoesVehicleExist(vehicle.plate) or IsPlayerDrivingVehicle(vehicle.plate) then
-			ShowNotification(_U("cannot_take_out"))
+			FrameworkCtx:ShowNotification(_U("cannot_take_out"))
 		elseif vehicle.pound == 1 then
-			ShowNotification(_U("vehicle_in_pound"))
+			FrameworkCtx:ShowNotification(_U("vehicle_in_pound"))
 		elseif vehicle.stored == 1 or overrideStored then
 			TriggerServerEvent("htb_garage:GetVehicleForSpawn", vehicle.plate, vehicle.garage)
 			ToggleGUI(false)
 		else
-			ShowNotification(_U("vehicle_already_out"))
+			FrameworkCtx:ShowNotification(_U("vehicle_already_out"))
 		end
 	end
 
@@ -422,6 +425,7 @@ end)
 RegisterNetEvent("htb_garage:GetPlayerVehiclesResults")
 AddEventHandler("htb_garage:GetPlayerVehiclesResults", function(vehicles, garageName)
 	local data = {}
+
 	for a, veh in pairs(vehicles) do
 		table.insert(data, {
 			garage = garageName,
@@ -519,7 +523,6 @@ function DetermineSpawnPosition(vehicleType, spawnPoint, heading, numSpawns)
 end
 
 function DoTheSpawn(vehicle, spawnPoint)
-	--local vehicleProps = ESX.Game.GetVehicleProperties()
 	local vehicleProps = json.decode(vehicle)
 
 	SpawnVehicle(
@@ -531,7 +534,10 @@ function DoTheSpawn(vehicle, spawnPoint)
 		},
 		spawnPoint.Heading,
 		function(callback_vehicle, networkId)
-			SetVehicleProperties(callback_vehicle, vehicleProps)
+			if GetResourceState('VehicleDeformation') == 'started' and vehicleProps.deformation ~= nil then
+				exports['VehicleDeformation']:SetVehicleDeformation(callback_vehicle, vehicleProps.deformation)
+			end
+			SetVehicleProperties(callback_vehicle, vehicleProps)			
 
 			if Config.TeleportToVehicleOnSpawn then
 				TaskWarpPedIntoVehicle(PlayerPedId(), callback_vehicle, -1)
@@ -541,6 +547,10 @@ function DoTheSpawn(vehicle, spawnPoint)
 
 			TriggerServerEvent("htb_garage:SetVehicleStored", carplate, 0)
 			TriggerServerEvent("htb_garage:StartTrackingEntity", carplate, networkId)
+			
+			local playerId = PlayerId()
+			local playerServerId = GetPlayerServerId(playerId)
+			FrameworkCtx:GiveVehicleKeys({ playerServerId = playerServerId, carplate = carplate, lifetime = 'permanent'})
 		end,
 		true
 	)
@@ -565,10 +575,11 @@ AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageNam
 		garage.SpawnPoint.NumSpawns
 	)
 	if spawnPoint == nil then
-		ShowNotification(_U("spawn_point_occupied"))
+		FrameworkCtx:ShowNotification(_U("spawn_point_occupied"))
 	else
 		-- May want to call through to server here depending on how things go with OneSync Infinity and vehicle duplication
 		DoTheSpawn(vehicle.vehicle, spawnPoint)
+		TriggerEvent('qb-vehiclekeys:client:AddKeys', vehicle.plate)
 	end
 end)
 
@@ -591,7 +602,7 @@ AddEventHandler("htb_garage:VehicleSaveAndStored", function(networkId, plate, ve
 
 	TriggerServerEvent("htb_garage:StopTrackingEntity", plate)
 
-	ShowNotification(_U("vehicle_in_garage"))
+	FrameworkCtx:ShowNotification(_U("vehicle_in_garage"))
 end)
 
 RegisterNetEvent("htb_garage:nearbyPlayersList")
@@ -603,12 +614,14 @@ AddEventHandler("htb_garage:nearbyPlayersList", function(players)
 end)
 
 RegisterNetEvent("htb_garage:TransferOwnershipResult")
-AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSeller)
-	ShowNotification(outcome)
+AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSeller, plate, receiverServerId)
+	FrameworkCtx:ShowNotification(outcome)
 
 	if amITheSeller then
+		TriggerEvent('qb-vehiclekeys:client:RemoveKeys', plate)
 		SendNUIMessage({
 			type = "transferComplete",
+			plate = plate
 		})
 	end
 end)
@@ -659,12 +672,12 @@ end
 
 RegisterNetEvent("htb_garage:Impounded")
 AddEventHandler("htb_garage:Impounded", function(message)
-	ShowNotification(message)
+	FrameworkCtx:ShowNotification(message)
 end)
 
 RegisterNetEvent("htb_garage:Released")
 AddEventHandler("htb_garage:Released", function(message, carplate)
-	ShowNotification(message)
+	FrameworkCtx:ShowNotification(message)
 
 	-- Charge the player
 
@@ -691,3 +704,58 @@ end)
 -- RegisterCommand('aaaaa', function(source, args, raw)
 --     print(json.encode(vehicleInstances))
 -- end, false)
+
+
+local lightBones = {
+	headlight_l      = "headlight_l",
+	headlight_r      = "headlight_r",
+	taillight_l      = "taillight_l",
+	taillight_r      = "taillight_r",
+	indicator_lf     = "indicator_lf",
+	indicator_rf     = "indicator_rf",
+	indicator_lr     = "indicator_lr",
+	indicator_rr     = "indicator_rr",
+	brakelight_l     = "brakelight_l",
+	brakelight_r     = "brakelight_r",
+	reversinglight_l = "reversinglight_l",
+	reversinglight_r = "reversinglight_r",
+  }
+  
+  -- Returns a table of booleans keyed by the bone‑name keys above
+  function GetLightsHealth(vehicle)
+	local out = {}
+	for key, boneName in pairs(lightBones) do
+	  local boneIndex = GetEntityBoneIndexByName(vehicle, boneName)
+	  if boneIndex ~= -1 then
+		-- world pos of the lamp bone
+		local wx, wy, wz = GetWorldPositionOfEntityBone(vehicle, boneIndex)
+		-- convert it into local vehicle offsets
+		local ox, oy, oz = GetOffsetFromEntityGivenWorldCoords(vehicle, wx, wy, wz)
+		-- sample mesh deformation at that offset
+		local dx, dy, dz = GetVehicleDeformationAtPos(vehicle, ox, oy, oz)  -- :contentReference[oaicite:0]{index=0}
+		out[key] = (dx ~= 0 or dy ~= 0 or dz ~= 0)
+	  else
+		out[key] = false
+	  end
+	end
+	
+	return out
+  end
+  
+  -- Re‑break exactly those lights by inflicting a tiny damage sphere
+  function SetLightsHealth(vehicle, lightsState)
+	-- allow lenses to shatter
+	SetVehicleHasUnbreakableLights(vehicle, false)
+	for key, shouldBeBroken in pairs(lightsState) do
+	  if shouldBeBroken then
+		local boneName = lightBones[key]
+		local boneIndex = GetEntityBoneIndexByName(vehicle, boneName)
+		if boneIndex ~= -1 then
+		  local wx, wy, wz = GetWorldPositionOfEntityBone(vehicle, boneIndex)
+		  local ox, oy, oz = GetOffsetFromEntityGivenWorldCoords(vehicle, wx, wy, wz)
+		  -- a small radius (0.1) focuses damage on that lamp; strength 10 is plenty to shatter
+		  SetVehicleDamage(vehicle, ox, oy, oz, 0.1, 10.0, true)  -- :contentReference[oaicite:1]{index=1}
+		end
+	  end
+	end
+  end

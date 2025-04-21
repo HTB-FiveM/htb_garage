@@ -44,14 +44,18 @@ If you need any assistance feel free to reach out at https://discord.gg/Ngg75byB
 
 The SQL I'm using is using some specific JSON fetch functions which aren't available in MySQL and therefore at this time you must be running MariaDB. I've tested with 10.7 so use that as a minimum. There'll be an update at some point once I work out how to implement a decent factory pattern to make the specific platform plugin code a little better.
 
+
 **My 'Strategy Pattern'**
 
 I have defined a base abstract class type LUA table for creating a "Strategy" A Strategy is instantiated with Strategy:new(<<some function>>) here <<some function>> is an anonymous function, or pointer to an existing function that can be invoked on the wrapper Strategy instance by calling .execute(). A "Context" class needs to be created where these Strategies will be invoked from. In my case I have a Context "class" that is instantiated with a list of Strategies. A set of Strategy functions is selected at started based on the Config.RolePlayFramework value, so if it's set to qbcore the qbcore version of the functions will be executed by the wrapper Context functions. It's a cleaner system than was there before.  
 
+
 **Installation**
 * Install ft_libs https://github.com/FivemTools/ft_libs if you don't already have it and add the ensure statement to your server.cfg
+* Install VehicleDeformation https://github.com/Kiminaze/VehicleDeformation if you don't already have it and add the ensure statement to you server.cfg
 * Install htb_garage and add the ensure statement after ft_libs in the server.cfg
 * Run the SQL script according to whether you already have the owned_vehicles table. If you have a stock ESX Legacy setup from the fxserver recipe deployer then run alter owned_vehicles file.
+* Rename the appropriate fxmanifest lua file based on the Role Play framework you're running.
 
 **Note regarding ESX-Legacy**
 

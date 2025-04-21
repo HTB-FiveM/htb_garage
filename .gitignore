@@ -40,3 +40,8 @@ luac.out
 *.hex
 
 /.vs
+.vscode
+
+fxmanifest.lua
+
+/htb_garage-ui/.vs

@@ -1,5 +1,9 @@
-function ShowNotificationCustom(msg)
-    -- Call your custom notification function here
-    
-end
+Custom = {
+    RunStartupStuff = Strategy:new(function()
 
+    end),
+
+    ShowNotification = Strategy:new(function(msg)
+
+    end)
+}

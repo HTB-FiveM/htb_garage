@@ -12,80 +12,49 @@ local garageDebug = false
 
 MySQL.ready(function()
 	MySQL.Async.store(
-		[[
-SELECT 
-	CAST(json_value(vehicle, '$.model') AS SIGNED) model,
-	CAST(json_value(vehicle, '$.bodyHealth') AS SIGNED) body,
-	CAST(json_value(vehicle, '$.engineHealth') AS SIGNED) engine,
-	CAST(json_value(vehicle, '$.fuelLevel') AS SIGNED) fuel
-	, `stored`, pound_htb AS pound, vehiclename, plate FROM owned_vehicles
-WHERE owner = @identifier AND type = @type AND job IS NULL
-    ]],
+		SQL[Config.RolePlayFramework].SqlGetAllVehicles,
 		function(storeId)
 			SqlGetAllVehicles = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-SELECT vehicle, `stored`, pound_htb AS pound, vehiclename, plate, type
-FROM owned_vehicles
-WHERE owner = @identifier AND plate = @plate
-        ]],
+		SQL[Config.RolePlayFramework].SqlGetVehicle,
 		function(storeId)
 			SqlGetVehicle = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-UPDATE owned_vehicles
-SET `stored` = @stored
-WHERE owner = @identifier AND plate = @plate
-        ]],
+		SQL[Config.RolePlayFramework].SqlSetVehicleStored,
 		function(storeId)
 			SqlSetVehicleStored = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-UPDATE owned_vehicles
-SET vehicle = @vehicle, `stored` = @stored
-WHERE plate = @plate
-        ]],
+		SQL[Config.RolePlayFramework].SqlSaveAndStoreVehicle,
 		function(storeId)
 			SqlSaveAndStoreVehicle = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-UPDATE owned_vehicles
-SET vehiclename = @newName
-WHERE owner = @identifier AND plate = @plate
-        ]],
+		SQL[Config.RolePlayFramework].SqlSetVehicleName,
 		function(storeId)
 			SqlSetVehicleName = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-UPDATE owned_vehicles
-SET owner = @newOwner
-WHERE owner = @currentOwner AND plate = @plate
-        ]],
+		SQL[Config.RolePlayFramework].SqlTransferOwnership,
 		function(storeId)
 			SqlTransferOwnership = storeId
 		end
 	)
 
 	MySQL.Async.store(
-		[[
-UPDATE owned_vehicles
-SET pound_htb = @pound
-        ]],
+		SQL[Config.RolePlayFramework].SqlImpoundVehicle,
 		function(storeId)
 			SqlImpoundVehicle = storeId
 		end
@@ -93,29 +62,14 @@ SET pound_htb = @pound
 end)
 
 -------------------------------------------------------------------------------------------
-if Config.RolePlayFramework == nil or Config.RolePlayFramework ~= "none" then
-	frameworkFunctionMappings[Config.RolePlayFramework]["runStartupStuff"]()
-end
+
+FrameworkCtx:RunStartupStuff()
 
 -------------------------------------------------------------------------------------------
-function GetAllPlayerNames()
-	if Config.RolePlayFramework == nil or Config.RolePlayFramework == "none" then
-		local playerNames = {}
-		for _, playerIdStr in pairs(GetPlayers()) do
-			local playerId = tonumber(playerIdStr)
-			playerNames[playerId] = GetPlayerName(playerId)
-		end
-		return playerNames
-	else
-		return frameworkFunctionMappings[Config.RolePlayFramework]["getAllPlayerNames"]()
-	end
-end
-
 RegisterNetEvent("htb_garage:SetVehicleName")
 AddEventHandler("htb_garage:SetVehicleName", function(plate, newName)
 	local _source = source
-	local xPlayer  = ESX.GetPlayerFromId(source)
-	local identifier = xPlayer.identifier
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
 
 	MySQL.Sync.execute(SqlSetVehicleName, {
 		["@newName"] = newName,
@@ -127,13 +81,12 @@ end)
 RegisterNetEvent("htb_garage:GetPlayerVehicles")
 AddEventHandler("htb_garage:GetPlayerVehicles", function(type, garageName)
 	local _source = source
-	local xPlayer  = ESX.GetPlayerFromId(source)
-	local identifier = xPlayer.identifier
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
 
 	local results = MySQL.Sync.fetchAll(SqlGetAllVehicles, {
 		["@identifier"] = identifier,
 		["@type"] = type,
-	})
+	}) 
 
 	TriggerClientEvent("htb_garage:GetPlayerVehiclesResults", _source, results, garageName)
 end)
@@ -141,8 +94,7 @@ end)
 RegisterNetEvent("htb_garage:GetVehicleForSpawn")
 AddEventHandler("htb_garage:GetVehicleForSpawn", function(plate, garage)
 	local _source = source
-	local xPlayer  = ESX.GetPlayerFromId(source)
-	local identifier = xPlayer.identifier
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
 
 	local results = MySQL.Sync.fetchAll(SqlGetVehicle, {
 		["@identifier"] = identifier,
@@ -154,8 +106,7 @@ end)
 RegisterNetEvent("htb_garage:SetVehicleStored")
 AddEventHandler("htb_garage:SetVehicleStored", function(plate, stored)
 	local _source = source
-	local xPlayer  = ESX.GetPlayerFromId(source)
-	local identifier = xPlayer.identifier
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
 
 	MySQL.Sync.execute(SqlSetVehicleStored, {
 		["@stored"] = stored,
@@ -224,8 +175,8 @@ end)
 RegisterNetEvent("htb_garage:MakePayment")
 AddEventHandler("htb_garage:MakePayment", function(account, amount)
 	local _source = source
-	local xPlayer = ESX.GetPlayerFromId(_source)
-	xPlayer.removeAccountMoney(account, amount)
+	FrameworkCtx:MakePayment(_source, account, amount)
+	
 end)
 
 RegisterNetEvent("htb_garage:fetchNearbyPlayers")
@@ -241,12 +192,12 @@ AddEventHandler("htb_garage:fetchNearbyPlayers", function(maxPlayers)
 	local tree = nil
 	local players = {}
 
-	local allPlayerNames = GetAllPlayerNames()
+	local allPlayerNames = FrameworkCtx:GetAllPlayerNames()
 
 	for _, playerIdStr in pairs(GetPlayers()) do
 		local playerId = tonumber(playerIdStr)
 		if playerId ~= _source then -- Ignore the player selling the vehicle
-			local player = GetPlayerPed(playerId)
+			local player = GetPlayerPed(playerIdStr)
 			local playerCoords = GetEntityCoords(player)
 			local distance = #(playerCoords - myCoords)
 			local name = allPlayerNames[playerId]
@@ -265,7 +216,7 @@ AddEventHandler("htb_garage:fetchNearbyPlayers", function(maxPlayers)
 	-- Retrieve btree items in order and build standard ordered lua table
 	if tree ~= nil then
 		for currPlayer in tree:values() do
-			table.insert(players, currPlayer)
+			table.insert(players, currPlayer.player)
 		end
 	end
 
@@ -285,13 +236,19 @@ AddEventHandler("htb_garage:transferOwnership", function(plate, newOwner)
 	--print('TransferOwnership Result: ' .. json.encode(result))
 
 	if result then
-		TriggerClientEvent("htb_garage:TransferOwnershipResult", oldOwnerServerId, "Sold vehicle " .. plate, true)
+		TriggerClientEvent("htb_garage:TransferOwnershipResult", oldOwnerServerId, "Sold vehicle " .. plate, true, plate)
 		TriggerClientEvent(
 			"htb_garage:TransferOwnershipResult",
 			newOwner.serverId,
 			"Purchased vehicle " .. plate,
 			false
 		)
+
+		-- if the vehicle is out then give the keys to the buyer
+			local theVeh = vehicleInstances[trim(plate)]
+			if theVeh then
+				TriggerClientEvent('qb-vehiclekeys:client:AddKeys', newOwner.serverId, plate)
+			end
 	else
 		TriggerClientEvent(
 			"htb_garage:TransferOwnershipResult",
@@ -344,3 +301,8 @@ RegisterCommand("dumpVehicleInstances", function(source, args, raw)
 		Citizen.Trace(json.encode(vehicleInstances))
 	end
 end, false)
+
+-- Lifetime is either 'temporary' for a one off key or 'permanent'
+RegisterNetEvent('htb_garage:giveKeys', function(playerServerId, carplate, lifetime)
+	FrameworkCtx:GiveVehicleKeys({ playerServerId = playerServerId, carplate = carplate, lifetime = lifetime})
+end)
