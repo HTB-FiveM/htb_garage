@@ -77,8 +77,12 @@ function EsxGetVehicleProperties(vehicle)
       end
   end
 
+  local deformation = exports['VehicleDeformation']:GetVehicleDeformation(vehicle, deformation)
+  local lightsState = GetLightsHealth(vehicle)
   return {
       model = GetEntityModel(vehicle),
+      deformation = deformation,
+      lightsState = lightsState,
       doorsBroken = doorsBroken,
       windowsBroken = windowsBroken,
       tyreBurst = tyreBurst,
@@ -92,6 +96,7 @@ function EsxGetVehicleProperties(vehicle)
 
       fuelLevel = HTB.Math.Round(GetVehicleFuelLevel(vehicle), 1),
       dirtLevel = HTB.Math.Round(GetVehicleDirtLevel(vehicle), 1),
+      oilLevel = HTB.Math.Round(GetVehicleOilLevel(vehicle), 1),
       color1 = colorPrimary,
       color2 = colorSecondary,
       customPrimaryColor = customPrimaryColor,

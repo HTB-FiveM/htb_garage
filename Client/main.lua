@@ -311,6 +311,10 @@ function SetVehicleProperties(vehicle, vehicleProps)
 	if vehicleProps.vehicleHeadLight then
 		SetVehicleHeadlightsColour(vehicle, vehicleProps.vehicleHeadLight)
 	end
+
+	if(vehicleProps["lightsState"]) then
+		SetLightsHealth(vehicle, vehicleProps.lightsState)
+	end
 end
 
 ---------------------
@@ -530,7 +534,8 @@ function DoTheSpawn(vehicle, spawnPoint)
 		},
 		spawnPoint.Heading,
 		function(callback_vehicle, networkId)
-			SetVehicleProperties(callback_vehicle, vehicleProps)
+			exports['VehicleDeformation']:SetVehicleDeformation(callback_vehicle, vehicleProps.deformation)
+			SetVehicleProperties(callback_vehicle, vehicleProps)			
 
 			if Config.TeleportToVehicleOnSpawn then
 				TaskWarpPedIntoVehicle(PlayerPedId(), callback_vehicle, -1)
@@ -697,3 +702,58 @@ end)
 -- RegisterCommand('aaaaa', function(source, args, raw)
 --     print(json.encode(vehicleInstances))
 -- end, false)
+
+
+local lightBones = {
+	headlight_l      = "headlight_l",
+	headlight_r      = "headlight_r",
+	taillight_l      = "taillight_l",
+	taillight_r      = "taillight_r",
+	indicator_lf     = "indicator_lf",
+	indicator_rf     = "indicator_rf",
+	indicator_lr     = "indicator_lr",
+	indicator_rr     = "indicator_rr",
+	brakelight_l     = "brakelight_l",
+	brakelight_r     = "brakelight_r",
+	reversinglight_l = "reversinglight_l",
+	reversinglight_r = "reversinglight_r",
+  }
+  
+  -- Returns a table of booleans keyed by the bone‑name keys above
+  function GetLightsHealth(vehicle)
+	local out = {}
+	for key, boneName in pairs(lightBones) do
+	  local boneIndex = GetEntityBoneIndexByName(vehicle, boneName)
+	  if boneIndex ~= -1 then
+		-- world pos of the lamp bone
+		local wx, wy, wz = GetWorldPositionOfEntityBone(vehicle, boneIndex)
+		-- convert it into local vehicle offsets
+		local ox, oy, oz = GetOffsetFromEntityGivenWorldCoords(vehicle, wx, wy, wz)
+		-- sample mesh deformation at that offset
+		local dx, dy, dz = GetVehicleDeformationAtPos(vehicle, ox, oy, oz)  -- :contentReference[oaicite:0]{index=0}
+		out[key] = (dx ~= 0 or dy ~= 0 or dz ~= 0)
+	  else
+		out[key] = false
+	  end
+	end
+	
+	return out
+  end
+  
+  -- Re‑break exactly those lights by inflicting a tiny damage sphere
+  function SetLightsHealth(vehicle, lightsState)
+	-- allow lenses to shatter
+	SetVehicleHasUnbreakableLights(vehicle, false)
+	for key, shouldBeBroken in pairs(lightsState) do
+	  if shouldBeBroken then
+		local boneName = lightBones[key]
+		local boneIndex = GetEntityBoneIndexByName(vehicle, boneName)
+		if boneIndex ~= -1 then
+		  local wx, wy, wz = GetWorldPositionOfEntityBone(vehicle, boneIndex)
+		  local ox, oy, oz = GetOffsetFromEntityGivenWorldCoords(vehicle, wx, wy, wz)
+		  -- a small radius (0.1) focuses damage on that lamp; strength 10 is plenty to shatter
+		  SetVehicleDamage(vehicle, ox, oy, oz, 0.1, 10.0, true)  -- :contentReference[oaicite:1]{index=1}
+		end
+	  end
+	end
+  end
