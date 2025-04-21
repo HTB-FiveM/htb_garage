@@ -301,3 +301,8 @@ RegisterCommand("dumpVehicleInstances", function(source, args, raw)
 		Citizen.Trace(json.encode(vehicleInstances))
 	end
 end, false)
+
+-- Lifetime is either 'temporary' for a one off key or 'permanent'
+RegisterNetEvent('htb_garage:giveKeys', function(playerServerId, carplate, lifetime)
+	FrameworkCtx:GiveVehicleKeys({ playerServerId = playerServerId, carplate = carplate, lifetime = lifetime})
+end)

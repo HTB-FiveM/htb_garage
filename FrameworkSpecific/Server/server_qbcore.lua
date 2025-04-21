@@ -26,5 +26,12 @@ QBCoreStrategy = {
         if player then
             player.Functions.RemoveMoney(account, amount)
         end
+    end),
+
+    GiveVehicleKeys = Strategy:new(function(args)
+        -- Is vehicles_keys script by jaksam installed then this should work, otherwise adjust to suit your own system
+        -- if GetResourceState('vehicles_keys') == 'started' then
+        --     exports['vehicles_keys']:giveVehicleKeysToPlayerId(args.playerServerId, args.carplate, args.lifetime)
+        -- end
     end)
 }

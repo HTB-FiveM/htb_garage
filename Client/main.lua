@@ -543,7 +543,7 @@ function DoTheSpawn(vehicle, spawnPoint)
 			
 			local playerId = PlayerId()
 			local playerServerId = GetPlayerServerId(playerId)
-			FrameworkCtx:GiveVehicleKeys(playerServerId, carplate)
+			FrameworkCtx:GiveVehicleKeys({ playerServerId = playerServerId, carplate = carplate, lifetime = 'permanent'})
 		end,
 		true
 	)

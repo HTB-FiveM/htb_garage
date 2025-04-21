@@ -34,5 +34,12 @@ EsxStrategy = {
     MakePayment = Strategy:new(function(source, account, amount)
         local xPlayer = ESX.GetPlayerFromId(source)
         xPlayer.removeAccountMoney(account, amount)
+    end),
+
+    GiveVehicleKeys = Strategy:new(function(args)
+        -- Is vehicles_keys script by jaksam installed then this should work, otherwise adjust to suit your own system
+        if GetResourceState('vehicles_keys') == 'started' then
+            exports['vehicles_keys']:giveVehicleKeysToPlayerId(args.playerServerId, args.carplate, args.lifetime)
+        end
     end)
 }                               

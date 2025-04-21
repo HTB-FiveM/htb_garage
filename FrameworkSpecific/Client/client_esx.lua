@@ -27,6 +27,11 @@ EsxStrategy = {
 
     GetPlayerData = Strategy:new(function()
         return ESX.GetPlayerData()
+    end),
+
+    GiveVehicleKeys = Strategy:new(function(args)
+        -- Is vehicles_keys script by jaksam installed then this should work, otherwise adjust to suit your own system
+        TriggerServerEvent('htb_garage:giveKeys', args.playerServerId, args.carplate, args.lifetime)
     end)
 }
 

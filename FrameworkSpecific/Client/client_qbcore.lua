@@ -25,5 +25,9 @@ QBCoreStrategy = {
                 { name = "money", money = playerData.money.cash }
             }
         }
+    end),
+
+    GiveVehicleKeys = Strategy:new(function(args)
+        TriggerEvent('vehiclekeys:client:SetOwner', args.carplate)
     end)
 }
