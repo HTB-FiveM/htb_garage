@@ -1,14 +1,27 @@
-export interface EnableData {
-  type: 'enable';
+import { Impound } from "./impoundTypes";
+
+export interface ToggleVisibilityData {
+  type: 'toggleVisibility';
   isVisible: boolean;
-  showFuel: boolean;
-  showEngine: boolean;
-  showBody: boolean;
+}
+
+export interface EnableGarageData {
+  type: 'enableGarage';
+  route: string;
+  isVisible: boolean;
 }
 
 export interface SetVehiclesData {
   type: 'setVehicles';
   vehicles: string; // Assuming this is a JSON string that needs parsing
+}
+
+export interface InitVehicleStatsData {
+  type: 'initVehicleStats';
+  vehicles: string; // Assuming this is a JSON string that needs parsing
+  showFuel: boolean;
+  showEngine: boolean;
+  showBody: boolean;  
 }
 
 export interface SetNearbyPlayersListData {
@@ -21,6 +34,49 @@ export interface TransferCompleteData {
   plate: string; // Assuming this is a JSON string that needs parsing
 }
 
+export interface EnableImpoundStoreData {
+  type: 'enableImpoundStore';
+  route: string;
+  isVisible: boolean;
+  vehiclePlate: string;
+}
+
+export interface ImpoundStoreVehicleData {
+  type: 'setImpoundStoreVehicle';
+  availableImpounds: Impound[];
+  timePeriods: number[];
+}
+
+export interface ImpoundRetrieveVehicleData {
+  type: 'setImpoundRetrieveVehicle';
+
+}
 
 // Union type for all message types
-export type NuiMessageData = EnableData | SetVehiclesData | SetNearbyPlayersListData | TransferCompleteData;
+export type NuiMessageData =
+ToggleVisibilityData |
+  EnableGarageData |
+  InitVehicleStatsData |
+  SetVehiclesData |
+  SetNearbyPlayersListData |
+  TransferCompleteData |
+
+  EnableImpoundStoreData |
+  ImpoundStoreVehicleData |
+  ImpoundRetrieveVehicleData;
+
+export type MessageHandlers = {
+  toggleVisibility:        (msg: ToggleVisibilityData)        => void;
+
+  enableGarage:            (msg: EnableGarageData)            => void;  
+  initVehicleStats:        (msg: InitVehicleStatsData)        => void;
+  setVehicles:             (msg: SetVehiclesData)             => void;
+  setNearbyPlayersList:    (msg: SetNearbyPlayersListData)    => void;
+  transferComplete:        (msg: TransferCompleteData)        => void;
+
+  enableImpoundStore:      (msg: EnableImpoundStoreData)      => void;
+  setImpoundStoreVehicle:  (msg: ImpoundStoreVehicleData)     => void;
+  setImpoundRetrieveVehicle:(msg: ImpoundRetrieveVehicleData) => void;
+
+}
+  

@@ -21,8 +21,6 @@ export interface Player {
 }
 
 export interface GarageStore {
-  isVisible: boolean;
-
   vehicles: Vehicle[];
 
   showFuel: boolean;

@@ -68,3 +68,30 @@ function NewBinaryTree(firstItem)
     return BinarySearchTree:new(firstItem)
   end
 
+function GetGameTimePlus(n)
+  -- fetch current in‑game time
+  local h = GetClockHours()
+  local m = GetClockMinutes()
+  local s = GetClockSeconds()
+
+  -- total seconds since midnight
+  local currentSec = h * 3600 + m * 60 + s
+  local addSec     = math.floor(n * 3600)
+  local totalSec   = currentSec + addSec
+
+  -- compute overflow days and wrap‑around seconds
+  local dayOverflow = math.floor(totalSec / (24 * 3600))
+  local wrapSec     = totalSec % (24 * 3600)
+
+  -- convert back to h:m:s
+  local newH = math.floor(wrapSec / 3600)
+  local newM = math.floor((wrapSec % 3600) / 60)
+  local newS = wrapSec % 60
+
+  return {
+      hours       = newH,
+      minutes     = newM,
+      seconds     = newS,
+      dayOverflow = dayOverflow,  -- how many days you rolled past
+  }
+end

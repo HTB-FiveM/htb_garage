@@ -49,6 +49,47 @@ SQL['esx'] = {
   [[
     UPDATE owned_vehicles
     SET pound_htb = @pound
+  ]],
+
+  SqlAddImpoundEntry =
+  [[
+    INSERT INTO impound_vehicle_htb(
+      vehiclePlate,
+      impoundId,
+      reasonForImpound,
+      releaseDateTime,
+      allowPersonalUnimpound) VALUES
+    (
+      @vehiclePlate,
+      @impoundId,
+      @reasonForImpound,
+      @releaseDateTime,
+      @allowPersonalUnimpound
+    )
+  ]],
+  
+  SqlGetImpoundedVehicleByPlate = 
+  [[
+    SELECT i.vehiclePlate, i.reasonForImpound, i.releaseDateTime, i.allowPersonalUnimpound, o.pound_htb isImpounded
+    FROM impound_vehicle_htb i INNER JOIN owned_vehicles o ON i.vehiclePlate = o.plate
+    WHERE vehiclePlate = @vehiclePlate AND o.pound_htb = 1
+  ]],
+  
+  SqlGetAllImpoundedVehicles = 
+  [[
+    SELECT i.vehiclePlate, i.reasonForImpound, i.releaseDateTime, i.allowPersonalUnimpound, o.pound_htb isImpounded
+    FROM impound_vehicle_htb i INNER JOIN owned_vehicles o ON i.vehiclePlate = o.plate
+    WHERE o.pound_htb = 1
+  ]],
+
+  SqlGetImpoundList = 
+  [[
+    SELECT name, displayName, locationX, locationY
+    FROM impound_htb
   ]]
 
+
 }
+
+
+

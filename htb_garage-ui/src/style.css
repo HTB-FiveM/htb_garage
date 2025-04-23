@@ -18,14 +18,16 @@ body {
 }
 
 #app {
+  display: flex;
+  flex-direction: column;
   position:absolute;
   top:50.5%;
   left:50.5%;
   -webkit-transform: translateX(-50%) translateY(calc(-50% - .1px));
   transform: translateX(-50%) translateY(calc(-50% - .1px));
   width: 30%;
-  max-width:30%;
-  max-height:80%;
+  max-width:80%;
+  max-height:80vh;
   overflow-y: hidden;
   padding: 8px;
   background-color: gray;

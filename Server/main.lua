@@ -7,6 +7,10 @@ local SqlSaveAndStoreVehicle = -1
 local SqlSetVehicleName = -1
 local SqlTransferOwnership = -1
 local SqlImpoundVehicle = -1
+local SqlAddImpoundEntry = -1
+local SqlGetImpoundedVehicleByPlate = -1
+local SqlGetAllImpoundedVehicles = -1
+local SqlGetImpoundList = 1
 
 local garageDebug = false
 
@@ -57,6 +61,34 @@ MySQL.ready(function()
 		SQL[Config.RolePlayFramework].SqlImpoundVehicle,
 		function(storeId)
 			SqlImpoundVehicle = storeId
+		end
+	)
+
+	MySQL.Async.store(
+		SQL[Config.RolePlayFramework].SqlAddImpoundEntry,
+		function(storeId)
+			SqlAddImpoundEntry = storeId
+		end
+	)
+
+	MySQL.Async.store(
+		SQL[Config.RolePlayFramework].SqlGetImpoundedVehicleByPlate,
+		function(storeId)
+			SqlGetImpoundedVehicleByPlate = storeId
+		end
+	)
+
+	MySQL.Async.store(
+		SQL[Config.RolePlayFramework].SqlGetAllImpoundedVehicles,
+		function(storeId)
+			SqlGetAllImpoundedVehicles = storeId
+		end
+	)
+
+	MySQL.Async.store(
+		SQL[Config.RolePlayFramework].SqlGetImpoundList,
+		function(storeId)
+			SqlGetImpoundList = storeId
 		end
 	)
 end)
@@ -273,8 +305,27 @@ AddEventHandler("htb_garage:TeleportAllInVehicleToDock", function(serverIds, pos
 end)
 
 RegisterNetEvent("htb_garage:ImpoundVehicle")
-AddEventHandler("htb_garage:ImpoundVehicle", function(plate, actionByJob)
+AddEventHandler("htb_garage:ImpoundVehicle", function(data)
+	-- vehiclePlate
+	-- selectedImpoundId
+	-- reasonForImpound
+	-- expiryHours
+	-- allowPersonalUnimpound
+
+	-- TODO: get the job of the current player
+	local actionByJob = 'police'
+
 	if Config.AllowedImpoundJobs[actionByJob] then
+		local expiryTime = GetGameTimePlus(data.expiryHours)
+
+		MySQL.Sync.execute(SqlAddImpoundEntry, {
+			["@vehiclePlate"] = data.vehiclePlate,
+			["@impoundId"] = data.selectedImpoundId,
+			["@reasonForImpound"] = data.reasonForImpound,
+			["@releaseDateTime"] = expiryTime,
+			["@allowPersonalUnimpound"] = data.allowPersonalUnimpound
+		})
+
 		MySQL.Sync.execute(SqlImpoundVehicle, {
 			["@pound"] = 1,
 		})
@@ -283,6 +334,19 @@ AddEventHandler("htb_garage:ImpoundVehicle", function(plate, actionByJob)
 		TriggerClientEvent("htb_garage:Impounded", source, "You are not authorised to impound vehicles")
 	end
 end)
+
+
+-- new stores
+-- SqlGetImpoundedVehicleByPlate
+-- SqlGetAllImpoundedVehicles
+
+RegisterNetEvent("htb_garage:ImpoundVehicle")
+AddEventHandler("htb_garage:GetImpoundList", function(data)
+	local results = MySQL.Sync.fetchAll(SqlGetImpoundList)
+	TriggerClientEvent("htb_garage:GetImpoundListResults", _source, results)
+end)
+
+
 
 RegisterNetEvent("htb_garage:ReleaseVehicle")
 AddEventHandler("htb_garage:ReleaseVehicle", function(plate)

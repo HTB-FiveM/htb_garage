@@ -1,5 +1,62 @@
 # A better vehicle garage system for FiveM RP by Harry The Bastard
 
+## Features
+ * Vehicle menu - basic garage menu, walk up to a zone and press E. Select vehicle from a simple list
+ * Impound
+    * Screen for police and mechanics to impound vehicles
+    * Screen for owners to retrieve their impounded vehicles
+ * 🚧 **Under Construction** - Personal property garages - enter you personal garage, walk up to your vehicles to drive away or inspect stats
+ * 🚧 **Under Construction** - Job and garages - Both Vehicle Menu and full garage modes
+
+ ### Vehicle menu
+ * Every parking garage has a set number of spawn locations. If the first position is occupied by a vehicle or ped then the next spawn location is checked, looping through until one is free or the player is notified that there a no positions available.
+ * Vehicle menu can filter the vehicle list as you type. The text compares the internal model name of the vehicle as well as plate, display and nickname.
+ * Set a nickname for the vehicle.
+ * If a vehicle is out in the world you can pay for a retrieve.
+ * If you prefer not to pay for a retrieve a GPS waypoint can be added to the minimap.
+ * If the vehicle is marked as impounded you won't be able to spawn it.
+ * Transfer ownership to another player.
+ * All players occupying seats of a boat will be spawned on the dock rather than dropped in the water where the boat was prior to despawn.
+ * Event handlers provided to allow vehicles instances to be tracked to avoid vehicle duplication. eg, esx_vehicle shop adds an owned_vehicles record but if you don't put the vehicle away first you can get the vehicle out and have a duplicate, at least with some garages. So you can Trigger these events passing the vehicle instance and plate to allow tracking. This could also be useful if using an external vehicle impound system where you want to mark a vehicle as disposed when impounded or to track it again once released from impound.
+
+# Changelog
+
+## [Unreleased] – 
+
+### Added
+- Support for dynamic route-aware dummy data loader.  
+- Click outside the user interface closes the UI.
+- Impound Vehicle User Interface to allow specified jobs the ability to impound vehicles.
+- Vehicle body deformation model is re-applied when retrieving vehicle. It's a little flaky, not sure if the issue is with the 3rd party resource.
+
+### Changed
+- Vehicle Menu now shrinks the list to fit the size of the car list.
+- Changed the way dummy data is loaded to simplify code.
+- Using vue router to name different pages within the application and allow easy changing between pages. This avoids the need to use v-if on every possible div that might be displayed when using a single page.
+- Handling messages from NUI engine in a more modular way allowing messages to typed and then call any function in the system to handle specific messages more cleanly.
+
+### Fixed
+- xxx
+
+### TODO:
+- Confirm that vehicle health stats are being saved and re-applied correctly
+
+---
+
+## [2.0.0] – 2025-04-21
+
+### Added
+- Full re-write of the front end UI using Node.JS based Vue.JS 3 Single Page Application.
+- Implement strategy pattern to make specific code strategy selection easier.
+
+### Fixed
+- Finalised the QBCore integration.
+
+## [1.0.0] - 2022-10-03
+### Added
+- Initial release:  
+  - Vehicle menu to replace old school garages like Eden Garage.
+
 **Motivation**
 
 We started our Role Play server with a basic garage system which worked nicely but had many issues. The ESX default menu used was limited and once you start acquiring many vehicles there was no sorting or filtering possible. We investigated other options including commercial resources which were mostly disappointing. One company in particular whose garage we purchased had some brilliant features and was visually exactly what I wanted to use, but past experiences with their support team on other of their products was disappointing and given I was having trouble integrating their garage and their system was obfuscated the thought of having to deal with them for support was frustrating enough to decide that writing my own system from the ground up was the only option. I have included features that I've seen in other garages and also implemented some of my own unique ideas. The only code that isn't original is the garage configuration which I lifted from jb eden garage as the configuration was pretty solid and locations were all there and ready to go.
@@ -10,19 +67,7 @@ I've also integrated some code from ESX for spawning and despawning vehicles and
 
 **Goals**
 
-I've been developing for FiveM for almost 12 months now. I had never worked with LUA so there was alot of leaning on existing examples to try to learn the syntax and general coding practices for the base language but there's also how to cater for the architecture that FiveM mandates. Using ESX 1.2 Final provided us with a fairly solid starting point but that framework has such a fundamentally flawed architecture that we spent alot of time re-writing many of the supporting addon resources to get a stable system. My key goal with this first public resource is to build something that can be re-used by anyone and integrate with any framework, be clearly written and easy to adapt over time. I am trying to use clean code to demonstrate how people could approach coding to produce better quality work. I would like to think that what I do here triggers clearer thinking, particularly for new developers for whom FiveM is their first coding experience. I have included some original ideas and re-used standard patterns, for example I've included a clean way for people to configure the identifier they wish to use, eg steam, identifier, discord, etc as well as a neat way to configure the framework in use and be able to cleanly switch between them. For sorting a list rather than looping and coming up with the slowest possible pattern in LUA I've used a Binary Tree to add potentially random data into a list sorting efficiently at the time of insert and being able to traverse it efficiently for display. I hope my work can help show a different way of thinking about coding for FiveM.
-
- **Features**
- 
- * Every parking garage has a set number of spawn locations. If the first position is occupied by a vehicle or ped then the next spawn location is checked, looping through until one is free or the player is notified that there a no positions available.
- * Vehicle menu can filter the vehicle list as you type. The text compares the internal model name of the vehicle as well as plate, display and nickname.
- * Set a nickname for the vehicle.
- * If a vehicle is out in the world you can pay for a retrieve.
- * If you prefer not to pay for a retrieve a GPS waypoint can be added to the minimap.
- * If the vehicle is marked as impounded you won't be able to spawn it.
- * Transfer ownership to another player.
- * All players occupying seats of a boat will be spawned on the dock rather than dropped in the water where the boat was prior to despawn.
- * Event handlers provided to allow vehicles instances to be tracked to avoid vehicle duplication. eg, esx_vehicle shop adds an owned_vehicles record but if you don't put the vehicle away first you can get the vehicle out and have a duplicate, at least with some garages. So you can Trigger these events passing the vehicle instance and plate to allow tracking. This could also be useful if using an external vehicle impound system where you want to mark a vehicle as disposed when impounded or to track it again once released from impound.
+I'd been developing for FiveM for almost 12 months now. I had never worked with LUA so there was alot of leaning on existing examples to try to learn the syntax and general coding practices for the base language but there's also how to cater for the architecture that FiveM mandates. Using ESX 1.2 Final provided us with a fairly solid starting point but that framework has such a fundamentally flawed architecture that we spent alot of time re-writing many of the supporting addon resources to get a stable system. My key goal with this first public resource is to build something that can be re-used by anyone and integrate with any framework, be clearly written and easy to adapt over time. I am trying to use clean code to demonstrate how people could approach coding to produce better quality work. I would like to think that what I do here triggers clearer thinking, particularly for new developers for whom FiveM is their first coding experience. I have included some original ideas and re-used standard patterns, for example I've included a clean way for people to configure the identifier they wish to use, eg steam, identifier, discord, etc as well as a neat way to configure the framework in use and be able to cleanly switch between them. For sorting a list rather than looping and coming up with the slowest possible pattern in LUA I've used a Binary Tree to add potentially random data into a list sorting efficiently at the time of insert and being able to traverse it efficiently for display. I hope my work can help show a different way of thinking about coding for FiveM.
 
 **Future Direction**
 

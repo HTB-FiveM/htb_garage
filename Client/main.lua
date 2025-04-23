@@ -9,20 +9,23 @@ local vehicleInstances = {}
 FrameworkCtx:RunStartupStuff()
 
 -------------------------------------------------------------------------------------------
-function ToggleGUI(explicit_status)
+function ToggleGUI(explicit_status, type, route)
+
 	if explicit_status ~= nil then
 		isVisible = explicit_status
 	else
 		isVisible = not isVisible
 	end
 	SetNuiFocus(isVisible, isVisible)
-	SendNUIMessage({
-		type = "enable",
-		isVisible = isVisible,
-		showFuel = Config.DisplayFuel,
-		showEngine = Config.DisplayEngine,
-		showBody = Config.DisplayBody,
-	})
+
+	local messageData = {
+		type = type or "toggleVisibility",
+		route = route,
+		isVisible = isVisible
+	}
+	print(json.encode(messageData))
+	SendNUIMessage(messageData)
+
 end
 
 function HandleVehicleSpecifics(vehicleEntity, vehicleType, deleteZone)
@@ -319,7 +322,9 @@ end
 
 ---------------------
 RegisterNUICallback("close", function(data, cb)
+	print('Snoogans')
 	ToggleGUI(false)
+
 	cb("ok")
 end)
 
@@ -422,9 +427,62 @@ RegisterNUICallback("fetchNearbyPlayers", function(data, cb)
 	cb("ok")
 end)
 
+
+
+--------------------------
+-- Impound related stuff
+--------------------------
+RegisterNetEvent("htb_garage:GetImpoundListResults")
+AddEventHandler("htb_garage:GetImpoundListResults", function(impounds)
+	local data = {}
+
+	for a, veh in pairs(vehicles) do
+		table.insert(data, {
+			name = data.name,
+			displayName = data.displayName,
+			locationX = data.locationX,
+			locationY = data.locationY
+		})
+	end
+
+	SendNUIMessage({
+		type = "setImpoundStoreVehicle",
+		vehicles = json.encode(data),
+	})
+
+	ToggleGUI(true)
+
+end)
+
+
+RegisterNUICallback("impoundStore", function(data, db)
+	-- These are passed through on the data object
+	-- vehiclePlate
+	-- selectedImpoundName
+	-- reasonForImpound
+	-- releaseDateTime
+	-- allowPersonalUnimpound
+	TriggerServerEvent("htb_garage:ImpoundVehicle", data)
+
+	cb("ok")
+end)
+
+RegisterNetEvent("htb_garage:DeleteVehicleAfterImpound")
+AddEventHandler("htb_garage:DeleteVehicleAfterImpound", function(vehiclePlate)
+
+end)
+
+
 RegisterNetEvent("htb_garage:GetPlayerVehiclesResults")
 AddEventHandler("htb_garage:GetPlayerVehiclesResults", function(vehicles, garageName)
 	local data = {}
+
+	SendNUIMessage({
+		type = "initVehicleStats",
+		showFuel = Config.DisplayFuel,
+		showEngine = Config.DisplayEngine,
+		showBody = Config.DisplayBody,
+	})
 
 	for a, veh in pairs(vehicles) do
 		table.insert(data, {
@@ -454,7 +512,7 @@ AddEventHandler("htb_garage:GetPlayerVehiclesResults", function(vehicles, garage
 		vehicles = json.encode(data),
 	})
 
-	ToggleGUI(true)
+	ToggleGUI(true, "enableGarage", "/vehicleMenu")
 end)
 
 function DetermineSpawnPosition(vehicleType, spawnPoint, heading, numSpawns)
