@@ -1,4 +1,4 @@
-import { EnableGarageData, EnableImpoundStoreData, SetupImpoundStoreVehicleData, InitVehicleStatsData, MessageHandlers, SetVehiclesData } from "@/types/nuiMessageTypes";
+import { EnableGarageData, EnableImpoundData, SetupImpoundStoreVehicleData, InitVehicleStatsData, MessageHandlers, SetVehiclesData, SetupImpoundRetrieveVehicleData } from "@/types/nuiMessageTypes";
 import { Impound } from "./types/impoundTypes";
 
 export default function initialiseDummyData(handlers: MessageHandlers, route: string) {
@@ -53,10 +53,10 @@ export default function initialiseDummyData(handlers: MessageHandlers, route: st
     }
 
     if(route === '/impound') {
-        handlers['enableImpoundStore']({
-            type: "enableImpoundStore",        
+        handlers['enableImpound']({
+            type: "enableImpound",
             isVisible: true,
-        } as EnableImpoundStoreData);
+        } as EnableImpoundData);
 
         handlers['setupImpoundStoreVehicle']({
             type: "setupImpoundStoreVehicle",
@@ -79,6 +79,40 @@ export default function initialiseDummyData(handlers: MessageHandlers, route: st
             }] as Impound[],
             timePeriods: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
         } as SetupImpoundStoreVehicleData);
+    }
+
+    if(route === '/retrieve') {
+        handlers['enableImpound']({
+            type: 'enableImpound',
+            isVisible: true,
+        } as EnableImpoundData);
+
+        handlers['setupImpoundRetrieveVehicle']({
+            type: 'setupImpoundRetrieveVehicle',
+            vehicles: [
+            {
+                type: "adder",
+                plate: "abc123",
+                displayName: "Bob",
+                modelName: "adssadads",
+                spawnName: "34534543",
+                import: false,
+                price: 1000,
+                timeLeft: 3
+            },
+            {
+                type: "zentorno",
+                plate: "def567",
+                displayName: "Snoogans",
+                modelName: "dsfgsdfg",
+                spawnName: "657457",
+                import: true,
+                price: 700,
+                timeLeft: 3
+            }
+            ]
+            
+        } as SetupImpoundRetrieveVehicleData);
     }
 
 };

@@ -24,9 +24,9 @@ const handlers: MessageHandlers = {
   setNearbyPlayersList: (msg) => garageStore.setNearbyPlayersList(msg),
   transferComplete: (msg) => garageStore.transferComplete(msg),
 
-  enableImpoundStore: (msg) => impoundStore.initStore(msg),
+  enableImpound: (msg) => impoundStore.initStore(msg),
   setupImpoundStoreVehicle: (msg) => impoundStore.setupImpoundStoreVehicle(msg),
-  setImpoundRetrieveVehicle: (msg) => impoundStore.setImpoundRetrieveVehicle(msg)
+  setupImpoundRetrieveVehicle: (msg) => impoundStore.setImpoundRetrieveVehicle(msg)
 
 };
 

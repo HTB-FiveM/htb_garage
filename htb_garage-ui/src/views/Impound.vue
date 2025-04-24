@@ -22,7 +22,7 @@ const impoundVehicle = () => {
 </script>
 
 <template>
-    <div class="menu-header">
+    <div v-if="store.mode === 'store'" class="menu-header">
         <div><strong>Impound a vehicle - {{ store.storeVehicle?.vehiclePlate }}</strong></div>
     </div>
 
@@ -34,6 +34,9 @@ const impoundVehicle = () => {
     </div>
 
     <div class="action-bar">
+        <div v-if="store.mode === 'retrieve'" class="summary">
+            <Label>Total vehicles: {{ store.retrieveVehicle?.vehicles.length }}</Label>
+        </div>
         <div class="buttons">
             <Button v-if="store.mode === 'store'" variant="primary" @click="impoundVehicle">Send to impound</Button>
             <Button variant="outline" @click="onCloseClick">Cancel</Button>
@@ -84,6 +87,11 @@ const impoundVehicle = () => {
 <style>
 .summarise {
     color: rgb(84, 84, 84);
+}
+
+.summary {
+    margin-left: .5rem;
+    color: #111;
 }
 
 .action-bar {

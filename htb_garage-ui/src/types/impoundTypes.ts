@@ -13,7 +13,7 @@ export interface ImpoundStoreVehicle {
 };
 
 export interface ImpoundRetrieveVehicle {
-    vehiclePlate: string | null;
+    vehicles: ImpoundVehicle[]
 };
 
 export type ImpoundMode = 'store' | 'retrieve';
@@ -26,3 +26,14 @@ export interface ImpoundStore {
     retrieveVehicle: ImpoundRetrieveVehicle | null;
 
 };
+
+export interface ImpoundVehicle {
+    type: string,
+    plate: string,
+    displayName: string,
+    modelName: string,
+    spawnName: string,
+    import: boolean,
+    price: number,
+    timeLeft: number
+}

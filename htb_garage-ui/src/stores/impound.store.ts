@@ -1,6 +1,6 @@
-import { ImpoundStore, ImpoundStoreVehicle } from "@/types/impoundTypes";
+import { ImpoundStore, ImpoundStoreVehicle, ImpoundVehicle } from "@/types/impoundTypes";
 import { defineStore } from "pinia";
-import { EnableImpoundStoreData, ImpoundRetrieveVehicleData, SetupImpoundStoreVehicleData } from "@/types/nuiMessageTypes";
+import { EnableImpoundData, SetupImpoundRetrieveVehicleData, SetupImpoundStoreVehicleData } from "@/types/nuiMessageTypes";
 import { useAppStore } from "./app.store";
 
 export const useImpoundStore = defineStore('impound', {
@@ -13,9 +13,27 @@ export const useImpoundStore = defineStore('impound', {
       retrieveVehicle: null,
 
     } as ImpoundStore),
+    getters: {
+      filteredVehicles(state): (searchTerm: string) => ImpoundVehicle[] | undefined {
+        return (searchTerm: string) =>  {
+            if(searchTerm === '') {
+                return state.retrieveVehicle?.vehicles;
+            }
+
+            return state.retrieveVehicle?.vehicles.filter(veh => {
+                const searchLower = searchTerm.toLowerCase();
+                    return veh.plate.toLowerCase().indexOf(searchLower) > -1
+                        || veh.spawnName !== undefined && veh.spawnName.toLowerCase().indexOf(searchLower) > -1
+                        || veh.modelName !== undefined && veh.modelName.toLowerCase().indexOf(searchLower) > -1
+                        || veh.displayName !== undefined && veh.displayName.toLowerCase().indexOf(searchLower) > -1
+            });
+
+        };
+      },
+    },
     actions: {
       // Handle messages from game client
-      initStore(messageData: EnableImpoundStoreData) {
+      initStore(messageData: EnableImpoundData) {
         const oldPlate = this.storeVehicle?.vehiclePlate ?? null;
         this.storeVehicle = {
           ...newStoreVehicle(),
@@ -36,10 +54,10 @@ export const useImpoundStore = defineStore('impound', {
         this.timePeriods = [ ...messageData.timePeriods ];
 
       },
-      setImpoundRetrieveVehicle(messageData: ImpoundRetrieveVehicleData) {
+      setImpoundRetrieveVehicle(messageData: SetupImpoundRetrieveVehicleData) {
         this.mode = 'retrieve';
         this.retrieveVehicle = {
-          vehiclePlate: messageData.type
+          vehicles: [ ...messageData.vehicles ]
         };
 
       },
@@ -54,7 +72,34 @@ export const useImpoundStore = defineStore('impound', {
         };
 
         await fetch("https://htb_garage/impoundStore", requestOptions);
-      }
+      },
+
+      async takeOut(vehicle: ImpoundVehicle, payForRetrieve: boolean) {
+        const requestOptions = {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ...vehicle,
+                payForRetrieve
+            })
+            
+        };
+        await fetch("https://htb_garage/takeOut", requestOptions);
+  
+      },
+
+      async returnToOwner(vehicle: ImpoundVehicle) {
+        const requestOptions = {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ...vehicle
+            })
+            
+        };
+        await fetch("https://htb_garage/returnToOwner", requestOptions);
+  
+      },
     }
 });
 

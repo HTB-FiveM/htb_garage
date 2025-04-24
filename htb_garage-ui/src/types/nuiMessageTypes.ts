@@ -1,4 +1,4 @@
-import { Impound } from "./impoundTypes";
+import { Impound, ImpoundVehicle } from "./impoundTypes";
 
 export interface ToggleVisibilityData {
   type: 'toggleVisibility';
@@ -34,8 +34,8 @@ export interface TransferCompleteData {
   plate: string; // Assuming this is a JSON string that needs parsing
 }
 
-export interface EnableImpoundStoreData {
-  type: 'enableImpoundStore';
+export interface EnableImpoundData {
+  type: 'enableImpound';
   route: string;
   isVisible: boolean;
 }
@@ -47,9 +47,9 @@ export interface SetupImpoundStoreVehicleData {
   timePeriods: number[];
 }
 
-export interface ImpoundRetrieveVehicleData {
-  type: 'setImpoundRetrieveVehicle';
-
+export interface SetupImpoundRetrieveVehicleData {
+  type: 'setupImpoundRetrieveVehicle';
+  vehicles: ImpoundVehicle[]
 }
 
 // Union type for all message types
@@ -61,22 +61,22 @@ ToggleVisibilityData |
   SetNearbyPlayersListData |
   TransferCompleteData |
 
-  EnableImpoundStoreData |
+  EnableImpoundData |
   SetupImpoundStoreVehicleData |
-  ImpoundRetrieveVehicleData;
+  SetupImpoundRetrieveVehicleData;
 
 export type MessageHandlers = {
-  toggleVisibility:        (msg: ToggleVisibilityData)        => void;
+  toggleVisibility:          (msg: ToggleVisibilityData)            => void;
 
-  enableGarage:            (msg: EnableGarageData)            => void;  
-  initVehicleStats:        (msg: InitVehicleStatsData)        => void;
-  setVehicles:             (msg: SetVehiclesData)             => void;
-  setNearbyPlayersList:    (msg: SetNearbyPlayersListData)    => void;
-  transferComplete:        (msg: TransferCompleteData)        => void;
+  enableGarage:              (msg: EnableGarageData)                => void;  
+  initVehicleStats:          (msg: InitVehicleStatsData)            => void;
+  setVehicles:               (msg: SetVehiclesData)                 => void;
+  setNearbyPlayersList:      (msg: SetNearbyPlayersListData)        => void;
+  transferComplete:          (msg: TransferCompleteData)            => void;
 
-  enableImpoundStore:      (msg: EnableImpoundStoreData)      => void;
-  setupImpoundStoreVehicle:  (msg: SetupImpoundStoreVehicleData)     => void;
-  setImpoundRetrieveVehicle:(msg: ImpoundRetrieveVehicleData) => void;
+  enableImpound:             (msg: EnableImpoundData)               => void;
+  setupImpoundStoreVehicle:  (msg: SetupImpoundStoreVehicleData)    => void;
+  setupImpoundRetrieveVehicle: (msg: SetupImpoundRetrieveVehicleData) => void;
 
 }
   
