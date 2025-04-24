@@ -1,6 +1,6 @@
 import { ImpoundStore, ImpoundStoreVehicle } from "@/types/impoundTypes";
 import { defineStore } from "pinia";
-import { EnableImpoundStoreData, ImpoundRetrieveVehicleData, ImpoundStoreVehicleData } from "@/types/nuiMessageTypes";
+import { EnableImpoundStoreData, ImpoundRetrieveVehicleData, SetupImpoundStoreVehicleData } from "@/types/nuiMessageTypes";
 import { useAppStore } from "./app.store";
 
 export const useImpoundStore = defineStore('impound', {
@@ -16,21 +16,25 @@ export const useImpoundStore = defineStore('impound', {
     actions: {
       // Handle messages from game client
       initStore(messageData: EnableImpoundStoreData) {
+        const oldPlate = this.storeVehicle?.vehiclePlate ?? null;
         this.storeVehicle = {
-          vehiclePlate: messageData.vehiclePlate,
-          selectedImpoundName: null,
-          reasonForImpound: null,
-          expiryHours: null,
-          allowPersonalUnimpound: false
-        };
+          ...newStoreVehicle(),
+          vehiclePlate: oldPlate
+        }
 
         const appStore = useAppStore();
         appStore.isVisible = messageData.isVisible;
       },
-      setImpoundStoreVehicle(messageData: ImpoundStoreVehicleData) {
+      setupImpoundStoreVehicle(messageData: SetupImpoundStoreVehicleData) {
         this.mode = 'store';
+        this.storeVehicle = {
+          ...this.storeVehicle ?? newStoreVehicle(),
+          vehiclePlate: messageData.vehiclePlate
+        }
+
         this.availableImpounds = [ ...messageData.availableImpounds ];
         this.timePeriods = [ ...messageData.timePeriods ];
+
       },
       setImpoundRetrieveVehicle(messageData: ImpoundRetrieveVehicleData) {
         this.mode = 'retrieve';
@@ -48,9 +52,19 @@ export const useImpoundStore = defineStore('impound', {
             body: JSON.stringify(impoundStoreDetails)
             
         };
-        console.log('Action: ', impoundStoreDetails);
-        console.log(JSON.stringify(impoundStoreDetails));
+
         await fetch("https://htb_garage/impoundStore", requestOptions);
       }
     }
 });
+
+
+function newStoreVehicle(): ImpoundStoreVehicle {
+  return {
+    vehiclePlate: null,
+    impoundId: null,
+    reasonForImpound: null,
+    expiryHours: null,
+    allowPersonalUnimpound: false
+  };
+}

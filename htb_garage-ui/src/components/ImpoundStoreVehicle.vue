@@ -9,12 +9,12 @@ import { computed } from 'vue';
 
 const store = useImpoundStore();
 
-const availableImpounds = computed<Option<string>[]>(() => {
+const availableImpounds = computed<Option<number>[]>(() => {
     if(!store.availableImpounds) return [];
     return store.availableImpounds.map(x => ({
         label: x?.displayName,
-        value: x?.name
-    } as Option<string>));
+        value: x?.id
+    } as Option<number>));
 });
 
 const timePeriods = computed<Option<number>[]>(() => {
@@ -34,7 +34,7 @@ const timePeriods = computed<Option<number>[]>(() => {
             id="selectImpound"
             name="selectImpound"
             :options="availableImpounds"
-            v-model="store.storeVehicle!.selectedImpoundName"
+            v-model="store.storeVehicle!.impoundId"
         />
         <Label class="summarise">The vehicle will be transported to this impound</Label>
     </div>

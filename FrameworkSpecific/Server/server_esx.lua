@@ -41,5 +41,15 @@ EsxStrategy = {
         if GetResourceState('vehicles_keys') == 'started' then
             exports['vehicles_keys']:giveVehicleKeysToPlayerId(args.playerServerId, args.carplate, args.lifetime)
         end
+    end),
+
+    GetPlayerJob = Strategy:new(function(source)
+        local xPlayer = ESX.GetPlayerFromId(source)
+        if not xPlayer then return end
+
+        return {
+            jobName = xPlayer.job.name,
+            jobGrade = xPlayer.job.grade_name
+        }        
     end)
 }                               

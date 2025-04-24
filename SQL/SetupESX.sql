@@ -30,8 +30,9 @@ CREATE TABLE impound_htb (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   name VARCHAR(30),
   displayName VARCHAR(100),
-  locationX DECIMAL(9, 6) NOT NULL,
-  locationY DECIMAL(9, 6) NOT NULL,
+  locationX DECIMAL(12, 6) NOT NULL,
+  locationY DECIMAL(12, 6) NOT NULL,
+  locationZ DECIMAL(12, 6) NOT NULL,
 
   PRIMARY KEY (id)
 );
@@ -52,6 +53,6 @@ CREATE TABLE impound_vehicle_htb (
   FOREIGN KEY (vehiclePlate) REFERENCES owned_vehicles(plate)
 );
 
-INSERT INTO impound_htb(name, displayName, locationX, locationY) VALUES
-('Snoog', 'Snoogans', 10.123, 50.321);
+INSERT INTO impound_htb(NAME, displayName, locationX, locationY, locationZ) VALUES
+('hayesautos', 'Haye''s Autos', 490.021973, -1315.938477, 29.246094);
 

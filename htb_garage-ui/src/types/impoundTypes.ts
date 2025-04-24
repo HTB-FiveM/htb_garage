@@ -1,12 +1,12 @@
 export interface Impound {
-    name: string;
+    id: number;
     displayName: string;
 
 };
 
 export interface ImpoundStoreVehicle {
     vehiclePlate: string | null;
-    selectedImpoundName: string | null;
+    impoundId: number | null;
     reasonForImpound: string | null;
     expiryHours: number | null;
     allowPersonalUnimpound: boolean;

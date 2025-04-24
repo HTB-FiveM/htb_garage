@@ -33,5 +33,15 @@ QBCoreStrategy = {
         -- if GetResourceState('vehicles_keys') == 'started' then
         --     exports['vehicles_keys']:giveVehicleKeysToPlayerId(args.playerServerId, args.carplate, args.lifetime)
         -- end
+    end),
+
+    GetPlayerJob = Strategy:new(function(source)
+        local Player = QBCore.Functions.GetPlayer(source)
+        if not Player then return end
+       
+        return {
+            jobName = job.name,
+            jobGrade = job.grade.level
+        }        
     end)
 }

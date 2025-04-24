@@ -38,11 +38,11 @@ export interface EnableImpoundStoreData {
   type: 'enableImpoundStore';
   route: string;
   isVisible: boolean;
-  vehiclePlate: string;
 }
 
-export interface ImpoundStoreVehicleData {
-  type: 'setImpoundStoreVehicle';
+export interface SetupImpoundStoreVehicleData {
+  type: 'setupImpoundStoreVehicle';
+  vehiclePlate: 'abc123',
   availableImpounds: Impound[];
   timePeriods: number[];
 }
@@ -62,7 +62,7 @@ ToggleVisibilityData |
   TransferCompleteData |
 
   EnableImpoundStoreData |
-  ImpoundStoreVehicleData |
+  SetupImpoundStoreVehicleData |
   ImpoundRetrieveVehicleData;
 
 export type MessageHandlers = {
@@ -75,7 +75,7 @@ export type MessageHandlers = {
   transferComplete:        (msg: TransferCompleteData)        => void;
 
   enableImpoundStore:      (msg: EnableImpoundStoreData)      => void;
-  setImpoundStoreVehicle:  (msg: ImpoundStoreVehicleData)     => void;
+  setupImpoundStoreVehicle:  (msg: SetupImpoundStoreVehicleData)     => void;
   setImpoundRetrieveVehicle:(msg: ImpoundRetrieveVehicleData) => void;
 
 }

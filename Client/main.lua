@@ -23,7 +23,7 @@ function ToggleGUI(explicit_status, type, route)
 		route = route,
 		isVisible = isVisible
 	}
-	print(json.encode(messageData))
+	-- print(json.encode(messageData))
 	SendNUIMessage(messageData)
 
 end
@@ -322,7 +322,6 @@ end
 
 ---------------------
 RegisterNUICallback("close", function(data, cb)
-	print('Snoogans')
 	ToggleGUI(false)
 
 	cb("ok")
@@ -432,40 +431,8 @@ end)
 --------------------------
 -- Impound related stuff
 --------------------------
-RegisterNetEvent("htb_garage:GetImpoundListResults")
-AddEventHandler("htb_garage:GetImpoundListResults", function(impounds)
-	local data = {}
-
-	for a, veh in pairs(vehicles) do
-		table.insert(data, {
-			name = data.name,
-			displayName = data.displayName,
-			locationX = data.locationX,
-			locationY = data.locationY
-		})
-	end
-
-	SendNUIMessage({
-		type = "setImpoundStoreVehicle",
-		vehicles = json.encode(data),
-	})
-
-	ToggleGUI(true)
-
-end)
 
 
-RegisterNUICallback("impoundStore", function(data, db)
-	-- These are passed through on the data object
-	-- vehiclePlate
-	-- selectedImpoundName
-	-- reasonForImpound
-	-- releaseDateTime
-	-- allowPersonalUnimpound
-	TriggerServerEvent("htb_garage:ImpoundVehicle", data)
-
-	cb("ok")
-end)
 
 RegisterNetEvent("htb_garage:DeleteVehicleAfterImpound")
 AddEventHandler("htb_garage:DeleteVehicleAfterImpound", function(vehiclePlate)
@@ -728,19 +695,6 @@ if Config.Debug then
 	end)
 end
 
-RegisterNetEvent("htb_garage:Impounded")
-AddEventHandler("htb_garage:Impounded", function(message)
-	FrameworkCtx:ShowNotification(message)
-end)
-
-RegisterNetEvent("htb_garage:Released")
-AddEventHandler("htb_garage:Released", function(message, carplate)
-	FrameworkCtx:ShowNotification(message)
-
-	-- Charge the player
-
-	-- Spawn the vehicle
-end)
 
 -- RegisterNetEvent('htb_garage:FinialiseSpawnVehicle')
 -- AddEventHandler('htb_garage:FinialiseSpawnVehicle', function(vehicle, id, model, vector)

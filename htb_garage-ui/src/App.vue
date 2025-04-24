@@ -25,7 +25,7 @@ const handlers: MessageHandlers = {
   transferComplete: (msg) => garageStore.transferComplete(msg),
 
   enableImpoundStore: (msg) => impoundStore.initStore(msg),
-  setImpoundStoreVehicle: (msg) => impoundStore.setImpoundStoreVehicle(msg),
+  setupImpoundStoreVehicle: (msg) => impoundStore.setupImpoundStoreVehicle(msg),
   setImpoundRetrieveVehicle: (msg) => impoundStore.setImpoundRetrieveVehicle(msg)
 
 };
@@ -35,17 +35,14 @@ function onNuiMessage(e: MessageEvent) {
 
   // Navigate to the page's route
   if ('route' in msg && msg.route) {
-    console.log(msg.route);
     router.push(msg.route)
   }
   if ('isVisible' in msg) {
-    console.log('New: ', msg.isVisible);
     appStore.isVisible = msg.isVisible;
   }
 
   // Invoke the incoming message event's target function
   if(msg.type) {
-    console.log('Handling NuiMessageData');
     const fn = handlers[msg.type];
     if(fn) {
       fn(msg as any);
@@ -56,17 +53,14 @@ function onNuiMessage(e: MessageEvent) {
 
 onMounted(async () => {
   await router.isReady();
-  console.log(route.path);
+
   window.addEventListener('keydown', onEscKey);
   window.addEventListener('message', onNuiMessage);
   document.addEventListener('mousedown', onClickOutside)
-  console.log('Main isVisible: ', appStore.isVisible);
 
   // Determine if the display loads dummy data for development purposes
   const isNui = window.location.host.startsWith('cfx-nui-');
-  console.log('isNui', isNui);
   if(!isNui) {
-    console.log(route.path);
     initialiseDummyData(handlers, route.path);
   }
 })
@@ -80,7 +74,6 @@ onUnmounted(() => {
 
 const unwatch = watch(() => appStore.isVisible,
     (newValue) => {
-      console.log('newValue:', newValue);
       document.body.style.display = newValue ? "block" : "none";
     },
     {

@@ -49,6 +49,10 @@ function FrameworkContext:GiveVehicleKeys(args)
   return self.strategies[GetFunctionName(2)].execute(args)
 end
 
+function FrameworkContext:GetPlayerJob(source)
+  return self.strategies[GetFunctionName(2)].execute(source)
+end
+
 --------------------------------------
 -- Wire up the framework functions
 --------------------------------------

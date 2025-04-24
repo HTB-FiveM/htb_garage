@@ -1,9 +1,8 @@
-import { EnableGarageData, EnableImpoundStoreData, ImpoundStoreVehicleData, InitVehicleStatsData, MessageHandlers, SetVehiclesData } from "@/types/nuiMessageTypes";
+import { EnableGarageData, EnableImpoundStoreData, SetupImpoundStoreVehicleData, InitVehicleStatsData, MessageHandlers, SetVehiclesData } from "@/types/nuiMessageTypes";
 import { Impound } from "./types/impoundTypes";
 
 export default function initialiseDummyData(handlers: MessageHandlers, route: string) {
     if(route === '/vehicleMenu') {
-        console.log("Initialising Vehicle Menu Dummy Data");
         handlers['enableGarage']({
             type: 'enableGarage',
             isVisible: true,
@@ -54,33 +53,32 @@ export default function initialiseDummyData(handlers: MessageHandlers, route: st
     }
 
     if(route === '/impound') {
-        console.log("Initialising Impound Dummy Data");
         handlers['enableImpoundStore']({
             type: "enableImpoundStore",        
             isVisible: true,
-            vehiclePlate: 'abc123',
         } as EnableImpoundStoreData);
 
-        handlers['setImpoundStoreVehicle']({
-            type: "setImpoundStoreVehicle",
+        handlers['setupImpoundStoreVehicle']({
+            type: "setupImpoundStoreVehicle",
+            vehiclePlate: 'abc123',
             availableImpounds: [{
-                name: 'UNION_DEPOSITORY',
+                id: 1,
                 displayName: 'Union Depository',
             },
             {
-                name: 'GARAGE_1',
+                id: 2,
                 displayName: 'First Garage',
             },
             {
-                name: 'GARAGE_2',
+                id: 3,
                 displayName: 'Second Garage',
             },
             {
-                name: 'GARAGE_3',
+                id: 4,
                 displayName: 'Third Garage',
             }] as Impound[],
             timePeriods: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
-        } as ImpoundStoreVehicleData);
+        } as SetupImpoundStoreVehicleData);
     }
 
 };

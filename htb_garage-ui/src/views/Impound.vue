@@ -35,7 +35,7 @@ const impoundVehicle = () => {
 
     <div class="action-bar">
         <div class="buttons">
-            <Button variant="primary" @click="impoundVehicle">Send to impound</Button>
+            <Button v-if="store.mode === 'store'" variant="primary" @click="impoundVehicle">Send to impound</Button>
             <Button variant="outline" @click="onCloseClick">Cancel</Button>
         </div>
     </div>
