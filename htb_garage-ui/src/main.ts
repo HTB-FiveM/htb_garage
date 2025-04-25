@@ -1,16 +1,19 @@
+// import './assets/main.css';
+import '@/style.css';
+
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import './style.css';
+
 import App from './App.vue';
 import router from './router';
-import vSelect from 'vue-select';
-import "vue-select/dist/vue-select.css";
+import { resourcePlugin } from './plugins/resourceName.plugin';
+
+const app = createApp(App);
 
 const pinia = createPinia();
+pinia.use(resourcePlugin);
 
-createApp(App)
-  .use(pinia)
-  .use(router)
-  .component("v-select", vSelect)
-  .mount('#app');
+app.use(pinia);
+app.use(router);
 
+app.mount('#app');

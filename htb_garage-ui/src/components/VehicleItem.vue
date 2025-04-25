@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import { inject, ref } from "vue";
-import { Vehicle, Player } from "../types/garageTypes";
-import VehicleAttribute from "./VehicleAttribute.vue";
+import { inject, ref } from 'vue';
+import type { Vehicle, Player } from '../types/garageTypes';
+import VehicleAttribute from './VehicleAttribute.vue';
 
-import { useGarageStore } from "../stores/garage.store";
+import { useGarageStore } from '../stores/garage.store';
 
 const store = useGarageStore();
 
 const closeApp = inject<() => void>('closeApp')!;
 function onCloseClick() {
-  closeApp()
+  closeApp();
 }
 
 defineProps<{ veh: Vehicle }>();
 
 const showDetails = ref(false);
 const showSetName = ref(false);
-const tempNickName = ref("");
+const tempNickName = ref('');
 
 const newOwner = ref(null as Player | null);
 
 const showTransferOwnership = ref(false);
 
 const modelName = (vehicle: Vehicle) => {
-  if (!vehicle.modelName || vehicle.modelName === "null") {
+  if (!vehicle.modelName || vehicle.modelName === 'null') {
     return vehicle.spawnName;
   }
 
@@ -49,7 +49,6 @@ const setVehicleName = async (vehicle: Vehicle) => {
 const takeOutVehicle = async (vehicle: Vehicle) => {
   await store.takeOut(vehicle, false);
   onCloseClick();
-
 };
 
 const retrieveVehicle = async (vehicle: Vehicle) => {
@@ -91,7 +90,7 @@ const showSetNamePanel = () => {
 
 const hideSetName = () => {
   showSetName.value = false;
-  tempNickName.value = "";
+  tempNickName.value = '';
 };
 
 const toggleDetailsPanel = () => {
@@ -101,11 +100,10 @@ const toggleDetailsPanel = () => {
     hideSetName();
   }
 };
-
 </script>
 
 <template>
-  <div  @click="toggleDetailsPanel">
+  <div @click="toggleDetailsPanel">
     <div class="vehicleListItem">
       <span>{{ modelName(veh) }} - </span>
       <span v-if="veh.plate" class="badge badge-light">{{ veh.plate }}</span>
@@ -116,51 +114,13 @@ const toggleDetailsPanel = () => {
   <div v-if="showDetails" class="details-body" :id="veh.htmlId">
     <div class="details-panel">
       <div class="action-buttons">
-        <a
-          v-if="veh.pound"
-          type="button"
-          class="btn btn-dark btn-sm disabled"
-          >Impounded
-        </a>
+        <a v-if="veh.pound" type="button" class="btn btn-dark btn-sm disabled">Impounded </a>
         <div v-else>
-          <button
-            v-if="veh.stored"
-            type="button"
-            class="btn btn-success btn-sm"
-            @click="takeOutVehicle(veh)"
-          >
-            Take out
-          </button>
-          <button
-            v-if="!veh.stored"
-            type="button"
-            class="btn btn-warning btn-sm"
-            @click="retrieveVehicle(veh)"
-          >
-            Pay for retrieve
-          </button>
-          <button
-            type="button"
-            class="btn btn-info btn-sm"
-            @click="showTransferOwnershipPanel()"
-          >
-            Transfer
-          </button>
-          <button
-            v-if="!veh.stored"
-            type="button"
-            class="btn btn-warning btn-sm"
-            @click="setGpsMarker(veh)"
-          >
-            Set GPS marker
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary btn-sm"
-            @click="showSetNamePanel"
-          >
-            Set Name
-          </button>
+          <button v-if="veh.stored" type="button" class="btn btn-success btn-sm" @click="takeOutVehicle(veh)">Take out</button>
+          <button v-if="!veh.stored" type="button" class="btn btn-warning btn-sm" @click="retrieveVehicle(veh)">Pay for retrieve</button>
+          <button type="button" class="btn btn-info btn-sm" @click="showTransferOwnershipPanel()">Transfer</button>
+          <button v-if="!veh.stored" type="button" class="btn btn-warning btn-sm" @click="setGpsMarker(veh)">Set GPS marker</button>
+          <button type="button" class="btn btn-primary btn-sm" @click="showSetNamePanel">Set Name</button>
         </div>
       </div>
       <div class="vehicle-attributes">
@@ -186,9 +146,7 @@ const toggleDetailsPanel = () => {
           :percentage="veh.body"
         ></VehicleAttribute>
         <transition name="fade">
-          <div v-if="showNoPlayersMessage" class="no-players">
-            No players near you to transfer ownership
-          </div>
+          <div v-if="showNoPlayersMessage" class="no-players">No players near you to transfer ownership</div>
         </transition>
       </div>
     </div>
@@ -196,12 +154,7 @@ const toggleDetailsPanel = () => {
     <div class="transfer-ownership" v-if="showTransferOwnership">
       <div class="dd">
         <div class="dropdown buyer">
-          <v-select
-            class="the-dropdown"
-            :options="store.nearbyPlayers"
-            placeholder="Select a buyer..."
-            v-model="newOwner"
-          >
+          <v-select class="the-dropdown" :options="store.nearbyPlayers" placeholder="Select a buyer..." v-model="newOwner">
             <template #option="option">
               <span>{{ option.name }}</span>
             </template>
@@ -212,21 +165,8 @@ const toggleDetailsPanel = () => {
         </div>
       </div>
       <div>
-        <button
-          type="button"
-          class="btn btn-secondary"
-          @click="hideTransferOwnership()"
-        >
-          Close
-        </button>
-        <button
-          type="button"
-          class="btn btn-warning"
-          @click="transferVehicleOwnership(veh)"
-          :disabled="!newOwner"
-        >
-          Transfer
-        </button>
+        <button type="button" class="btn btn-secondary" @click="hideTransferOwnership()">Close</button>
+        <button type="button" class="btn btn-warning" @click="transferVehicleOwnership(veh)" :disabled="!newOwner">Transfer</button>
       </div>
     </div>
 
@@ -242,20 +182,8 @@ const toggleDetailsPanel = () => {
         />
       </div>
       <div class="nick-buttons">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          @click="hideSetName()"
-        >
-          Close
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          @click="setVehicleName(veh)"
-        >
-          Save
-        </button>
+        <button type="button" class="btn btn-secondary" @click="hideSetName()">Close</button>
+        <button type="button" class="btn btn-primary" @click="setVehicleName(veh)">Save</button>
       </div>
     </div>
   </div>
@@ -350,11 +278,10 @@ VehicleAttribute {
   border-color: #444;
   border-width: 1px;
   background-color: orangered;
-  padding: .5rem;
-  font-size: .7rem;
+  padding: 0.5rem;
+  font-size: 0.7rem;
   text-align: center;
-  margin: .5rem .3rem 0 .3rem;
-  
+  margin: 0.5rem 0.3rem 0 0.3rem;
 }
 
 .fade-enter-active {
@@ -365,12 +292,13 @@ VehicleAttribute {
   transition: opacity 1s;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
-.fade-enter-to, .fade-leave-from {
+.fade-enter-to,
+.fade-leave-from {
   opacity: 1;
 }
-
 </style>

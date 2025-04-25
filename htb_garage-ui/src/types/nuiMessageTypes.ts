@@ -1,4 +1,4 @@
-import { Impound, ImpoundVehicle } from "./impoundTypes";
+import type { Impound, ImpoundVehicle } from '@/types/impoundTypes';
 
 export interface ToggleVisibilityData {
   type: 'toggleVisibility';
@@ -21,7 +21,7 @@ export interface InitVehicleStatsData {
   vehicles: string; // Assuming this is a JSON string that needs parsing
   showFuel: boolean;
   showEngine: boolean;
-  showBody: boolean;  
+  showBody: boolean;
 }
 
 export interface SetNearbyPlayersListData {
@@ -42,41 +42,38 @@ export interface EnableImpoundData {
 
 export interface SetupImpoundStoreVehicleData {
   type: 'setupImpoundStoreVehicle';
-  vehiclePlate: 'abc123',
+  vehiclePlate: 'abc123';
   availableImpounds: Impound[];
   timePeriods: number[];
 }
 
 export interface SetupImpoundRetrieveVehicleData {
   type: 'setupImpoundRetrieveVehicle';
-  vehicles: ImpoundVehicle[]
+  vehicles: ImpoundVehicle[];
 }
 
 // Union type for all message types
 export type NuiMessageData =
-ToggleVisibilityData |
-  EnableGarageData |
-  InitVehicleStatsData |
-  SetVehiclesData |
-  SetNearbyPlayersListData |
-  TransferCompleteData |
-
-  EnableImpoundData |
-  SetupImpoundStoreVehicleData |
-  SetupImpoundRetrieveVehicleData;
+  | ToggleVisibilityData
+  | EnableGarageData
+  | InitVehicleStatsData
+  | SetVehiclesData
+  | SetNearbyPlayersListData
+  | TransferCompleteData
+  | EnableImpoundData
+  | SetupImpoundStoreVehicleData
+  | SetupImpoundRetrieveVehicleData;
 
 export type MessageHandlers = {
-  toggleVisibility:          (msg: ToggleVisibilityData)            => void;
+  toggleVisibility: (msg: ToggleVisibilityData) => void;
 
-  enableGarage:              (msg: EnableGarageData)                => void;  
-  initVehicleStats:          (msg: InitVehicleStatsData)            => void;
-  setVehicles:               (msg: SetVehiclesData)                 => void;
-  setNearbyPlayersList:      (msg: SetNearbyPlayersListData)        => void;
-  transferComplete:          (msg: TransferCompleteData)            => void;
+  enableGarage: (msg: EnableGarageData) => void;
+  initVehicleStats: (msg: InitVehicleStatsData) => void;
+  setVehicles: (msg: SetVehiclesData) => void;
+  setNearbyPlayersList: (msg: SetNearbyPlayersListData) => void;
+  transferComplete: (msg: TransferCompleteData) => void;
 
-  enableImpound:             (msg: EnableImpoundData)               => void;
-  setupImpoundStoreVehicle:  (msg: SetupImpoundStoreVehicleData)    => void;
+  enableImpound: (msg: EnableImpoundData) => void;
+  setupImpoundStoreVehicle: (msg: SetupImpoundStoreVehicleData) => void;
   setupImpoundRetrieveVehicle: (msg: SetupImpoundRetrieveVehicleData) => void;
-
-}
-  
+};

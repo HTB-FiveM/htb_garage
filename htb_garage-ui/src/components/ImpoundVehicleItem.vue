@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { ImpoundVehicle } from "../types/impoundTypes";
+import { ref } from 'vue';
+import type { ImpoundVehicle } from '../types/impoundTypes';
 
-import { useCurrency } from "@/composables/useCurrency";
+import { useCurrency } from '@/composables/useCurrency';
 
 defineProps<{ veh: ImpoundVehicle }>();
 
 const showDetails = ref(false);
 
 const modelName = (vehicle: ImpoundVehicle) => {
-  if (!vehicle.modelName || vehicle.modelName === "null") {
+  if (!vehicle.modelName || vehicle.modelName === 'null') {
     return vehicle.spawnName;
   }
 
@@ -19,30 +19,30 @@ const modelName = (vehicle: ImpoundVehicle) => {
 const toggleDetailsPanel = () => {
   showDetails.value = !showDetails.value;
   if (!showDetails.value) {
-
   }
 };
 
 // Using the composable this way rather than directly in the template
 // prevent the output value being wrapped in double quotes
 const formatCurrency = (amount: number) => {
-  return useCurrency(amount).value
-} 
-
+  return useCurrency(amount).value;
+};
 </script>
 
 <template>
   <div @click="toggleDetailsPanel">
     <div class="vehicleListItem">
-      <span><strong>{{ modelName(veh) }}</strong> - </span>
+      <span
+        ><strong>{{ modelName(veh) }}</strong> -
+      </span>
       <span v-if="veh.plate" class="badge badge-light">{{ veh.plate }}</span>
       <span v-if="veh.displayName"> - {{ veh.displayName }}</span>
       <small v-if="veh.import">, import</small>
     </div>
-    <div style="color: #466F52;">{{ formatCurrency(veh.price) }}</div>
-     
+    <div style="color: #466f52">{{ formatCurrency(veh.price) }}</div>
   </div>
-  <div v-if="showDetails" class="details-body"><!-- :id="veh.htmlId">-->
+  <div v-if="showDetails" class="details-body">
+    <!-- :id="veh.htmlId">-->
     <slot />
   </div>
 </template>
@@ -136,11 +136,10 @@ VehicleAttribute {
   border-color: #444;
   border-width: 1px;
   background-color: orangered;
-  padding: .5rem;
-  font-size: .7rem;
+  padding: 0.5rem;
+  font-size: 0.7rem;
   text-align: center;
-  margin: .5rem .3rem 0 .3rem;
-  
+  margin: 0.5rem 0.3rem 0 0.3rem;
 }
 
 .fade-enter-active {
@@ -151,12 +150,13 @@ VehicleAttribute {
   transition: opacity 1s;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
-.fade-enter-to, .fade-leave-from {
+.fade-enter-to,
+.fade-leave-from {
   opacity: 1;
 }
-
 </style>

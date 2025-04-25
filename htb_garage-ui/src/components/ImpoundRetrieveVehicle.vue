@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useImpoundStore } from '@/stores/impound.store';
-import { ImpoundVehicle } from '@/types/impoundTypes';
+import type { ImpoundVehicle } from '@/types/impoundTypes';
 import { computed, inject, ref } from 'vue';
 
 import ImpoundVehiceItem from "@/components/ImpoundVehicleItem.vue";
@@ -42,11 +42,11 @@ const spawnVehicle = async (vehicle: ImpoundVehicle) => {
             style="display:flex; margin: .5rem;"
         >No vehicles matching criteria</Alert>
         <ul v-else>
-            <li v-for="vehicle in filteredVehicles" class="impound-list-item">                
+            <li v-for="vehicle in filteredVehicles" class="impound-list-item">
                 <ImpoundVehiceItem :veh="vehicle">
                     <div class="details-panel">
                         <div class="action-buttons">
-                            
+
                             <!-- <a
                             v-if="veh.pound"
                             type="button"

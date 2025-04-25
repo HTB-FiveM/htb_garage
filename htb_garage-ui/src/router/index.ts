@@ -2,9 +2,9 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
-      path: '/vehicleMenu',
-      name: 'vehicleMenu',
-      component: () => import('@/views/VehicleMenu.vue'),
+    path: '/vehicleMenu',
+    name: 'vehicleMenu',
+    component: () => import('@/views/VehicleMenu.vue'),
   },
   {
     path: '/impound',
@@ -16,7 +16,6 @@ const routes: RouteRecordRaw[] = [
     name: 'retrieve',
     component: () => import('@/views/Impound.vue'),
   },
-
 ];
 
 const router = createRouter({
