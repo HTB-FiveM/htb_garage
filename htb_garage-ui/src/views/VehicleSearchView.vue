@@ -1,14 +1,6 @@
 <template>
   <div class="vehicle-search-panel">
     <MetalForm @submit="submitForm">
-      <div class="header-bar">
-        <span class="title">Vehicle Search</span>
-        <div class="search-input">
-          <SearchInput v-model="search" placeholder="Search by plate or name" />
-        </div>
-        <button class="close-button" @click="clearSearch">×</button>
-      </div>
-
       <div class="form-body">
         <Label>Vehicle Type</Label>
         <SingleSelect v-model="vehicleType" :options="vehicleTypes" />
@@ -64,7 +56,6 @@ import Label from '@/components/ui/Label.vue';
 import { useLayoutStore } from '@/stores/layout.store';
 
 /////
-import SearchInput1 from '@/components/ui/TextInput.vue';
 
 const layoutStore = useLayoutStore();
 
@@ -73,10 +64,10 @@ onMounted(() => {
   // layoutStore.setHeader(() => <SearchInput1 v-model="search" placeholder="Search vehicles..." />);
   layoutStore.setHeader(() =>
     h('div', { style: { marginTop: '.8rem' } }, [
-      h(SearchInput1, {
+      h(SearchInput, {
         modelValue: search.value,
-        'onUpdate:modelValue': (v: string) => (search.value = v),
-        placeholder: 'Search vehicles...',
+        onUpdateModelValue: (v: string) => (search.value = v),
+        placeholder: 'Search by plate or name',
       }),
     ]),
   );
