@@ -7,7 +7,7 @@ import type {
   SetVehiclesData,
   SetupImpoundRetrieveVehicleData,
 } from '@/types/nuiMessageTypes';
-import type { Impound } from './types/impoundTypes';
+import type { Impound } from '@/types/impoundTypes';
 
 export default function initialiseDummyData(handlers: MessageHandlers, route: string) {
   if (route === '/vehicleMenu') {

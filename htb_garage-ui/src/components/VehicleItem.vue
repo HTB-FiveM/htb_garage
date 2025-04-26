@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { inject, ref } from 'vue';
-import type { Vehicle, Player } from '../types/garageTypes';
-import VehicleAttribute from './VehicleAttribute.vue';
+import type { Vehicle, Player } from '@/types/garageTypes';
+import VehicleAttribute from '@/components/VehicleAttribute.vue';
 
 import { useGarageStore } from '../stores/garage.store';
 

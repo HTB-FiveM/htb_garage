@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { useAppStore } from '@/stores/app.store';
-import type { MessageHandlers, NuiMessageData } from './types/nuiMessageTypes';
-import initialiseDummyData from './dummyData';
+import type { MessageHandlers, NuiMessageData } from '@/types/nuiMessageTypes';
+import initialiseDummyData from '@/dummyData';
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, onUnmounted, watch, provide, ref } from 'vue';
-import { useGarageStore } from './stores/garage.store';
-import { useImpoundStore } from './stores/impound.store';
+import { useAppStore } from '@/stores/app.store';
+import { useGarageStore } from '@/stores/garage.store';
+import { useImpoundStore } from '@/stores/impound.store';
+
+import MetalPanel from '@/components/layout/MetalPanel.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -101,13 +103,31 @@ function onClickOutside(event: MouseEvent) {
 }
 </script>
 
-<template>
+<!-- <template>
   <section ref="appContainer" class="page-content">
     <router-view />
   </section>
+</template> -->
+
+<template>
+  <div id="app-root">
+    <MetalPanel>
+      <router-view />
+    </MetalPanel>
+  </div>
 </template>
 
 <style scoped>
+#app-root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>
+
+<!-- <style scoped>
 header {
   line-height: 1.5;
   max-height: 100vh;
@@ -169,4 +189,4 @@ nav a:first-of-type {
     margin-top: 1rem;
   }
 }
-</style>
+</style> -->

@@ -4,17 +4,22 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/vehicleMenu',
     name: 'vehicleMenu',
-    component: () => import('@/views/VehicleMenu.vue'),
+    component: () => import('../views/VehicleMenu.vue'),
   },
   {
     path: '/impound',
     name: 'impound',
-    component: () => import('@/views/Impound.vue'),
+    component: () => import('../views/Impound.vue'),
   },
   {
     path: '/retrieve',
     name: 'retrieve',
-    component: () => import('@/views/Impound.vue'),
+    component: () => import('../views/Impound.vue'),
+  },
+  {
+    path: '/testing',
+    name: 'testing',
+    component: () => import('../views/VehicleSearchView.vue'),
   },
 ];
 

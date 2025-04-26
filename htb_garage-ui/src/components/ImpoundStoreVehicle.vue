@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import Label from './Label.vue';
-import TextInput from './TextInput.vue';
-import SingleSelect, { type Option } from './SingleSelect.vue';
-import ToggleSwitch from './ToggleSwitch.vue';
+import Label from '@/components/Label.vue';
+import TextInput from '@/components/TextInput.vue';
+import SingleSelect, { type Option } from '@/components/SingleSelect.vue';
+import ToggleSwitch from '@/components/ToggleSwitch.vue';
 
 import { useImpoundStore } from '@/stores/impound.store';
 import { computed } from 'vue';

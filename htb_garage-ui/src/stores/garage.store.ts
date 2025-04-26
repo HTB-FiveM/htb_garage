@@ -8,7 +8,7 @@ import type {
   SetVehiclesData,
   TransferCompleteData,
 } from '@/types/nuiMessageTypes';
-import { useAppStore } from './app.store';
+import { useAppStore } from '@/stores/app.store';
 
 export const useGarageStore = defineStore('garage', {
   state: () =>

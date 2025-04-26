@@ -1,7 +1,7 @@
 import type { ImpoundStore, ImpoundStoreVehicle, ImpoundVehicle } from '@/types/impoundTypes';
 import { defineStore } from 'pinia';
 import type { EnableImpoundData, SetupImpoundRetrieveVehicleData, SetupImpoundStoreVehicleData } from '@/types/nuiMessageTypes';
-import { useAppStore } from './app.store';
+import { useAppStore } from '@/stores/app.store';
 
 export const useImpoundStore = defineStore('impound', {
   state: () =>
