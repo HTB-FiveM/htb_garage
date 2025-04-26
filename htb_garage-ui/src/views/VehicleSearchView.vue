@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, h } from 'vue';
 import SearchInput from '@/components/ui/TextInput.vue'; // SearchInput would be a wrapper if you want, otherwise just TextInput
 import SingleSelect from '@/components/ui/SingleSelect.vue';
 import MultiSelect from '@/components/ui/MultiSelect.vue';
@@ -61,6 +61,33 @@ import ExpandableListItem from '@/components/ui/ExpandableListItem.vue';
 import Alert from '@/components/ui/Alert.vue';
 import Toast from '@/components/ui/Toast.vue';
 import Label from '@/components/ui/Label.vue';
+import { useLayoutStore } from '@/stores/layout.store';
+
+/////
+import SearchInput1 from '@/components/ui/TextInput.vue';
+
+const layoutStore = useLayoutStore();
+
+// Set header control when this page is active
+onMounted(() => {
+  // layoutStore.setHeader(() => <SearchInput1 v-model="search" placeholder="Search vehicles..." />);
+  layoutStore.setHeader(() =>
+    h('div', { style: { marginTop: '.8rem' } }, [
+      h(SearchInput1, {
+        modelValue: search.value,
+        'onUpdate:modelValue': (v: string) => (search.value = v),
+        placeholder: 'Search vehicles...',
+      }),
+    ]),
+  );
+});
+
+// Clear header when leaving page
+onUnmounted(() => {
+  layoutStore.setHeader(null);
+});
+
+/////
 
 const search = ref('');
 const vehicleType = ref('');

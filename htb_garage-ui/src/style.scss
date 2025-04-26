@@ -7,6 +7,11 @@ body {
   font-family: 'Segoe UI', sans-serif;
 }
 
+input::placeholder {
+  color: #bbb; /* or #aaa if you want it even softer */
+  opacity: 1; /* Important: avoid Chrome/Firefox reducing opacity */
+}
+
 input[type='text'],
 input[type='range'],
 input[type='checkbox'],

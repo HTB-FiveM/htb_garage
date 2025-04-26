@@ -4,6 +4,8 @@ import initialiseDummyData from '@/dummyData';
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, onUnmounted, watch, provide, ref } from 'vue';
 import { useAppStore } from '@/stores/app.store';
+import { useLayoutStore } from '@/stores/layout.store';
+
 import { useGarageStore } from '@/stores/garage.store';
 import { useImpoundStore } from '@/stores/impound.store';
 
@@ -13,6 +15,8 @@ const router = useRouter();
 const route = useRoute();
 
 const appStore = useAppStore();
+const layoutStore = useLayoutStore();
+
 const garageStore = useGarageStore();
 const impoundStore = useImpoundStore();
 
@@ -103,22 +107,19 @@ function onClickOutside(event: MouseEvent) {
 }
 </script>
 
-<!-- <template>
-  <section ref="appContainer" class="page-content">
-    <router-view />
-  </section>
-</template> -->
-
 <template>
-  <div id="app-root">
+  <div id="outer-panel">
     <MetalPanel>
+      <template #header>
+        <component :is="layoutStore.headerContent" v-if="layoutStore.headerContent" />
+      </template>
       <router-view />
     </MetalPanel>
   </div>
 </template>
 
 <style scoped>
-#app-root {
+#outer-panel {
   width: 100vw;
   height: 100vh;
   display: flex;

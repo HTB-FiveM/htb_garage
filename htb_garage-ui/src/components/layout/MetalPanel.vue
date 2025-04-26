@@ -6,7 +6,15 @@ const close = () => router.push('/');
 
 <template>
   <div class="metal-panel">
-    <button class="close-button" @click="close">×</button>
+    <div class="panel-header">
+      <div class="header-left">
+        <div class="header-slot">
+          <slot name="header" />
+        </div>
+      </div>
+      <button class="close-button" @click="close">×</button>
+    </div>
+
     <div class="panel-content">
       <slot />
     </div>
@@ -26,20 +34,43 @@ const close = () => router.push('/');
   backdrop-filter: blur(6px);
   position: relative;
 }
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0 10px;
+  background: rgba(74, 74, 74, 0.75);
+}
+.header-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.header-slot {
+  flex: 1; /* ← THIS makes the search input fill horizontally */
+  display: flex;
+  align-items: center;
+}
+
+.header-slot > * {
+  flex: 1; /* ← THIS ensures whatever is injected (like SearchInput) fills it */
+}
 .close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
   background: #2c2c2c;
   color: white;
   border: none;
   border-radius: 6px;
   font-size: 1.2rem;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px; /* space between search and close button */
 }
 .panel-content {
-  margin-top: 40px;
+  margin-top: 10px;
 }
 </style>
