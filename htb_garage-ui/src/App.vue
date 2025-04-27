@@ -108,7 +108,9 @@ function onClickOutside(event: MouseEvent) {
 </script>
 
 <template>
+  Outside
   <div id="outer-panel">
+    Inside
     <MetalPanel>
       <template #header>
         <component :is="layoutStore.headerContent" v-if="layoutStore.headerContent" />

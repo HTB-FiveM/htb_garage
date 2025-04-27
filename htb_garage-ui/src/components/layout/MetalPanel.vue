@@ -40,7 +40,7 @@ const close = () => router.push('/');
   justify-content: space-between;
   min-height: 48px;
   padding: 0 10px;
-  background: rgba(74, 74, 74, 0.75);
+  background: rgba(150, 67, 67, 0.75);
 }
 .header-left {
   flex: 1;

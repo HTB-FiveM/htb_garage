@@ -54,6 +54,7 @@ import Alert from '@/components/ui/Alert.vue';
 import Toast from '@/components/ui/Toast.vue';
 import Label from '@/components/ui/Label.vue';
 import { useLayoutStore } from '@/stores/layout.store';
+// import { VehicleSearchHeader } from './VehicleSearchHeader.tsx';
 
 /////
 
@@ -61,21 +62,40 @@ const layoutStore = useLayoutStore();
 
 // Set header control when this page is active
 onMounted(() => {
-  // layoutStore.setHeader(() => <SearchInput1 v-model="search" placeholder="Search vehicles..." />);
-  layoutStore.setHeader(() =>
-    h('div', { style: { marginTop: '.8rem' } }, [
-      h(SearchInput, {
-        modelValue: search.value,
-        onUpdateModelValue: (v: string) => (search.value = v),
-        placeholder: 'Search by plate or name',
-      }),
-    ]),
+  layoutStore.setHeader(
+    () =>
+      h('div', { style: { marginTop: '.8rem' } }, [
+        h(SearchInput, {
+          modelValue: search.value,
+          onUpdateModelValue: (v: string) => (search.value = v),
+          placeholder: 'Search by plate or name',
+        }),
+      ]),
+    // <div style="margin-top: .8rem">
+    //   <SearchInput v-model={search.value} placeholder="Search by plate or name" />
+    // </div>
   );
 });
 
+// // // // // onMounted(() => {
+// // // // //   layoutStore.setHeader(VehicleSearchHeader);
+// // // // // });
+
+// // // // // const Header = defineComponent(() => {
+// // // // //   return () => (
+// // // // //     <div style="margin-top: .8rem">
+// // // // //       <SearchInput v-model={search.value} placeholder="Search by plate or name" />
+// // // // //     </div>
+// // // // //   );
+// // // // // });
+
+// // // // // onMounted(() => {
+// // // // //   layoutStore.setHeader(() => h(Header));
+// // // // // });
+
 // Clear header when leaving page
 onUnmounted(() => {
-  layoutStore.setHeader(null);
+  layoutStore.clearHeader();
 });
 
 /////

@@ -1,13 +1,21 @@
-import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { JSX } from 'vue/jsx-runtime';
+import { defineStore } from 'pinia';
+import type { VNode } from 'vue';
 
 export const useLayoutStore = defineStore('layout', () => {
-  const headerContent = ref<null | (() => JSX.Element)>(null);
+  const headerContent = ref<(() => VNode | null) | null>(null);
 
-  function setHeader(content: null | (() => JSX.Element)) {
+  function setHeader(content: (() => VNode | null) | null) {
     headerContent.value = content;
   }
 
-  return { headerContent, setHeader };
+  function clearHeader() {
+    headerContent.value = null;
+  }
+
+  return {
+    headerContent,
+    setHeader,
+    clearHeader,
+  };
 });
