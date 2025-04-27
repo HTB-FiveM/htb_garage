@@ -9,8 +9,6 @@ import { useLayoutStore } from '@/stores/layout.store';
 import { useGarageStore } from '@/stores/garage.store';
 import { useImpoundStore } from '@/stores/impound.store';
 
-import MetalPanel from '@/components/layout/MetalPanel.vue';
-
 const router = useRouter();
 const route = useRoute();
 
@@ -108,88 +106,115 @@ function onClickOutside(event: MouseEvent) {
 </script>
 
 <template>
-  Outside
-  <div id="outer-panel">
-    Inside
-    <MetalPanel>
-      <template #header>
-        <component :is="layoutStore.headerContent" v-if="layoutStore.headerContent" />
-      </template>
+  <div id="outer-panel" ref="appContainer">
+    <div class="panel-header">
+      <component :is="layoutStore.headerContent" v-if="layoutStore.headerContent" />
+      <button class="close-button" @click="close">×</button>
+    </div>
+
+    <div class="panel-content">
       <router-view />
-    </MetalPanel>
+    </div>
+
+    <div class="panel-footer"></div>
   </div>
+  Footer
 </template>
 
 <style scoped>
 #outer-panel {
-  width: 100vw;
-  height: 100vh;
+  /* panel background, border, rounded corners, and shadow */
+  background: rgba(25, 25, 25, 0.75);
+  border: 1px solid #444;
+  border-radius: 12px;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    0 4px 10px rgba(0, 0, 0, 0.6);
+
+  /* 2 rows: auto header height, flexible content */
+  display: grid;
+  grid-template-rows: auto 1fr;
+
+  /* size constraints */
+  width: 40%;
+  max-width: 80%;
+  max-height: 80vh;
+  overflow: hidden;
+
+  position: fixed; /* or absolute */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* HEADER */
+.panel-header {
+  background: rgba(0, 0, 0, 1);
+  padding: 20px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: space-between;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+/* FOOTER */
+.panel-footer {
+  background: rgba(0, 0, 0, 1);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+/* CLOSE BUTTON */
+.close-button {
+  background: #2c2c2c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CONTENT AREA */
+
+.panel-content {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Firefox */
+.panel-content {
+  /* thin track + red thumb */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150, 67, 67, 0.8) rgba(0, 0, 0, 0.1);
+}
+
+/* WebKit browsers */
+.panel-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background-color: rgba(150, 67, 67, 0.8);
+  border-radius: 4px;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(150, 67, 67, 1);
 }
 </style>
-
-<!-- <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style> -->

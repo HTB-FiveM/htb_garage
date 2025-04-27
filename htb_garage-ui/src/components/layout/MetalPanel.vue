@@ -26,7 +26,7 @@ const close = () => router.push('/');
   background: rgba(25, 25, 25, 0.75);
   border: 1px solid #444;
   border-radius: 12px;
-  padding: 20px;
+  // padding: 20px;
   min-width: 400px;
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.1),
