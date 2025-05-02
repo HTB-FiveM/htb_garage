@@ -11,25 +11,25 @@
     "coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@types/node": "^20.11.16",
-    "pinia": "^2.1.7",
-    "vue": "^3.3.11",
-    "vue-router": "^4.5.0",
+    "@types/node": "^22.15.3",
+    "pinia": "^3.0.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1",
     "vue-select": "^4.0.0-beta.6"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/vue": "^8.0.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/vue": "^8.1.0",
     "@types/vue-select": "^3.16.8",
-    "@vitejs/plugin-vue": "^4.5.2",
-    "@vue/test-utils": "^2.4.4",
-    "jsdom": "^24.0.0",
-    "sass": "^1.70.0",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8",
-    "vite-plugin-singlefile": "^1.0.0",
-    "vitest": "^1.2.2",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^26.1.0",
+    "sass": "^1.87.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.4",
+    "vite-plugin-singlefile": "^2.2.0",
+    "vitest": "^3.1.2",
     "vue-test-utils": "^1.0.0-beta.11",
-    "vue-tsc": "^1.8.25"
+    "vue-tsc": "^2.2.10"
   }
 }

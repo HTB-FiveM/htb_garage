@@ -1,102 +1,112 @@
 <script lang="ts" setup>
-import { useImpoundStore } from '@/stores/impound.store';
-import { ImpoundVehicle } from '@/types/impoundTypes';
-import { computed, inject, ref } from 'vue';
+import { useImpoundStore } from "@/stores/impound.store";
+import { ImpoundVehicle } from "@/types/impoundTypes";
+import { computed, inject, ref } from "vue";
 
 import ImpoundVehiceItem from "@/components/ImpoundVehicleItem.vue";
-import TextInput from '@/components/TextInput.vue';
+import TextInput from "@/components/TextInput.vue";
 import Button from "@/components/Button.vue";
 import Alert from "@/components/Alert.vue";
 
 const store = useImpoundStore();
 
-const searchTerm = ref('');
-const filteredVehicles = computed<ImpoundVehicle[] | undefined >(() => {
-  return store.filteredVehicles(searchTerm.value);
+const searchTerm = ref("");
+const filteredVehicles = computed<ImpoundVehicle[]>(() => {
+  return store.filteredVehicles(searchTerm.value) as ImpoundVehicle[];
 });
 
-const closeApp = inject<() => void>('closeApp')!;
-function onCloseClick() {
-  closeApp()
+const expandedPlate = ref<string | null>(null);
+
+function toggleExpand(veh: ImpoundVehicle) {
+  expandedPlate.value = expandedPlate.value === veh.plate ? null : veh.plate;
 }
+
+const closeApp = inject<() => void>("closeApp")!;
+function onCloseClick() {
+  closeApp();
+}
+
 const spawnVehicle = async (vehicle: ImpoundVehicle) => {
-  await store.takeOut(vehicle, false);
+  await store.impoundRetrieve(vehicle);
+  onCloseClick();
+};
+
+const returnToOwner = async (vehicle: ImpoundVehicle) => {
+  await store.returnToOwner(vehicle);
   onCloseClick();
 };
 </script>
 
 <template>
-    <div>
-        <TextInput
-            type="text"
-            ref="searchBox"
-            class="form-control"
-            placeholder="Search the vehicles by plate or name"
-            v-model="searchTerm"
-        />
-    </div>
-    <div class="car-list">
-        <Alert
-            v-if="store.retrieveVehicle!.vehicles.length > 0 && filteredVehicles?.length === 0"
-            variant="warning"
-            style="display:flex; margin: .5rem;"
-        >No vehicles matching criteria</Alert>
-        <ul v-else>
-            <li v-for="vehicle in filteredVehicles" class="impound-list-item">                
-                <ImpoundVehiceItem :veh="vehicle">
-                    <div class="details-panel">
-                        <div class="action-buttons">
-                            
-                            <!-- <a
-                            v-if="veh.pound"
-                            type="button"
-                            class="btn btn-dark btn-sm disabled"
-                            >Impounded
-                            </a>
-                            <div v-else>
-                            <button
-                                v-if="veh.stored"
-                                type="button"
-                                class="btn btn-success btn-sm"
-                                @click="takeOutVehicle(veh)"
-                            >
-                                Take out
-                            </button>
+  <div>
+    <TextInput
+      type="text"
+      ref="searchBox"
+      class="form-control"
+      placeholder="Search the vehicles by plate or name"
+      v-model="searchTerm"
+    />
+  </div>
+  <div class="car-list">
+    <Alert
+      v-if="store.retrieveVehicle!.vehicles.length > 0
+      && (searchTerm ?? '').trim() !== ''
+      && filteredVehicles?.length === 0"
+      variant="warning"
+      style="display: flex; margin: 0.5rem"
+      >No vehicles matching criteria</Alert
+    >
+    <ul v-else>
+      <li
+        v-for="vehicle in filteredVehicles"
+        :key="vehicle.plate"
+        class="impound-list-item"
+      >
+        <!-- wrap the click on whichever part of the item should toggle it -->
+        <div @click="toggleExpand(vehicle)">
+          <ImpoundVehiceItem :veh="vehicle" />
+        </div>
 
-                            </div> -->
-                            <div class="item-buttons">
-                                <Button @click="spawnVehicle(vehicle)">Spawn vehicle</Button>
-                                <Button variant="secondary" @click="">Return to owner</Button>
-                            </div>
-                        </div>
-                    </div>
-                </ImpoundVehiceItem>
-            </li>
-        </ul>
-    </div>
+        <!-- only render the details‐panel if this one is “active” -->
+        <div v-if="expandedPlate === vehicle.plate" class="details-panel">
+          <div class="action-buttons">
+            <div class="item-buttons">
+              <Button @click="spawnVehicle(vehicle)">Pay for retrieve</Button>
+
+              <Button
+                v-if="store.retrieveVehicle!.userIsImpoundManager"
+                variant="secondary"
+                @click="returnToOwner(vehicle)"
+              >
+                Return to owner
+              </Button>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <style scoped>
 ul {
-    padding: .5rem .3rem 0 .3rem;
+  padding: 0.5rem 0.3rem 0 0.3rem;
 }
 
-
 .impound-list-item {
-    list-style-type: none;
-    position: relative;
-    display: block;
-    padding: .2rem .2rem .2rem .2rem;
-    margin-bottom: 1rem;
-    /* border: 1px solid rgba(0, 0, 0, 0.125); */
-    border-bottom: 1px sold rgba(0, 0, 0, 0.125);
-
+  list-style-type: none;
+  position: relative;
+  display: block;
+  padding: 0.2rem 0.2rem 0.2rem 0.2rem;
+  margin-bottom: 1rem;
+  /* border: 1px solid rgba(0, 0, 0, 0.125); */
+  border-bottom: 1px sold rgba(0, 0, 0, 0.125);
 }
 
 .car-list {
-    margin-top: .5rem;
-    border-radius: 5px;
-    /* border-style: solid;
+  margin-top: 0.5rem;
+  border-radius: 5px;
+  /* border-style: solid;
     border-color: #a0a0a0; */
 }
 
@@ -109,12 +119,10 @@ ul {
 }
 
 .item-buttons {
-    display: flex;            /* turn on flex layout */
-    justify-content: center;  /* center along the main axis (horizontally) */
-    align-items: center;      /* center along the cross axis (vertically) */
-    gap: 1rem;                /* optional spacing between buttons */
-    /* if you want the wrapper to fill some height: */
-
+  display: flex; /* turn on flex layout */
+  justify-content: center; /* center along the main axis (horizontally) */
+  align-items: center; /* center along the cross axis (vertically) */
+  gap: 1rem; /* optional spacing between buttons */
+  /* if you want the wrapper to fill some height: */
 }
-
 </style>
