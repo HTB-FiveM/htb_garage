@@ -114,6 +114,7 @@ AddEventHandler("htb_garage:SaveAndStoreVehicle", function(vehicleProps, network
 		["@vehicle"] = vehprop,
 		["@stored"] = 1,
 		["@plate"] = vehicleProps.plate,
+		["@type"] = vehicleType,
 	})
 
 	TriggerClientEvent(
