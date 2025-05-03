@@ -434,7 +434,7 @@ RegisterNUICallback("takeOut", function(data, cb)
 			FrameworkCtx:ShowNotification(_U("cannot_take_out"))
 		elseif vehicle.pound == 1 then
 			FrameworkCtx:ShowNotification(_U("vehicle_in_pound"))
-		elseif vehicle.stored == 1 or overrideStored then
+		elseif vehicle.stored or overrideStored then
 			TriggerServerEvent("htb_garage:GetVehicleForSpawn", vehicle.plate, vehicle.garage)
 			ToggleGUI(false)
 		else
