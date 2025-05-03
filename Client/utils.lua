@@ -49,3 +49,28 @@ function GetVehicleByPlate(plateText)
     end
     return nil
 end
+
+
+
+RegisterCommand('coords_htb', function()
+    local ped = PlayerPedId()
+    -- Get current position
+    local x, y, z = table.unpack(GetEntityCoords(ped))
+    -- Get current heading
+    local heading = GetEntityHeading(ped)
+
+    -- Format as vector3
+    local posVec = vector3(x, y, z)
+
+    -- Print to the client console
+    print(('[coords] %s, heading: %.2f'):format(posVec, heading))
+
+    -- Optional: show in chat as well
+    TriggerEvent('chat:addMessage', {
+        color = { 255, 240, 0},
+        args = { 'Coords', ('%s | heading: %.2f'):format(posVec, heading) }
+    })
+end, false)
+
+-- Optional: bind to a key (e.g. F5)
+RegisterKeyMapping('coords_htb', 'Dump current coords & heading', 'keyboard', 'F5')

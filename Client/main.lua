@@ -131,6 +131,50 @@ function StoreVehicle(vehicleType, deleteZone)
 	end
 end
 
+function DrawImpoundMarkers(impounds, markerType)
+	for impoundName, details in pairs(impounds) do
+		local zone = details.RetrievePoint
+		local spawnPoints = details.SpawnPoints
+		local blip = {
+			text = zone.Name,
+			colorId = Config.Blips.impound.color,
+			imageId = Config.Blips.impound.sprite,
+		}
+		exports.ft_libs:AddArea(("htb_garage_impound_%s"):format(impoundName), {
+			marker = {
+				weight = zone.Marker.w,
+				height = zone.Marker.h,
+				red = zone.Marker.r,
+				green = zone.Marker.g,
+				blue = zone.Marker.b,
+				type = markerType,
+			},
+			trigger = {
+				weight = zone.Marker.w,
+				active = {
+					callback = function()
+						exports.ft_libs:HelpPromt(zone.HelpPrompt)
+						if IsControlJustReleased(0, 38) and IsInputDisabled(0) and GetLastInputMethod(2) then
+							if not IsPedInAnyVehicle(PlayerPedId(), true) then
+								OpenImpoundRetrieveUI()
+							end
+						end
+					end,
+				},
+				exit = {
+					callback = exitmarker,
+				},
+			},
+			blip = blip,
+			locations = {
+				zone.Pos,
+			},
+		})
+
+	end
+
+end
+
 function DrawMarkers(garages, markerType, vehicleType)
 	for k, garage in pairs(garages) do
 		for zoneName, zone in pairs(garage) do
@@ -159,7 +203,7 @@ function DrawMarkers(garages, markerType, vehicleType)
 							callback = function()
 								exports.ft_libs:HelpPromt(zone.HelpPrompt)
 								if IsControlJustReleased(0, 38) and IsInputDisabled(0) and GetLastInputMethod(2) then
-									if not IsPedInAnyVehicle(PlayerPedId()) then
+									if not IsPedInAnyVehicle(PlayerPedId(), true) then
 										if zoneName == "SpawnPoint" then
 											TriggerServerEvent("htb_garage:GetPlayerVehicles", vehicleType, k)
 										end
@@ -196,6 +240,10 @@ AddEventHandler("ft_libs:OnClientReady", function()
 
 	if Config.HangarsEnabled then
 		DrawMarkers(Config.Hangars, Config.HangarMarkerType, "plane")
+	end
+
+	if Config.ImpoundEnabled then
+		DrawImpoundMarkers(Config.Impounds, Config.ImpoundMarkerType)
 	end
 end)
 

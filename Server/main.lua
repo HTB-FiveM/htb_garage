@@ -260,8 +260,8 @@ RegisterNetEvent("htb_garage:ImpoundVehicle")
 AddEventHandler("htb_garage:ImpoundVehicle", function(impoundData)
 	local _source = source
 
+	local playerLicense = PlayerIdentifiers(_source)
 	local playerJob = FrameworkCtx:GetPlayerJob(_source)
-print('PlayJob: ' .. json.encode(playerJob.jobName))
 
 	if Config.AllowedImpoundJobs[playerJob.jobName] then
 		local isCitizen = MySQL.Sync.fetchScalar(qu.SqlIsCitizenVehicle.handle, {
@@ -278,7 +278,8 @@ print('PlayJob: ' .. json.encode(playerJob.jobName))
 			["@id"] = impoundData.impoundId,
 			["@reasonForImpound"] = impoundData.reasonForImpound,
 			["@releaseDateTime"] = impoundData.releaseDateTime,
-			["@allowPersonalUnimpound"] = impoundData.allowPersonalUnimpound
+			["@allowPersonalUnimpound"] = impoundData.allowPersonalUnimpound,
+			["@impoundedByUser"] = playerLicense
 		})
 		local updated = MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
 			["@pound"] = 1,
@@ -302,9 +303,67 @@ RegisterNetEvent("htb_garage:ReleaseVehicle")
 AddEventHandler("htb_garage:ReleaseVehicle", function(plate)
 	MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
 		["@pound"] = 0,
+		["@plate"] = plate
 	})
 	TriggerClientEvent("htb_garage:Released", source, "Vehicle '" .. plate .. "' has been released", plate)
 end)
+
+
+
+/*
+{
+  type: string;
+  plate: string;
+  displayName: string;
+  modelName: string;
+  spawnName: string;
+  import: boolean;
+  price: number;
+  timeLeft: number;
+}
+*/
+
+
+
+RegisterNetEvent("htb_garage:server:ImpoundRetrieveVehicle")
+AddEventHandler("htb_garage:server:ImpoundRetrieveVehicle", function(vehicle)
+	local _source = source
+
+	MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
+		["@pound"] = 0,
+		["@plate"] = vehicle.plate
+
+	})
+
+	
+
+	TriggerClientEvent("htb_garage:client:VehicleImpoundRetrieved", _source,
+	{
+		plate = vehicle.plate,
+		spawnLocation = vector3()
+	})
+end)
+
+RegisterNetEvent("htb_garage:server:ReturnVehicleToOwner")
+AddEventHandler("htb_garage:server:ReturnVehicleToOwner", function(vehicle)
+	local _source = source
+
+	MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
+		["@pound"] = 0,
+		["@plate"] = vehicle.plate
+
+	})
+	local message = ("Vehicle %s has been returned to the owner"):format(vehicle.plate)
+	TriggerClientEvent("htb_garage:client:VehicleReturnedToOwner", _source, message)
+end)
+
+
+
+
+
+
+
+
 
 RegisterCommand("garageToggleDebug", function(source, args, raw)
 	garageDebug = not garageDebug

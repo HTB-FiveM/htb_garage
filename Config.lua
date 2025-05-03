@@ -5,7 +5,8 @@ Config.MinSpawns = 2
 Config.Blips = {
     car = { sprite = 524, color = 30 },
     boat = { sprite = 410, color = 30 },
-    plane = { sprite = 524, color = 188 }
+    plane = { sprite = 572, color = 188 },
+    impound = { sprite = 372, color = 46 } -- TODO Find a blip for here
 }
 
 Config.GarageMarkerType = 1 --27
@@ -15,7 +16,7 @@ Config.HangarMarkerType = 1
 Config.DocksEnabled = true
 Config.HangarsEnabled = false
 
-Config.ImpoundPrice	= 2500 -- pound price to get vehicle back
+Config.ImpoundPrice	= 2500 -- pound price to get vehicle back TOO: Remove this
 Config.Locale = 'en'
 
 Config.TeleportToVehicleOnSpawn = true
@@ -35,7 +36,7 @@ Config.AllowedImpoundJobs = {
 }
 
 Config.ImpoundTimePeriods = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24}
---Config.ImpoundTimePeriods = {0,1,2,3}
+
 
 -- Set the identifier type as a string here, for example:
 --		steam

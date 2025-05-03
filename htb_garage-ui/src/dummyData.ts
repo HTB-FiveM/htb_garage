@@ -73,7 +73,7 @@ export default function initialiseDummyData(
       availableImpounds: [
         {
           id: 1,
-          displayName: "Union Depository",
+          displayName: "Harry's garage",
         },
         {
           id: 2,
@@ -114,6 +114,7 @@ export default function initialiseDummyData(
           import: false,
           price: 1000,
           timeLeft: 3,
+          impoundId: 1,
         },
         {
           type: "zentorno",
@@ -124,6 +125,7 @@ export default function initialiseDummyData(
           import: true,
           price: 700,
           timeLeft: 3,
+          impoundId: 1,
         },
       ],
     } as SetupImpoundRetrieveVehicleData);

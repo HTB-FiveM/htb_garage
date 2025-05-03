@@ -13,15 +13,11 @@ CREATE TABLE owned_vehicles (
   plate varchar(50) NOT NULL,
   type varchar(10) NOT NULL DEFAULT 'car',
   job varchar(50) DEFAULT NULL,
-  PRIMARY KEY (plate)
+
+  PRIMARY KEY (plate),
+  CONSTRAINT FK_ownedvehicles_users FOREIGN KEY (owner) REFERENCES users (identifier) ON DELETE CASCADE ON UPDATE CASCADE;
 );
 
---
--- Create foreign key
---
-ALTER TABLE owned_vehicles
-ADD CONSTRAINT FK_ownedvehicles_users FOREIGN KEY (owner)
-REFERENCES users (identifier) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Create the impound table which lists all impound depots around the map 

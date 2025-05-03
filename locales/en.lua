@@ -13,8 +13,8 @@ Locales['en'] = {
 	['open_plane_hangar']		         = 'Press ~INPUT_PICKUP~ to open the hangar',
 	['spawn_plane']				         = 'Press ~INPUT_PICKUP~ to take your aircraft out of the hangar',
 	['store_plane']				         = 'Press ~INPUT_PICKUP~ to store your aircraft in the hangar',
-	['take_from_pound']			         = 'Press ~INPUT_PICKUP~ to take vehicle out of the pound',
-	['store_in_pound']			         = 'press ~INPUT_PICKUP~ to store vehicle in the pound',
+	['take_from_pound']			         = 'Press ~INPUT_PICKUP~ to take vehicle out of the impound',
+	['store_in_pound']			         = 'press ~INPUT_PICKUP~ to store vehicle in the impound',
 	['police_garage_name']		         = 'Police Garage',
 	['open_police_garage']		         = 'Press ~INPUT_PICKUP~ to open the police garage',
 	['spawn_police_garage']		         = 'Press ~INPUT_PICKUP~ to take a vehicle out of the police garage',
@@ -65,4 +65,6 @@ Locales['en'] = {
 	['no_vehicles_nearby']		         = 'No vehicles nearby',
 	['vehicle_impounded']		         = 'Vehicle has been impounded',
 	["citizen_vehicle_only_impound"]     = "Only citizen vehicles can be impounded!!!",
+	["return_not_auth"]                  = "You are not authorised to return vehicles without payment",
+	["sherriff_impound"]                 = "Sherriff's Impound"
 }

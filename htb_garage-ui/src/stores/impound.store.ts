@@ -99,8 +99,10 @@ export const useImpoundStore = defineStore("impound", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...vehicle,
-          userIsImpoundManager: this.retrieveVehicle.userIsImpoundManager,
+          vehicle: { ...vehicle },
+          userIsImpoundManager: !this.retrieveVehicle
+            ? false
+            : this.retrieveVehicle.userIsImpoundManager,
         }),
       };
 

@@ -98,13 +98,15 @@ SQL['qbcore'] = {
         impoundId,
         reasonForImpound,
         releaseDateTime,
-        allowPersonalUnimpound
+        allowPersonalUnimpound,
+        impoundedByUser
       ) VALUES (
         @vehiclePlate,
         @id,
         @reasonForImpound,
         @releaseDateTime,
-        @allowPersonalUnimpound
+        @allowPersonalUnimpound,
+        @impoundedByUser
       )
     ]],
     handle = nil,

@@ -35,4 +35,5 @@ export interface ImpoundVehicle {
   import: boolean;
   price: number;
   timeLeft: number;
+  impoundId: number;
 }

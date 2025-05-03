@@ -115,6 +115,77 @@ AddEventHandler("htb_garage:ImpoundResult", function(data)
 	FrameworkCtx:ShowNotification(data.message)
 end)
 
+
+
+
+
+
+
+function OpenImpoundRetrieveUI()
+	-- Get the player job and determine if they're an impound manager
+	local userIsImpoundManager  = false
+
+	local impoundedPlayerVehicles = {}
+
+	-- {
+	-- 	type: string;
+	-- 	plate: string;
+	-- 	displayName: string;
+	-- 	modelName: string;
+	-- 	spawnName: string;
+	-- 	import: boolean;
+	-- 	price: number;
+	-- 	timeLeft: number;
+	-- 	impoundId: number;
+	--   }
+	local messageData = {
+		type = "setupImpoundRetrieveVehicle",
+		userIsImpoundManager = userIsImpoundManager,
+		vehicles = impoundedPlayerVehicles
+	}
+	SendNUIMessage(messageData)
+
+	ToggleGUI(true, "enableImpound", "/impound")
+end
+
+
+
+RegisterNUICallback("impoundRetrieve", function(vehicle, cb)
+
+	TriggerServerEvent("htb_garage:server:ImpoundRetrieveVehicle", vehicle)
+
+	cb("ok")
+end)
+
+RegisterNetEvent("htb_garage:client:VehicleImpoundRetrieved")
+AddEventHandler("htb_garage:client:VehicleImpoundRetrieved", function(data)
+
+	local message = (""):format()
+	FrameworkCtx:ShowNotification(message)
+	ToggleGUI(false)
+end)
+
+
+
+RegisterNUICallback("returnToOwner", function(data, cb)
+	if data.userIsImpoundManager == nil or data.userIsImpoundManager == false then
+		FrameworkCtx:ShowNotification(_U('return_not_auth'))
+		return
+	end
+	if data ~= nil and data.vehicle ~= nil then
+		TriggerServerEvent("htb_garage:server:ReturnVehicleToOwner", data.vehicle)
+	end
+
+	cb("ok")
+end)
+
+RegisterNetEvent("htb_garage:client:VehicleReturnedToOwner")
+AddEventHandler("htb_garage:client:VehicleReturnedToOwner", function(message)
+	FrameworkCtx:ShowNotification(message)
+	ToggleGUI(false)
+end)
+
+
 RegisterNetEvent("htb_garage:Released")
 AddEventHandler("htb_garage:Released", function(message, carplate)
 	FrameworkCtx:ShowNotification(message)
