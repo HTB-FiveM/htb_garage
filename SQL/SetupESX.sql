@@ -41,16 +41,18 @@ CREATE TABLE impound_htb (
 -- Create the impound_vehicle where a record of vehicle imponds are recorded 
 --
 CREATE TABLE impound_vehicle_htb (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-	vehiclePlate VARCHAR(12),
-	impoundId INT UNSIGNED NOT NULL, -- FK
-	reasonForImpound VARCHAR(300),
-	releaseDateTime varchar(50),
-	allowPersonalUnimpound TINYINT(1),
-  
+  id int UNSIGNED NOT NULL AUTO_INCREMENT,
+  vehiclePlate varchar(12) DEFAULT NULL,
+  impoundId int UNSIGNED NOT NULL,
+  reasonForImpound varchar(300) DEFAULT NULL,
+  releaseDateTime varchar(50) DEFAULT NULL,
+  allowPersonalUnimpound tinyint(1) DEFAULT NULL,
+  impoundedByUser varchar(60) NOT NULL,
+
   PRIMARY KEY (id),
-  FOREIGN KEY (impoundId) REFERENCES impound_htb(id),
-  FOREIGN KEY (vehiclePlate) REFERENCES owned_vehicles(plate)
+  CONSTRAINT FK_impoundvehicle_impound FOREIGN KEY (impoundId) REFERENCES impound_htb (id),
+  CONSTRAINT FK_impoundvehicle_ownedvehicle FOREIGN KEY (vehiclePlate) REFERENCES owned_vehicles (plate),
+  CONSTRAINT FK_impoundvehicle_users FOREIGN KEY (impoundedByUser) REFERENCES users (identifier)
 );
 
 INSERT INTO impound_htb(NAME, displayName, locationX, locationY, locationZ) VALUES
