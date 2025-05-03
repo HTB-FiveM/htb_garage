@@ -49,7 +49,8 @@ SQL['esx'] = {
     query = [[
       UPDATE owned_vehicles
       SET vehicle = @vehicle,
-          `stored` = @stored
+          `stored` = @stored,
+          `type` = @type
       WHERE plate = @plate
     ]],
     handle = nil,
