@@ -49,7 +49,8 @@ SQL['qbcore'] = {
     query = [[
       UPDATE player_vehicles
       SET mods     = @vehicle,
-          `stored` = @stored
+          `stored` = @stored,
+          `type` = @type
       WHERE plate   = @plate
     ]],
     handle = nil,
