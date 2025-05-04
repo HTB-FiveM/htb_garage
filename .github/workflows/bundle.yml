@@ -1,0 +1,17 @@
+name: Bundle FiveM Resources
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bundle-esx:
+    uses: steveski/FiveM-Pipeline-Templates/.github/workflows/fivem-bundle-resource.yml@main
+    with:
+      framework: esx
+
+  bundle-qbcore:
+    uses: steveski/FiveM-Pipeline-Templates/.github/workflows/fivem-bundle-resource.yml@main
+    with:
+      framework: qbcore
