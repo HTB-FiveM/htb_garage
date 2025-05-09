@@ -51,5 +51,56 @@ EsxStrategy = {
             jobName = xPlayer.job.name,
             jobGrade = xPlayer.job.grade_name
         }        
-    end)
-}                               
+    end),
+
+    -- Attempts to deduct `amount` from a player's cash or bank.
+    -- @param source       number    The player’s server ID
+    -- @param amount       number    How much to deduct (must be > 0)
+    -- @param accountName  string?   Optional: “bank”, “black_money”, etc. If nil, tries cash then bank.
+    -- @return boolean               True if money was removed, false if insufficient funds
+    TryDeductPlayerMoney = Strategy:new(function(source, amount, accountName)
+        if amount <= 0 then
+            return false
+        end
+        
+        local xPlayer = ESX.GetPlayerFromId(source)
+        if not xPlayer then
+            return false
+        end
+
+        -- Helper to test-and-remove from a given account
+        local function attemptAccount(accName, current)
+            if (current - amount) >= 0 then
+                if accName == 'cash' then
+                    xPlayer.removeMoney(amount)
+                else
+                    xPlayer.removeAccountMoney(accName, amount)
+                end
+                return true
+            end
+            return false
+        end
+
+        if accountName then
+            -- Specified account: fetch its balance and try it
+            local acc = xPlayer.getAccount(accountName)
+            if acc and attemptAccount(accountName, acc.money) then
+                return true
+            end
+            return false
+        else
+            -- No account specified: try cash first…
+            local cash   = xPlayer.getMoney()
+            if attemptAccount('cash', cash) then
+                return true
+            end
+            -- then fall back to bank
+            local bankAcc = xPlayer.getAccount('bank')
+            if bankAcc and attemptAccount('bank', bankAcc.money) then
+                return true
+            end
+            return false
+        end
+    end),
+
+}

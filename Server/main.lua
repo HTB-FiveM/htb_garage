@@ -227,12 +227,12 @@ AddEventHandler("htb_garage:TeleportAllInVehicleToDock", function(serverIds, pos
 end)
 
 
-RegisterNetEvent("htb_garage:SetupForImpoundVehicle")
-AddEventHandler("htb_garage:SetupForImpoundVehicle", function(plate)
+RegisterNetEvent("htb_garage:server:SetupForImpoundVehicle")
+AddEventHandler("htb_garage:server:SetupForImpoundVehicle", function(plate)
 	local _source = source
 
 	local playerJob = FrameworkCtx:GetPlayerJob(_source)
-print('PlayJob: ' .. json.encode(playerJob.jobName))
+
 	if Config.AllowedImpoundJobs[playerJob.jobName] then
 		local isCitizen = MySQL.scalar.await(qu.SqlIsCitizenVehicle.handle, {
 			["@plate"] = plate
@@ -242,14 +242,21 @@ print('PlayJob: ' .. json.encode(playerJob.jobName))
 			return
 		end
 		
-		local results = MySQL.Sync.fetchAll(qu.SqlGetImpoundList.handle, {})
+		-- Get Impound details from config
+		local impounds = {}
+		for impoundKey, v in pairs(Config.Impounds) do
+			table.insert(impounds, {
+				impoundId = impoundKey,
+				displayName = v.RetrievePoint.Name
+			})
+		end
 
 		local ret = {
-			impounds = results,
+			impounds = impounds,
 			data = plate
 		}
 
-		TriggerClientEvent("htb_garage:SetupForImpoundVehicleResults", _source, ret)
+		TriggerClientEvent("htb_garage:client:SetupForImpoundVehicleResults", _source, ret)
 	
 	else
 		TriggerClientEvent("htb_garage:ShowClientNotification", _source, "You are not authorised to impound vehicles")
@@ -260,7 +267,7 @@ RegisterNetEvent("htb_garage:ImpoundVehicle")
 AddEventHandler("htb_garage:ImpoundVehicle", function(impoundData)
 	local _source = source
 
-	local playerLicense = PlayerIdentifiers(_source)
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
 	local playerJob = FrameworkCtx:GetPlayerJob(_source)
 
 	if Config.AllowedImpoundJobs[playerJob.jobName] then
@@ -275,11 +282,11 @@ AddEventHandler("htb_garage:ImpoundVehicle", function(impoundData)
 
 		local id = MySQL.Sync.insert(qu.SqlAddImpoundEntry.handle, {		
 			["@vehiclePlate"] = impoundData.vehiclePlate,
-			["@id"] = impoundData.impoundId,
+			["@impoundName"] = impoundData.impoundId,
 			["@reasonForImpound"] = impoundData.reasonForImpound,
 			["@releaseDateTime"] = impoundData.releaseDateTime,
 			["@allowPersonalUnimpound"] = impoundData.allowPersonalUnimpound,
-			["@impoundedByUser"] = playerLicense
+			["@impoundedByUser"] = identifier
 		})
 		local updated = MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
 			["@pound"] = 1,
@@ -309,45 +316,46 @@ AddEventHandler("htb_garage:ReleaseVehicle", function(plate)
 end)
 
 
-
-/*
-{
-  type: string;
-  plate: string;
-  displayName: string;
-  modelName: string;
-  spawnName: string;
-  import: boolean;
-  price: number;
-  timeLeft: number;
-}
-*/
-
-
-
 RegisterNetEvent("htb_garage:server:ImpoundRetrieveVehicle")
 AddEventHandler("htb_garage:server:ImpoundRetrieveVehicle", function(vehicle)
 	local _source = source
 
-	MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
-		["@pound"] = 0,
-		["@plate"] = vehicle.plate
+	if vehicle.priceToRelease ~= nil and vehicle.priceToRelease > 0 then
+		local success = FrameworkCtx:TryDeductPlayerMoney(_source, vehicle.priceToRelease)
+		if not success then
+			TriggerClientEvent("htb_garage:ShowClientNotification", _source, "Unable to charge retrieval fee due to lack of funds")
+			return
+		end
+	end
 
+	-- If successful then release the vehicle
+	-- Unimpound the vehicle
+	-- MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
+	-- 	["@pound"] = 0,
+	-- 	["@plate"] = vehicle.plate
+
+	-- })
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
+	local results = MySQL.Sync.fetchAll(qu.SqlGetVehicle.handle, {
+		["@identifier"] = identifier,
+		["@plate"] = vehicle.plate,
 	})
 
-	
-
-	TriggerClientEvent("htb_garage:client:VehicleImpoundRetrieved", _source,
-	{
-		plate = vehicle.plate,
-		spawnLocation = vector3()
-	})
+	TriggerClientEvent("htb_garage:client:VehicleImpoundRetrieved", _source, results, vehicle.impoundId)
 end)
 
 RegisterNetEvent("htb_garage:server:ReturnVehicleToOwner")
 AddEventHandler("htb_garage:server:ReturnVehicleToOwner", function(vehicle)
 	local _source = source
 
+	-- Cancel the detail record of the impound
+	MySQL.Sync.execute(qu.SqlSetImpoundVehicleActive.handle, {
+		["@active"] = 0,
+		["@impoundVehicleId"] = vehicle.impoundVehicleId
+
+	})
+
+	-- Set the vehicle as unimpounded
 	MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
 		["@pound"] = 0,
 		["@plate"] = vehicle.plate
@@ -360,9 +368,29 @@ end)
 
 
 
+RegisterNetEvent("htb_garage:server:FetchImpoundedPlayerVehicles")
+AddEventHandler("htb_garage:server:FetchImpoundedPlayerVehicles",  function(impoundName)
+	local _source = source
 
+	local playerJob = FrameworkCtx:GetPlayerJob(_source)
+	local allowedImpoundJob = Config.AllowedImpoundJobs[playerJob.jobName]
 
+	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source) --PlayerIdentifiers(_source)
+print(identifier)
+print(impoundName)
+	local vehicles = MySQL.Sync.fetchAll(qu.SqlGetImpoundedPlayerVehicles.handle, {
+		["@license"] = identifier,
+		["@impoundName"] = impoundName,
+	}) 
 
+	for k, veh in pairs(vehicles) do
+		veh.impoundName = Config.Impounds[veh.impoundId].RetrievePoint.Name
+		--veh.import = IsImportVehicle(veh.model)
+print("Veh Import: " .. json.encode(veh.import))
+	end
+print(json.encode(vehicles))
+	TriggerClientEvent("htb_garage:client:ReturnImpoundedPlayerVehicles", _source, vehicles, allowedImpoundJob)
+end)
 
 
 RegisterCommand("garageToggleDebug", function(source, args, raw)

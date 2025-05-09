@@ -5,8 +5,8 @@ Config.MinSpawns = 2
 Config.Blips = {
     car = { sprite = 524, color = 30 },
     boat = { sprite = 410, color = 30 },
-    plane = { sprite = 572, color = 188 },
-    impound = { sprite = 372, color = 46 } -- TODO Find a blip for here
+    plane = { sprite = 423, color = 188 },
+    impound = { sprite = 317, color = 33 } -- TODO Find a blip for here
 }
 
 Config.GarageMarkerType = 1 --27

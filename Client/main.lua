@@ -156,7 +156,7 @@ function DrawImpoundMarkers(impounds, markerType)
 						exports.ft_libs:HelpPromt(zone.HelpPrompt)
 						if IsControlJustReleased(0, 38) and IsInputDisabled(0) and GetLastInputMethod(2) then
 							if not IsPedInAnyVehicle(PlayerPedId(), true) then
-								OpenImpoundRetrieveUI()
+								FetchImpoundedPlayerVehicles(impoundName)
 							end
 						end
 					end,

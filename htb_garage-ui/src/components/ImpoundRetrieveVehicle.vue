@@ -71,7 +71,9 @@ const returnToOwner = async (vehicle: ImpoundVehicle) => {
         <div v-if="expandedPlate === vehicle.plate" class="details-panel">
           <div class="action-buttons">
             <div class="item-buttons">
-              <Button @click="spawnVehicle(vehicle)">Pay for retrieve</Button>
+              <Button v-if="!vehicle.timeLeft" @click="spawnVehicle(vehicle)"
+                >Pay for retrieve</Button
+              >
 
               <Button
                 v-if="store.retrieveVehicle!.userIsImpoundManager"

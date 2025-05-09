@@ -88,14 +88,14 @@ SQL['esx'] = {
     query = [[
       INSERT INTO impound_vehicle_htb (
         vehiclePlate,
-        impoundId,
+        impoundName,
         reasonForImpound,
         releaseDateTime,
         allowPersonalUnimpound,
         impoundedByUser
       ) VALUES (
         @vehiclePlate,
-        @id,
+        @impoundName,
         @reasonForImpound,
         @releaseDateTime,
         @allowPersonalUnimpound,
@@ -138,19 +138,6 @@ SQL['esx'] = {
     handle = nil,
   },
 
-  SqlGetImpoundList = {
-    query = [[
-      SELECT
-        id AS impoundId,
-        displayName,
-        locationX,
-        locationY,
-        locationZ
-      FROM impound_htb
-    ]],
-    handle = nil,
-  },
-
   SqlIsCitizenVehicle = {
     query = [[
       SELECT plate
@@ -160,6 +147,37 @@ SQL['esx'] = {
     ]],
     handle = nil,
   },
+
+  SqlGetImpoundedPlayerVehicles = {
+    query = [[
+SELECT 
+  ov.type,
+  ov.plate,
+  ov.vehiclename AS displayName,
+  CAST(json_value(ov.vehicle, '$.model') AS SIGNED) model,
+  iv.priceToRelease,
+  iv.impoundName AS impoundId,
+  iv.id AS impoundVehicleId
+
+FROM owned_vehicles ov
+  INNER JOIN impound_vehicle_htb iv
+    ON ov.plate = iv.vehiclePlate
+
+WHERE ov.pound_htb = 1
+  AND ov.owner = @license
+  AND iv.impoundName = @impoundName
+    ]],
+    handle = nil,
+  },
+
+  SqlSetImpoundVehicleActive = {
+    query = [[
+UPDATE impound_vehicle_htb
+SET active = @active
+WHERE id = @impoundVehicleId
+    ]],
+    handle = nil,
+  }
 }
 
 -- Then, in your client.lua (or shared init), store them all in one loop:

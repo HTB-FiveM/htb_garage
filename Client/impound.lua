@@ -77,21 +77,20 @@ RegisterCommand("impound", function()
 
 	local plate = GetVehicleNumberPlateText(veh)
 
-	TriggerServerEvent("htb_garage:SetupForImpoundVehicle", plate)
+	TriggerServerEvent("htb_garage:server:SetupForImpoundVehicle", plate)
 end, false)
 
-RegisterNetEvent("htb_garage:SetupForImpoundVehicleResults")
-AddEventHandler("htb_garage:SetupForImpoundVehicleResults", function(data)
+RegisterNetEvent("htb_garage:client:SetupForImpoundVehicleResults")
+AddEventHandler("htb_garage:client:SetupForImpoundVehicleResults", function(data)
 	local impounds = {}
+
 	for a, imp in pairs(data.impounds) do
 		table.insert(impounds, {
 			id = imp.impoundId,
 			displayName = imp.displayName,
-			locationX = imp.locationX,
-			locationY = imp.locationY,
-			locationZ = imp.locationZ,
 		})
 	end
+
 	local plate = data.data
 	OpenImpoundUI(plate, impounds)
 end)
@@ -120,13 +119,13 @@ end)
 
 
 
+function FetchImpoundedPlayerVehicles(impoundName)
+	TriggerServerEvent("htb_garage:server:FetchImpoundedPlayerVehicles", impoundName)
+end
 
-function OpenImpoundRetrieveUI()
-	-- Get the player job and determine if they're an impound manager
-	local userIsImpoundManager  = false
 
-	local impoundedPlayerVehicles = {}
 
+function OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
 	-- {
 	-- 	type: string;
 	-- 	plate: string;
@@ -148,6 +147,16 @@ function OpenImpoundRetrieveUI()
 	ToggleGUI(true, "enableImpound", "/impound")
 end
 
+RegisterNetEvent("htb_garage:client:ReturnImpoundedPlayerVehicles")
+AddEventHandler("htb_garage:client:ReturnImpoundedPlayerVehicles", function(impoundedPlayerVehicles, userIsImpoundManager)
+	
+	for k, veh in pairs(impoundedPlayerVehicles) do
+		veh.spawnName = GetDisplayNameFromVehicleModel(veh.model)
+
+	end
+
+	OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
+end)
 
 
 RegisterNUICallback("impoundRetrieve", function(vehicle, cb)
@@ -158,7 +167,18 @@ RegisterNUICallback("impoundRetrieve", function(vehicle, cb)
 end)
 
 RegisterNetEvent("htb_garage:client:VehicleImpoundRetrieved")
-AddEventHandler("htb_garage:client:VehicleImpoundRetrieved", function(data)
+AddEventHandler("htb_garage:client:VehicleImpoundRetrieved", function(vehicle, impoundId)
+	local spawnPoint = DetermineImpoundRetrieveSpawnLocation(Config.Impounds[impoundId].SpawnPoints)
+
+	if spawnPoint == nil then
+		FrameworkCtx:ShowNotification(_U("spawn_point_occupied"))
+		return
+	end
+
+	-- May want to call through to server here depending on how things go with OneSync Infinity and vehicle duplication
+	DoTheSpawn(vehicle.vehicle, spawnPoint)
+	TriggerEvent('qb-vehiclekeys:client:AddKeys', vehicle.plate)
+
 
 	local message = (""):format()
 	FrameworkCtx:ShowNotification(message)

@@ -19,30 +19,37 @@ const modelName = (vehicle: ImpoundVehicle) => {
 const toggleDetailsPanel = () => {
   showDetails.value = !showDetails.value;
   if (!showDetails.value) {
-
   }
 };
 
 // Using the composable this way rather than directly in the template
 // prevent the output value being wrapped in double quotes
 const formatCurrency = (amount: number) => {
-  return useCurrency(amount).value
-} 
-
+  return useCurrency(amount).value;
+};
 </script>
 
 <template>
-  <div @click="toggleDetailsPanel">
-    <div class="vehicleListItem">
-      <span><strong>{{ modelName(veh) }}</strong> - </span>
-      <span v-if="veh.plate" class="badge badge-light">{{ veh.plate }}</span>
-      <span v-if="veh.displayName"> - {{ veh.displayName }}</span>
-      <small v-if="veh.import">, import</small>
+  <div class="vehicle-row" @click="toggleDetailsPanel">
+    <div class="vehicle-details">
+      <div class="vehicleListItem">
+        <span
+          ><strong>{{ modelName(veh) }}</strong>
+          <small v-if="veh.import">, import</small> -
+        </span>
+        <span v-if="veh.plate" class="badge badge-light">{{ veh.plate }}</span>
+        <span v-if="veh.displayName"> - {{ veh.displayName }}</span>
+      </div>
+      <div style="color: #466f52">{{ formatCurrency(veh.priceToRelease) }}</div>
     </div>
-    <div style="color: #466F52;">{{ formatCurrency(veh.price) }}</div>
-     
+    <div class="impound-details">
+      <div>{{ veh.impoundName }}</div>
+      <div v-if="veh.timeLeft">{{ veh.timeLeft }} hours</div>
+      <div v-else>Ready</div>
+    </div>
   </div>
-  <div v-if="showDetails" class="details-body"><!-- :id="veh.htmlId">-->
+  <div v-if="showDetails" class="details-body">
+    <!-- :id="veh.htmlId">-->
     <slot />
   </div>
 </template>
@@ -136,11 +143,10 @@ VehicleAttribute {
   border-color: #444;
   border-width: 1px;
   background-color: orangered;
-  padding: .5rem;
-  font-size: .7rem;
+  padding: 0.5rem;
+  font-size: 0.7rem;
   text-align: center;
-  margin: .5rem .3rem 0 .3rem;
-  
+  margin: 0.5rem 0.3rem 0 0.3rem;
 }
 
 .fade-enter-active {
@@ -151,12 +157,40 @@ VehicleAttribute {
   transition: opacity 1s;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
-.fade-enter-to, .fade-leave-from {
+.fade-enter-to,
+.fade-leave-from {
   opacity: 1;
 }
 
+.vehicle-row {
+  display: flex;
+  /* Option A: space them out evenly */
+  justify-content: space-between;
+  align-items: center;
+  /* Option B: remove justify-content and instead push the second child
+     .impound-details { margin-left: auto; } */
+}
+
+.impound-details {
+  /* push to right if you didn’t use justify-content: space-between */
+  /* margin-left: auto; */
+
+  /* right-align its contents */
+  text-align: right;
+
+  /* optionally vertically center if its height differs */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* if you want the .vehicle-details to take all the space up to the impound div */
+.vehicle-details {
+  /* flex: 1;   <-- only if you need it to grow/shrink */
+}
 </style>

@@ -1,5 +1,5 @@
 export interface Impound {
-  id: number;
+  id: string;
   displayName: string;
 }
 
@@ -33,7 +33,9 @@ export interface ImpoundVehicle {
   modelName: string;
   spawnName: string;
   import: boolean;
-  price: number;
+  priceToRelease: number;
   timeLeft: number;
-  impoundId: number;
+  impoundId: string;
+  impoundName: string;
+  impoundVehicleId: number;
 }

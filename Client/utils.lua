@@ -51,6 +51,54 @@ function GetVehicleByPlate(plateText)
 end
 
 
+--- Attempts to find an unoccupied impound retrieval spawn location.
+-- @param spawnPoints table  Array of vector4 spawn locations ({ x, y, z, w })
+-- @return table|nil         `{ Pos = { x, y, z }, Heading = number }` or `nil` if all are occupied
+function DetermineImpoundRetrieveSpawnLocation(spawnPoints)
+    -- Make a shallow copy so we don't modify the original table
+    local candidates = {}
+    for i, v in ipairs(spawnPoints) do
+        candidates[i] = v
+    end
+
+    local spawnArea = 1.5  -- radius (in metres) to check for obstructions
+
+    -- Try random locations until we run out of candidates
+    while #candidates > 0 do
+        local idx   = math.random(1, #candidates)
+        local spawn = candidates[idx]
+        -- remove this candidate so we don't try it again
+        table.remove(candidates, idx)
+
+        -- extract x, y, z and heading (w) from the vector4
+        local x, y, z, heading = spawn.x, spawn.y, spawn.z, spawn.w
+
+        -- native: checks for vehicles/peds/etc in the area
+        if not IsPositionOccupied(
+            x, y, z,
+            spawnArea,
+            false, -- unknown, leave false
+            true,  -- check for any vehicles
+            true,  -- check for any peds
+            false, -- unknown
+            false, -- unknown
+            0,     -- unknown
+            false  -- unknown
+        ) then
+            return {
+                Pos     = { x = x, y = y, z = z },
+                Heading = heading
+            }
+        end
+    end
+print("none mate")
+    -- all spawn points were occupied
+    return nil
+end
+
+
+
+
 
 RegisterCommand('coords_htb', function()
     local ped = PlayerPedId()

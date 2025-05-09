@@ -72,19 +72,19 @@ export default function initialiseDummyData(
       vehiclePlate: "abc123",
       availableImpounds: [
         {
-          id: 1,
+          id: "HG",
           displayName: "Harry's garage",
         },
         {
-          id: 2,
+          id: "FG",
           displayName: "First Garage",
         },
         {
-          id: 3,
+          id: "SG",
           displayName: "Second Garage",
         },
         {
-          id: 4,
+          id: "TG",
           displayName: "Third Garage",
         },
       ] as Impound[],
@@ -112,9 +112,11 @@ export default function initialiseDummyData(
           modelName: "adssadads",
           spawnName: "34534543",
           import: false,
-          price: 1000,
-          timeLeft: 3,
-          impoundId: 1,
+          priceToRelease: 1000,
+          timeLeft: 0,
+          impoundId: "David_Sherriff_Station",
+          impoundName: "David Sherriff Station",
+          impoundVehicleId: 5,
         },
         {
           type: "zentorno",
@@ -123,9 +125,11 @@ export default function initialiseDummyData(
           modelName: "dsfgsdfg",
           spawnName: "657457",
           import: true,
-          price: 700,
+          priceToRelease: 700,
           timeLeft: 3,
-          impoundId: 1,
+          impoundId: "David_Sherriff_Station",
+          impoundName: "David Sherriff Station",
+          impoundVehicleId: 56,
         },
       ],
     } as SetupImpoundRetrieveVehicleData);

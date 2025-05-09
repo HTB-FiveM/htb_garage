@@ -53,6 +53,10 @@ function FrameworkContext:GetPlayerJob(source)
   return self.strategies[GetFunctionName(2)].execute(source)
 end
 
+function FrameworkContext:TryDeductPlayerMoney(source, amount, accountName)
+  return self.strategies[GetFunctionName(2)].execute(source, amount, accountName)
+end
+
 --------------------------------------
 -- Wire up the framework functions
 --------------------------------------
