@@ -6,8 +6,10 @@ import ToggleSwitch from "./ToggleSwitch.vue";
 import CurrencyInput from "./CurrencyInput.vue";
 
 import { useImpoundStore } from "@/stores/impound.store";
-import { computed } from "vue";
+import { computed, inject } from "vue";
+import type { AppConfig } from "@/config";
 
+const config = inject<AppConfig>('appConfig');
 const store = useImpoundStore();
 
 const availableImpounds = computed<Option<string>[]>(() => {
@@ -96,9 +98,9 @@ const timePeriods = computed<Option<number>[]>(() => {
       id="releasePrice"
       name="releasePrice"
       placeholder="Enter amount"
-      locale="en-AU"
-      currency="AUD"
-      :maxFractionDigits="2"
+      :locale="config?.locale"
+      :currency="config?.currency"
+      :maxFractionDigits="config?.maxFractionDigits"
       v-model="store.storeVehicle!.retrievePrice" />
   </div>
 </template>
