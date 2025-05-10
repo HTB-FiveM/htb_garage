@@ -32,8 +32,7 @@ const handlers: MessageHandlers = {
 
   enableImpound: (msg) => impoundStore.initStore(msg),
   setupImpoundStoreVehicle: (msg) => impoundStore.setupImpoundStoreVehicle(msg),
-  setupImpoundRetrieveVehicle: (msg) =>
-    impoundStore.setImpoundRetrieveVehicle(msg),
+  setupImpoundRetrieveVehicle: (msg) => impoundStore.setImpoundRetrieveVehicle(msg),
 };
 
 function onNuiMessage(e: MessageEvent) {
@@ -41,7 +40,14 @@ function onNuiMessage(e: MessageEvent) {
 
   // Navigate to the page's route
   if ("route" in msg && msg.route) {
-    router.push(msg.route);
+    const r = msg.route as string
+    if (r.startsWith("/")) {
+      // treat as path
+      router.push(r)
+    } else {
+      // treat as name
+      router.push({ name: r })
+    }
   }
   if ("isVisible" in msg) {
     appStore.isVisible = msg.isVisible;
@@ -87,6 +93,16 @@ const unwatch = watch(
   }
 );
 
+// here for debugging meta values on routes
+// watch(
+//   () => route.meta.containerWidth,
+//   (w) => {
+//     console.log('containerWidth changed to', w)
+//   },
+//   { immediate: true }
+// )
+
+
 const onEscKey = (event: KeyboardEvent) => {
   if (event.key === "Escape") {
     close();
@@ -116,7 +132,7 @@ function onClickOutside(event: MouseEvent) {
     ref="appContainer"
     class="page-content"
     :style="{ width: containerWidth }">
-    <router-view />
+    <router-view :key="route.fullPath" />
   </section>
 </template>
 

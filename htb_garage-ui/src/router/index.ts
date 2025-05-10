@@ -10,13 +10,13 @@ const routes: RouteRecordRaw[] = [
     path: '/impound',
     name: 'impound',
     component: () => import('@/views/Impound.vue'),
-    meta: { containerWidth: '50%' }
+    meta: { containerWidth: '30%' }
   },
   {
     path: '/retrieve',
     name: 'retrieve',
     component: () => import('@/views/Impound.vue'),
-    meta: { containerWidth: '30%' }
+    meta: { containerWidth: '20%' }
   },
 
 ];

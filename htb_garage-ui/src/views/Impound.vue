@@ -2,6 +2,7 @@
 import ImpoundStore from "@/components/ImpoundStoreVehicle.vue";
 import ImpoundRetrieve from "@/components/ImpoundRetrieveVehicle.vue";
 import Button from "@/components/Button.vue";
+import Label from "@/components/Label.vue";
 import { useImpoundStore } from "@/stores/impound.store";
 import { inject } from "vue";
 
@@ -107,6 +108,7 @@ const impoundVehicle = () => {
 .action-bar {
   display: flex;
   align-items: center;
+  margin-right: 1rem;
   /* no justify-content here so items sit next to each other */
 }
 

@@ -116,7 +116,7 @@ function FetchImpoundedPlayerVehicles(impoundName)
 	TriggerServerEvent("htb_garage:server:FetchImpoundedPlayerVehicles", impoundName)
 end
 
-function OpenImpoundRetrieveUI(impoundedPlayerVehicles)
+function OpenImpoundRetrieveUI(impoundedPlayerVehicles, route)
 	-- {
 	-- 	type: string;
 	-- 	plate: string;
@@ -134,7 +134,7 @@ function OpenImpoundRetrieveUI(impoundedPlayerVehicles)
 	}
 	SendNUIMessage(messageData)
 
-	ToggleGUI(true, "enableImpound", "/impound")
+	ToggleGUI(true, "enableImpound", route)
 end
 
 RegisterNetEvent("htb_garage:client:ReturnImpoundedPlayerVehicles")
@@ -148,7 +148,7 @@ AddEventHandler("htb_garage:client:ReturnImpoundedPlayerVehicles", function(impo
 		veh.spawnName = GetDisplayNameFromVehicleModel(veh.model)
 	end
 
-	OpenImpoundRetrieveUI(impoundedPlayerVehicles)
+	OpenImpoundRetrieveUI(impoundedPlayerVehicles, "/retrieve")
 end)
 
 RegisterNUICallback("impoundRetrieve", function(vehicle, cb)

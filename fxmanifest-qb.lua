@@ -4,9 +4,16 @@ game("gta5")
 author("Harry The Bastard")
 version("1.3.0")
 description("A better garage system")
-lua54 'yes'
+lua54("yes")
 
 ui_page("ui/index.html")
+
+-- Switch to this ui_page and uncomment disable_nui_csp when you
+-- need live updates in FiveM for debugging layout changes
+-- ui_page 'http://127.0.0.1:5175/index.html'
+
+-- -- THIS is critical to allow remote URLs:
+-- disable_nui_csp 'yes'
 
 files({
 	"UI/index.html",
@@ -34,7 +41,7 @@ server_scripts({
 client_scripts({
 	"Config.lua",
 	"Configs/*.lua",
-	"FrameworkSpecific/Interfaces.lua";
+	"FrameworkSpecific/Interfaces.lua",
 	"VehicleStuff.lua",
 	"FrameworkSpecific/Client/*.lua",
 	"FrameworkSpecific/Setup_Client.lua",
@@ -42,4 +49,4 @@ client_scripts({
 	"Client/main.lua",
 })
 
-dependency 'qb-core'
+dependency("qb-core")

@@ -13,5 +13,11 @@ export default defineConfig({
   },
   build: {
     outDir: '../UI', // Set your desired output directory here
+    emptyOutDir: true
   },
+  server: {
+    host: '0.0.0.0',
+    port: 5175,
+    cors: true
+  }
 })
