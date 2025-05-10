@@ -28,7 +28,7 @@ CREATE TABLE impound_vehicle_htb (
   reasonForImpound varchar(300) DEFAULT NULL,
   releaseDateTime varchar(50) DEFAULT NULL,
   allowPersonalUnimpound tinyint(1) DEFAULT NULL,
-  priceToRelease int UNSIGNED NULL,
+  priceToRelease int UNSIGNED NOT NULL DEFAULT 0,
   impoundedByUser varchar(60) NOT NULL,
   active tinyint(1) NOT NULL DEFAULT 1,
 

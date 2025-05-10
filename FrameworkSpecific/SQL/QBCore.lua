@@ -1,7 +1,7 @@
 -- define each QBCore SQL statement as { query = <SQL>, handle = nil }
-SQL['qbcore'] = {
-  SqlGetAllVehicles = {
-    query = [[
+SQL["qbcore"] = {
+	SqlGetAllVehicles = {
+		query = [[
       SELECT 
         CAST(json_value(mods,        '$.model')      AS SIGNED) model,
         CAST(json_value(mods,        '$.bodyHealth') AS SIGNED) body,
@@ -16,11 +16,11 @@ SQL['qbcore'] = {
         AND type    = @type
         AND job     IS NULL
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlGetVehicle = {
-    query = [[
+	SqlGetVehicle = {
+		query = [[
       SELECT
         mods      AS vehicle,
         `stored`,
@@ -32,41 +32,41 @@ SQL['qbcore'] = {
       WHERE license = @identifier
         AND plate   = @plate
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlSetVehicleStored = {
-    query = [[
+	SqlSetVehicleStored = {
+		query = [[
       UPDATE player_vehicles
       SET `stored` = @stored
       WHERE license = @identifier
         AND plate   = @plate
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlSaveAndStoreVehicle = {
-    query = [[
+	SqlSaveAndStoreVehicle = {
+		query = [[
       UPDATE player_vehicles
       SET mods     = @vehicle,
           `stored` = @stored
       WHERE plate   = @plate
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlSetVehicleName = {
-    query = [[
+	SqlSetVehicleName = {
+		query = [[
       UPDATE player_vehicles
       SET vehiclename = @newName
       WHERE license = @identifier
         AND plate   = @plate
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlTransferOwnership = {
-    query = [[
+	SqlTransferOwnership = {
+		query = [[
       UPDATE player_vehicles
       SET license   = @newOwner,
           citizenid = (
@@ -79,20 +79,20 @@ SQL['qbcore'] = {
       WHERE license = @currentOwner
         AND plate   = @plate
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlImpoundVehicle = {
-    query = [[
+	SqlImpoundVehicle = {
+		query = [[
       UPDATE player_vehicles
       SET pound_htb = @pound
       WHERE plate = @vehiclePlate
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlAddImpoundEntry = {
-    query = [[
+	SqlAddImpoundEntry = {
+		query = [[
       INSERT INTO impound_vehicle_htb (
         vehiclePlate,
         impoundName,
@@ -109,11 +109,11 @@ SQL['qbcore'] = {
         @impoundedByUser
       )
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlGetImpoundedVehicleByPlate = {
-    query = [[
+	SqlGetImpoundedVehicleByPlate = {
+		query = [[
       SELECT
         i.vehiclePlate,
         i.reasonForImpound,
@@ -126,11 +126,11 @@ SQL['qbcore'] = {
       WHERE i.vehiclePlate = @vehiclePlate
         AND o.pound_htb    = 1
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlGetAllImpoundedVehicles = {
-    query = [[
+	SqlGetAllImpoundedVehicles = {
+		query = [[
       SELECT
         i.vehiclePlate,
         i.reasonForImpound,
@@ -142,28 +142,34 @@ SQL['qbcore'] = {
         ON i.vehiclePlate = o.plate
       WHERE o.pound_htb = 1
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlIsCitizenVehicle = {
-    query = [[
+	SqlIsCitizenVehicle = {
+		query = [[
       SELECT plate
       FROM owned_vehicles
       WHERE plate = @plate
       LIMIT 1
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlGetImpoundedPlayerVehicles = {
-    query = [[
+	SqlGetImpoundedPlayerVehicles = {
+		query = [[
 SELECT 
   ov.type,
   ov.plate,
   ov.vehiclename AS displayName,
+  CAST(json_value(ov.vehicle, '$.model') AS SIGNED) model,
   iv.priceToRelease,
   iv.impoundName AS impoundId,
-  iv.id AS impoundVehicleId
+  iv.id AS impoundVehicleId,
+  CASE
+      WHEN iv.impoundName = @impoundName THEN 1
+      ELSE 0
+  END AS canRetrieveHere
+                                     
 
 FROM owned_vehicles ov
   INNER JOIN impound_vehicle_htb iv
@@ -171,20 +177,22 @@ FROM owned_vehicles ov
 
 WHERE ov.pound_htb = 1
   AND ov.owner = @license
-  AND iv.impoundName = @impoundName
+  AND iv.active = 1
     ]],
-    handle = nil,
-  },
+		handle = nil,
+	},
 
-  SqlSetImpoundVehicleActive = {
-    query = [[
-UPDATE impound_vehicle_htb
-SET active = @active
-WHERE id = @impoundVehicleId
+	SqlReleaseImpoundVehicle = {
+		query = [[
+UPDATE impound_vehicle_htb iv
+JOIN owned_vehicles ov ON iv.vehiclePlate = ov.plate
+SET iv.active = 0,
+    ov.pound_htb = 0,
+    ov.`stored` = 0
+WHERE ov.plate = @plate;
     ]],
-    handle = nil,
-  }
-
+		handle = nil,
+	},
 }
 
 -- The same MySQL.ready loop you already have will automatically store all of these:
