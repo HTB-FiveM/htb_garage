@@ -71,9 +71,12 @@ const returnToOwner = async (vehicle: ImpoundVehicle) => {
         <div v-if="expandedPlate === vehicle.plate" class="details-panel">
           <div class="action-buttons">
             <div class="item-buttons">
-              <Button v-if="!vehicle.timeLeft" @click="spawnVehicle(vehicle)"
-                >Pay for retrieve</Button
-              >
+              <div v-if="vehicle.canRetrieveHere">
+                <Button @click="spawnVehicle(vehicle)"
+                    >Pay for retrieve</Button
+                >
+              </div>
+              <Alert v-else>Your vehicle is not held here. Please visit {{ vehicle.impoundName }} to retrieve.</Alert>
 
               <Button
                 v-if="store.retrieveVehicle!.userIsImpoundManager"
@@ -126,5 +129,9 @@ ul {
   align-items: center; /* center along the cross axis (vertically) */
   gap: 1rem; /* optional spacing between buttons */
   /* if you want the wrapper to fill some height: */
+}
+
+.not-here {
+    background-color: darksalmon;
 }
 </style>

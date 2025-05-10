@@ -114,9 +114,10 @@ export default function initialiseDummyData(
           import: false,
           priceToRelease: 1000,
           timeLeft: 0,
-          impoundId: "David_Sherriff_Station",
+          impoundId: "LosSantos",
           impoundName: "David Sherriff Station",
           impoundVehicleId: 5,
+          canRetrieveHere: false
         },
         {
           type: "zentorno",
@@ -130,6 +131,7 @@ export default function initialiseDummyData(
           impoundId: "David_Sherriff_Station",
           impoundName: "David Sherriff Station",
           impoundVehicleId: 56,
+          canRetrieveHere: true
         },
       ],
     } as SetupImpoundRetrieveVehicleData);

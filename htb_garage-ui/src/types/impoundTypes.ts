@@ -38,4 +38,5 @@ export interface ImpoundVehicle {
   impoundId: string;
   impoundName: string;
   impoundVehicleId: number;
+  canRetrieveHere: boolean;
 }

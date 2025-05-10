@@ -10,7 +10,6 @@ FrameworkCtx:RunStartupStuff()
 
 -------------------------------------------------------------------------------------------
 function ToggleGUI(explicit_status, type, route)
-
 	if explicit_status ~= nil then
 		isVisible = explicit_status
 	else
@@ -21,11 +20,10 @@ function ToggleGUI(explicit_status, type, route)
 	local messageData = {
 		type = type or "toggleVisibility",
 		route = route,
-		isVisible = isVisible
+		isVisible = isVisible,
 	}
 	-- print(json.encode(messageData))
 	SendNUIMessage(messageData)
-
 end
 
 function HandleVehicleSpecifics(vehicleEntity, vehicleType, deleteZone)
@@ -77,10 +75,7 @@ AddEventHandler("htb_garage:HandleWarpToDock", function(pos)
 		false --[[ boolean ]]
 	)
 
-	SetEntityHeading(
-		ped, --[[ Entity ]]
-		pos.h --[[ number ]]
-	)
+	SetEntityHeading(ped, --[[ Entity ]] pos.h --[[ number ]])
 end)
 
 function StoreVehicle(vehicleType, deleteZone)
@@ -170,9 +165,7 @@ function DrawImpoundMarkers(impounds, markerType)
 				zone.Pos,
 			},
 		})
-
 	end
-
 end
 
 function DrawMarkers(garages, markerType, vehicleType)
@@ -363,7 +356,7 @@ function SetVehicleProperties(vehicle, vehicleProps)
 		SetVehicleHeadlightsColour(vehicle, vehicleProps.vehicleHeadLight)
 	end
 
-	if(vehicleProps["lightsState"]) then
+	if vehicleProps["lightsState"] then
 		SetLightsHealth(vehicle, vehicleProps.lightsState)
 	end
 end
@@ -377,14 +370,14 @@ end)
 
 function PayForRetrieve(vehicle)
 	local playerData = FrameworkCtx:GetPlayerData()
-	
+
 	-- TODO: Should move this to a factory generated class
 	local accountName = ""
-  if Config.RolePlayFramework == "esx" then
+	if Config.RolePlayFramework == "esx" then
 		accountName = "money"
 	elseif Config.RolePlayFramework == "qbcore" then
-			accountName = "cash"
-	end    
+		accountName = "cash"
+	end
 
 	for _, account in pairs(playerData.accounts) do
 		if account.name == "money" then
@@ -411,7 +404,11 @@ function PayForRetrieve(vehicle)
 	end
 
 	Citizen.Trace(
-		"function PayForRetrieve: Unable to find account '" .. accountName .. "' for player " .. playerData.identifier .. "\n"
+		"function PayForRetrieve: Unable to find account '"
+			.. accountName
+			.. "' for player "
+			.. playerData.identifier
+			.. "\n"
 	)
 	return false
 end
@@ -474,19 +471,12 @@ RegisterNUICallback("fetchNearbyPlayers", function(data, cb)
 	cb("ok")
 end)
 
-
-
 --------------------------
 -- Impound related stuff
 --------------------------
 
-
-
 RegisterNetEvent("htb_garage:DeleteVehicleAfterImpound")
-AddEventHandler("htb_garage:DeleteVehicleAfterImpound", function(vehiclePlate)
-
-end)
-
+AddEventHandler("htb_garage:DeleteVehicleAfterImpound", function(vehiclePlate) end)
 
 RegisterNetEvent("htb_garage:GetPlayerVehiclesResults")
 AddEventHandler("htb_garage:GetPlayerVehiclesResults", function(vehicles, garageName)
@@ -595,7 +585,7 @@ function DetermineSpawnPosition(vehicleType, spawnPoint, heading, numSpawns)
 	return nil
 end
 
-function DoTheSpawn(vehicle, spawnPoint)
+function DoTheSpawn(vehicle, spawnPoint, teleportPlayerToVehicle)
 	local vehicleProps = json.decode(vehicle)
 
 	SpawnVehicle(
@@ -607,12 +597,12 @@ function DoTheSpawn(vehicle, spawnPoint)
 		},
 		spawnPoint.Heading,
 		function(callback_vehicle, networkId)
-			if GetResourceState('VehicleDeformation') == 'started' and vehicleProps.deformation ~= nil then
-				exports['VehicleDeformation']:SetVehicleDeformation(callback_vehicle, vehicleProps.deformation)
+			if GetResourceState("VehicleDeformation") == "started" and vehicleProps.deformation ~= nil then
+				exports["VehicleDeformation"]:SetVehicleDeformation(callback_vehicle, vehicleProps.deformation)
 			end
-			SetVehicleProperties(callback_vehicle, vehicleProps)			
+			SetVehicleProperties(callback_vehicle, vehicleProps)
 
-			if Config.TeleportToVehicleOnSpawn then
+			if teleportPlayerToVehicle then
 				TaskWarpPedIntoVehicle(PlayerPedId(), callback_vehicle, -1)
 			end
 
@@ -620,10 +610,14 @@ function DoTheSpawn(vehicle, spawnPoint)
 
 			TriggerServerEvent("htb_garage:SetVehicleStored", carplate, 0)
 			TriggerServerEvent("htb_garage:StartTrackingEntity", carplate, networkId)
-			
+
 			local playerId = PlayerId()
 			local playerServerId = GetPlayerServerId(playerId)
-			FrameworkCtx:GiveVehicleKeys({ playerServerId = playerServerId, carplate = carplate, lifetime = 'permanent'})
+			FrameworkCtx:GiveVehicleKeys({
+				playerServerId = playerServerId,
+				carplate = carplate,
+				lifetime = "permanent",
+			})
 		end,
 		true
 	)
@@ -641,18 +635,14 @@ AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageNam
 	local GarageKey = GarageTypeMapping[vehicle.type]
 	local garage = Config[GarageKey][garageName]
 
-	local spawnPoint = DetermineSpawnPosition(
-		vehicle.type,
-		garage.SpawnPoint,
-		garage.SpawnPoint.Heading,
-		garage.SpawnPoint.NumSpawns
-	)
+	local spawnPoint =
+		DetermineSpawnPosition(vehicle.type, garage.SpawnPoint, garage.SpawnPoint.Heading, garage.SpawnPoint.NumSpawns)
 	if spawnPoint == nil then
 		FrameworkCtx:ShowNotification(_U("spawn_point_occupied"))
 	else
 		-- May want to call through to server here depending on how things go with OneSync Infinity and vehicle duplication
-		DoTheSpawn(vehicle.vehicle, spawnPoint)
-		TriggerEvent('qb-vehiclekeys:client:AddKeys', vehicle.plate)
+		DoTheSpawn(vehicle.vehicle, spawnPoint, Config.TeleportToVehicleOnSpawn)
+		TriggerEvent("qb-vehiclekeys:client:AddKeys", vehicle.plate)
 	end
 end)
 
@@ -691,10 +681,10 @@ AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSe
 	FrameworkCtx:ShowNotification(outcome)
 
 	if amITheSeller then
-		TriggerEvent('qb-vehiclekeys:client:RemoveKeys', plate)
+		TriggerEvent("qb-vehiclekeys:client:RemoveKeys", plate)
 		SendNUIMessage({
 			type = "transferComplete",
-			plate = plate
+			plate = plate,
 		})
 	end
 end)
@@ -743,7 +733,6 @@ if Config.Debug then
 	end)
 end
 
-
 -- RegisterNetEvent('htb_garage:FinialiseSpawnVehicle')
 -- AddEventHandler('htb_garage:FinialiseSpawnVehicle', function(vehicle, id, model, vector)
 --     SetNetworkIdCanMigrate(id, true)
@@ -765,57 +754,64 @@ end
 --     print(json.encode(vehicleInstances))
 -- end, false)
 
-
 local lightBones = {
-	headlight_l      = "headlight_l",
-	headlight_r      = "headlight_r",
-	taillight_l      = "taillight_l",
-	taillight_r      = "taillight_r",
-	indicator_lf     = "indicator_lf",
-	indicator_rf     = "indicator_rf",
-	indicator_lr     = "indicator_lr",
-	indicator_rr     = "indicator_rr",
-	brakelight_l     = "brakelight_l",
-	brakelight_r     = "brakelight_r",
+	headlight_l = "headlight_l",
+	headlight_r = "headlight_r",
+	taillight_l = "taillight_l",
+	taillight_r = "taillight_r",
+	indicator_lf = "indicator_lf",
+	indicator_rf = "indicator_rf",
+	indicator_lr = "indicator_lr",
+	indicator_rr = "indicator_rr",
+	brakelight_l = "brakelight_l",
+	brakelight_r = "brakelight_r",
 	reversinglight_l = "reversinglight_l",
 	reversinglight_r = "reversinglight_r",
-  }
-  
-  -- Returns a table of booleans keyed by the bone‑name keys above
-  function GetLightsHealth(vehicle)
+}
+
+-- Returns a table of booleans keyed by the bone‑name keys above
+function GetLightsHealth(vehicle)
 	local out = {}
 	for key, boneName in pairs(lightBones) do
-	  local boneIndex = GetEntityBoneIndexByName(vehicle, boneName)
-	  if boneIndex ~= -1 then
-		-- world pos of the lamp bone
-		local wx, wy, wz = GetWorldPositionOfEntityBone(vehicle, boneIndex)
-		-- convert it into local vehicle offsets
-		local ox, oy, oz = GetOffsetFromEntityGivenWorldCoords(vehicle, wx, wy, wz)
-		-- sample mesh deformation at that offset
-		local dx, dy, dz = GetVehicleDeformationAtPos(vehicle, ox, oy, oz)  -- :contentReference[oaicite:0]{index=0}
-		out[key] = (dx ~= 0 or dy ~= 0 or dz ~= 0)
-	  else
-		out[key] = false
-	  end
+		local boneIndex = GetEntityBoneIndexByName(vehicle, boneName)
+		if boneIndex ~= -1 then
+			-- world pos of the lamp bone
+			local wx, wy, wz = GetWorldPositionOfEntityBone(vehicle, boneIndex)
+			-- convert it into local vehicle offsets
+			local ox, oy, oz = GetOffsetFromEntityGivenWorldCoords(vehicle, wx, wy, wz)
+			-- sample mesh deformation at that offset
+			local dx, dy, dz = GetVehicleDeformationAtPos(vehicle, ox, oy, oz) -- :contentReference[oaicite:0]{index=0}
+			out[key] = (dx ~= 0 or dy ~= 0 or dz ~= 0)
+		else
+			out[key] = false
+		end
 	end
-	
+
 	return out
-  end
-  
-  -- Re‑break exactly those lights by inflicting a tiny damage sphere
-  function SetLightsHealth(vehicle, lightsState)
+end
+
+-- Re‑break exactly those lights by inflicting a tiny damage sphere
+function SetLightsHealth(vehicle, lightsState)
 	-- allow lenses to shatter
 	SetVehicleHasUnbreakableLights(vehicle, false)
 	for key, shouldBeBroken in pairs(lightsState) do
-	  if shouldBeBroken then
-		local boneName = lightBones[key]
-		local boneIndex = GetEntityBoneIndexByName(vehicle, boneName)
-		if boneIndex ~= -1 then
-		  local wx, wy, wz = GetWorldPositionOfEntityBone(vehicle, boneIndex)
-		  local ox, oy, oz = GetOffsetFromEntityGivenWorldCoords(vehicle, wx, wy, wz)
-		  -- a small radius (0.1) focuses damage on that lamp; strength 10 is plenty to shatter
-		  SetVehicleDamage(vehicle, ox, oy, oz, 0.1, 10.0, true)  -- :contentReference[oaicite:1]{index=1}
+		if shouldBeBroken then
+			local boneName = lightBones[key]
+			local boneIndex = GetEntityBoneIndexByName(vehicle, boneName)
+			if boneIndex ~= -1 then
+				local wx, wy, wz = GetWorldPositionOfEntityBone(vehicle, boneIndex)
+				local ox, oy, oz = GetOffsetFromEntityGivenWorldCoords(vehicle, wx, wy, wz)
+				-- a small radius (0.1) focuses damage on that lamp; strength 10 is plenty to shatter
+				SetVehicleDamage(vehicle, ox, oy, oz, 0.1, 10.0, true) -- :contentReference[oaicite:1]{index=1}
+			end
 		end
-	  end
 	end
-  end
+end
+
+RegisterNetEvent("timeSync:updateTime")
+AddEventHandler("timeSync:updateTime", function(hour, minute, second)
+	-- freeze = false means time will continue advancing from this point
+	NetworkOverrideClockTime(hour, minute, second)
+	-- if you want to *freeze* the world at exactly that time, uncomment:
+	-- PauseClock(true)
+end)

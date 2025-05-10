@@ -114,16 +114,9 @@ AddEventHandler("htb_garage:ImpoundResult", function(data)
 	FrameworkCtx:ShowNotification(data.message)
 end)
 
-
-
-
-
-
 function FetchImpoundedPlayerVehicles(impoundName)
 	TriggerServerEvent("htb_garage:server:FetchImpoundedPlayerVehicles", impoundName)
 end
-
-
 
 function OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
 	-- {
@@ -140,7 +133,7 @@ function OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
 	local messageData = {
 		type = "setupImpoundRetrieveVehicle",
 		userIsImpoundManager = userIsImpoundManager,
-		vehicles = impoundedPlayerVehicles
+		vehicles = impoundedPlayerVehicles,
 	}
 	SendNUIMessage(messageData)
 
@@ -148,48 +141,49 @@ function OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
 end
 
 RegisterNetEvent("htb_garage:client:ReturnImpoundedPlayerVehicles")
-AddEventHandler("htb_garage:client:ReturnImpoundedPlayerVehicles", function(impoundedPlayerVehicles, userIsImpoundManager)
-	
-	for k, veh in pairs(impoundedPlayerVehicles) do
-		veh.spawnName = GetDisplayNameFromVehicleModel(veh.model)
+AddEventHandler(
+	"htb_garage:client:ReturnImpoundedPlayerVehicles",
+	function(impoundedPlayerVehicles, userIsImpoundManager)
+		if not impoundedPlayerVehicles or #impoundedPlayerVehicles < 1 then
+			FrameworkCtx:ShowNotification(_U("no_vehicles_impounded"))
+			return
+		end
 
+		for k, veh in pairs(impoundedPlayerVehicles) do
+			veh.spawnName = GetDisplayNameFromVehicleModel(veh.model)
+		end
+
+		OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
 	end
-
-	OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
-end)
-
+)
 
 RegisterNUICallback("impoundRetrieve", function(vehicle, cb)
-
-	TriggerServerEvent("htb_garage:server:ImpoundRetrieveVehicle", vehicle)
-
-	cb("ok")
-end)
-
-RegisterNetEvent("htb_garage:client:VehicleImpoundRetrieved")
-AddEventHandler("htb_garage:client:VehicleImpoundRetrieved", function(vehicle, impoundId)
-	local spawnPoint = DetermineImpoundRetrieveSpawnLocation(Config.Impounds[impoundId].SpawnPoints)
+	local spawnPoint = DetermineImpoundRetrieveSpawnLocation(Config.Impounds[vehicle.impoundId].SpawnPoints)
 
 	if spawnPoint == nil then
 		FrameworkCtx:ShowNotification(_U("spawn_point_occupied"))
 		return
 	end
 
+	TriggerServerEvent("htb_garage:server:ImpoundRetrieveVehicle", vehicle, spawnPoint)
+
+	cb("ok")
+end)
+
+RegisterNetEvent("htb_garage:client:VehicleImpoundRetrieved")
+AddEventHandler("htb_garage:client:VehicleImpoundRetrieved", function(vehicle, spawnPoint)
 	-- May want to call through to server here depending on how things go with OneSync Infinity and vehicle duplication
-	DoTheSpawn(vehicle.vehicle, spawnPoint)
-	TriggerEvent('qb-vehiclekeys:client:AddKeys', vehicle.plate)
+	DoTheSpawn(vehicle.vehicle, spawnPoint, false)
+	TriggerEvent("qb-vehiclekeys:client:AddKeys", vehicle.plate)
 
-
-	local message = (""):format()
+	local message = (_U("impound_vehicle_released")):format()
 	FrameworkCtx:ShowNotification(message)
 	ToggleGUI(false)
 end)
 
-
-
 RegisterNUICallback("returnToOwner", function(data, cb)
 	if data.userIsImpoundManager == nil or data.userIsImpoundManager == false then
-		FrameworkCtx:ShowNotification(_U('return_not_auth'))
+		FrameworkCtx:ShowNotification(_U("return_not_auth"))
 		return
 	end
 	if data ~= nil and data.vehicle ~= nil then
@@ -204,7 +198,6 @@ AddEventHandler("htb_garage:client:VehicleReturnedToOwner", function(message)
 	FrameworkCtx:ShowNotification(message)
 	ToggleGUI(false)
 end)
-
 
 RegisterNetEvent("htb_garage:Released")
 AddEventHandler("htb_garage:Released", function(message, carplate)
