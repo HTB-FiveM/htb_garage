@@ -17,7 +17,7 @@ body {
   display: none;
 }
 
-#app {
+/* #app {
   display: flex;
   flex-direction: column;
   position:absolute;
@@ -35,7 +35,7 @@ body {
 
   border-radius: 13px;
 
-}
+} */
 
 .form-control {
   display: block;

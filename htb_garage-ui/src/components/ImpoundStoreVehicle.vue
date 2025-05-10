@@ -3,6 +3,7 @@ import Label from "./Label.vue";
 import TextInput from "./TextInput.vue";
 import SingleSelect, { Option } from "./SingleSelect.vue";
 import ToggleSwitch from "./ToggleSwitch.vue";
+import CurrencyInput from "./CurrencyInput.vue";
 
 import { useImpoundStore } from "@/stores/impound.store";
 import { computed } from "vue";
@@ -88,6 +89,18 @@ const timePeriods = computed<Option<number>[]>(() => {
       the impound timer expires</Label
     >
   </div>
+  
+  <div clas="field">
+    <Label label-for="releasePrice">Release price</Label>
+    <CurrencyInput class="price"
+      id="releasePrice"
+      name="releasePrice"
+      placeholder="Enter amount"
+      locale="en-AU"
+      currency="AUD"
+      :maxFractionDigits="2"
+      v-model="store.storeVehicle!.retrievePrice" />
+  </div>
 </template>
 
 <style scoped>
@@ -109,5 +122,10 @@ const timePeriods = computed<Option<number>[]>(() => {
   height: 2.5rem;
   max-height: 2.5rem;
   line-height: 2.5rem;
+}
+
+.price {
+    max-width: 33%;
+    margin-bottom: 2rem;
 }
 </style>

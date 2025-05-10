@@ -273,6 +273,9 @@ AddEventHandler("htb_garage:ImpoundVehicle", function(impoundData)
 	local playerJob = FrameworkCtx:GetPlayerJob(_source)
 
 	if Config.AllowedImpoundJobs[playerJob.jobName] then
+		local expiryTime = GetTimePlusHours(impoundData.expiryHours)
+		impoundData.releaseDateTime = os.date("%Y-%m-%d %H:%M:%S", expiryTime)
+
 		local isCitizen = MySQL.Sync.fetchScalar(qu.SqlIsCitizenVehicle.handle, {
 			["@plate"] = impoundData.vehiclePlate,
 		})
@@ -281,13 +284,14 @@ AddEventHandler("htb_garage:ImpoundVehicle", function(impoundData)
 			TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("citizen_vehicle_only_impound"))
 			return
 		end
-		print(json.encode(impoundData))
+
 		local id = MySQL.Sync.insert(qu.SqlAddImpoundEntry.handle, {
 			["@vehiclePlate"] = impoundData.vehiclePlate,
 			["@impoundName"] = impoundData.impoundId,
 			["@reasonForImpound"] = impoundData.reasonForImpound,
 			["@releaseDateTime"] = impoundData.releaseDateTime,
 			["@allowPersonalUnimpound"] = impoundData.allowPersonalUnimpound,
+			["@priceToRelease"] = impoundData.retrievePrice,
 			["@impoundedByUser"] = identifier,
 		})
 		local updated = MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
@@ -375,12 +379,26 @@ AddEventHandler("htb_garage:server:FetchImpoundedPlayerVehicles", function(impou
 	})
 
 	for k, veh in pairs(vehicles) do
+		local releaseTs = ParseDateTime(veh.releaseDateTime)
+		local h, m, s = GetTimeRemaining(releaseTs)
+
+		if h == 0 and m == 0 and s == 0 then
+			veh.timeLeft = nil
+			veh.expired = true
+		else
+			veh.timeLeft = ("%dh %dm %ds"):format(h, m, s)
+			veh.expired = false
+		end
+
 		veh.impoundName = Config.Impounds[veh.impoundId].RetrievePoint.Name
 		--veh.import = IsImportVehicle(veh.model)
 		-- print("Veh Import: " .. json.encode(veh.import))
+
+		-- if the vehicle impounded is the cop's then prevent them "returning to owner" in the retrieve UI. Corruption prevention!
+		veh.allowReturn = not allowedImpoundJob
 	end
 
-	TriggerClientEvent("htb_garage:client:ReturnImpoundedPlayerVehicles", _source, vehicles, allowedImpoundJob)
+	TriggerClientEvent("htb_garage:client:ReturnImpoundedPlayerVehicles", _source, vehicles)
 end)
 
 RegisterCommand("garageToggleDebug", function(source, args, raw)

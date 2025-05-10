@@ -92,6 +92,7 @@ SQL["esx"] = {
         reasonForImpound,
         releaseDateTime,
         allowPersonalUnimpound,
+        priceToRelease,
         impoundedByUser
       ) VALUES (
         @vehiclePlate,
@@ -99,6 +100,7 @@ SQL["esx"] = {
         @reasonForImpound,
         @releaseDateTime,
         @allowPersonalUnimpound,
+        @priceToRelease,
         @impoundedByUser
       )
     ]],
@@ -158,6 +160,8 @@ SELECT
   iv.priceToRelease,
   iv.impoundName AS impoundId,
   iv.id AS impoundVehicleId,
+  iv.releaseDateTime,
+  iv.allowPersonalUnimpound,
   CASE
       WHEN iv.impoundName = @impoundName THEN 1
       ELSE 0

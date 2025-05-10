@@ -61,6 +61,7 @@ function OpenImpoundUI(plate, impounds)
 		vehiclePlate = plate,
 		availableImpounds = impounds,
 		timePeriods = Config.ImpoundTimePeriods,
+		retrievePrice = Config.ImpoundDefaultRetrievePrice,
 	}
 	SendNUIMessage(messageData)
 
@@ -96,9 +97,6 @@ AddEventHandler("htb_garage:client:SetupForImpoundVehicleResults", function(data
 end)
 
 RegisterNUICallback("impoundStore", function(impoundData, cb)
-	local expiryTime = GetGameTimePlus(impoundData.expiryHours)
-	impoundData.releaseDateTime = ("%02d:%02d:%02d"):format(expiryTime.hours, expiryTime.minutes, expiryTime.seconds)
-
 	TriggerServerEvent("htb_garage:ImpoundVehicle", impoundData)
 
 	cb("ok")
@@ -118,7 +116,7 @@ function FetchImpoundedPlayerVehicles(impoundName)
 	TriggerServerEvent("htb_garage:server:FetchImpoundedPlayerVehicles", impoundName)
 end
 
-function OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
+function OpenImpoundRetrieveUI(impoundedPlayerVehicles)
 	-- {
 	-- 	type: string;
 	-- 	plate: string;
@@ -132,7 +130,6 @@ function OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
 	--   }
 	local messageData = {
 		type = "setupImpoundRetrieveVehicle",
-		userIsImpoundManager = userIsImpoundManager,
 		vehicles = impoundedPlayerVehicles,
 	}
 	SendNUIMessage(messageData)
@@ -141,21 +138,18 @@ function OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
 end
 
 RegisterNetEvent("htb_garage:client:ReturnImpoundedPlayerVehicles")
-AddEventHandler(
-	"htb_garage:client:ReturnImpoundedPlayerVehicles",
-	function(impoundedPlayerVehicles, userIsImpoundManager)
-		if not impoundedPlayerVehicles or #impoundedPlayerVehicles < 1 then
-			FrameworkCtx:ShowNotification(_U("no_vehicles_impounded"))
-			return
-		end
-
-		for k, veh in pairs(impoundedPlayerVehicles) do
-			veh.spawnName = GetDisplayNameFromVehicleModel(veh.model)
-		end
-
-		OpenImpoundRetrieveUI(impoundedPlayerVehicles, userIsImpoundManager)
+AddEventHandler("htb_garage:client:ReturnImpoundedPlayerVehicles", function(impoundedPlayerVehicles)
+	if not impoundedPlayerVehicles or #impoundedPlayerVehicles < 1 then
+		FrameworkCtx:ShowNotification(_U("no_vehicles_impounded"))
+		return
 	end
-)
+
+	for k, veh in pairs(impoundedPlayerVehicles) do
+		veh.spawnName = GetDisplayNameFromVehicleModel(veh.model)
+	end
+
+	OpenImpoundRetrieveUI(impoundedPlayerVehicles)
+end)
 
 RegisterNUICallback("impoundRetrieve", function(vehicle, cb)
 	local spawnPoint = DetermineImpoundRetrieveSpawnLocation(Config.Impounds[vehicle.impoundId].SpawnPoints)

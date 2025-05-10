@@ -381,9 +381,9 @@ function PayForRetrieve(vehicle)
 
 	for _, account in pairs(playerData.accounts) do
 		if account.name == "money" then
-			if account.money >= Config.ImpoundPrice then
+			if account.money >= Config.RetrieveVehiclePrice then
 				-- Pay the fee and notify the player
-				TriggerServerEvent("htb_garage:MakePayment", accountName, Config.ImpoundPrice)
+				TriggerServerEvent("htb_garage:MakePayment", accountName, Config.RetrieveVehiclePrice)
 				FrameworkCtx:ShowNotification(_U("retrieval_fee_paid"))
 
 				local plate = trim(vehicle.plate)

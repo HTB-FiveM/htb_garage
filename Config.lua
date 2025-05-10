@@ -17,7 +17,7 @@ Config.HangarMarkerType = 1
 Config.DocksEnabled = true
 Config.HangarsEnabled = false
 
-Config.ImpoundPrice = 2500 -- pound price to get vehicle back TOO: Remove this
+Config.RetrieveVehiclePrice = 2500 -- pound price to get vehicle back TOO: Remove this
 Config.Locale = "en"
 
 Config.TeleportToVehicleOnSpawn = true
@@ -36,7 +36,15 @@ Config.AllowedImpoundJobs = {
 	mechanic = true,
 }
 
-Config.ImpoundTimePeriods = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 }
+Config.ImpoundTimePeriods =
+	{ 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48 }
+
+Config.ImpoundDefaultRetrievePrice = 1000
+
+-- when false: 1 hour = 3,600 real seconds
+-- when  true: 1 in-game hour = 2 real minutes = 120 real seconds
+Config.UseInGameClock = true
+Config.InGameHourSeconds = 2 * 60
 
 -- Set the identifier type as a string here, for example:
 --		steam

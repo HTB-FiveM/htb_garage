@@ -17,47 +17,49 @@ const impoundVehicle = () => {
     ...store.storeVehicle!,
   });
 };
+
 </script>
 
 <template>
-  <div v-if="store.mode === 'store'" class="menu-header">
-    <div>
-      <strong
-        >Impound a vehicle - {{ store.storeVehicle?.vehiclePlate }}</strong
-      >
+    <div v-if="store.mode === 'store'" class="menu-header">
+        <div>
+        <strong
+            >Impound a vehicle - {{ store.storeVehicle?.vehiclePlate }}</strong
+        >
+        </div>
     </div>
-  </div>
 
-  <div id="app-border">
-    <div class="the-form">
-      <ImpoundStore v-if="store.mode === 'store'" />
-      <ImpoundRetrieve v-if="store.mode === 'retrieve'" />
+    <div id="app-border">
+        <div class="the-form">
+        <ImpoundStore v-if="store.mode === 'store'" />
+        <ImpoundRetrieve v-if="store.mode === 'retrieve'" />
+        </div>
     </div>
-  </div>
 
-  <div class="action-bar">
-    <div v-if="store.mode === 'retrieve'" class="summary">
-      <Label
-        >Total vehicles: {{ store.retrieveVehicle?.vehicles.length }}</Label
-      >
+    <div class="action-bar">
+        <div v-if="store.mode === 'retrieve'" class="summary">
+        <Label
+            >Total vehicles: {{ store.retrieveVehicle?.vehicles.length }}</Label
+        >
+        </div>
+        <div class="buttons">
+        <Button
+            v-if="store.mode === 'store'"
+            variant="primary"
+            @click="impoundVehicle"
+            >Send to impound</Button
+        >
+        <Button variant="outline" @click="onCloseClick">Cancel</Button>
+        </div>
     </div>
-    <div class="buttons">
-      <Button
-        v-if="store.mode === 'store'"
-        variant="primary"
-        @click="impoundVehicle"
-        >Send to impound</Button
-      >
-      <Button variant="outline" @click="onCloseClick">Cancel</Button>
-    </div>
-  </div>
-  <!-- <pre>{{ store.storeVehicle }}</pre> -->
+    <!-- <pre>{{ store.storeVehicle }}</pre> -->
+
 </template>
 
 <style>
-#app {
-  width: 50%;
-}
+/* #app {
+    width: 50%;
+} */
 </style>
 
 <style scoped>

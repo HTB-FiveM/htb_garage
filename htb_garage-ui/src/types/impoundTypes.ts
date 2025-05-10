@@ -9,11 +9,11 @@ export interface ImpoundStoreVehicle {
   reasonForImpound: string | null;
   expiryHours: number | null;
   allowPersonalUnimpound: boolean;
+  retrievePrice: number;
 }
 
 export interface ImpoundRetrieveVehicle {
   vehicles: ImpoundVehicle[];
-  userIsImpoundManager: boolean;
 }
 
 export type ImpoundMode = "store" | "retrieve";
@@ -34,9 +34,12 @@ export interface ImpoundVehicle {
   spawnName: string;
   import: boolean;
   priceToRelease: number;
-  timeLeft: number;
+  timeLeft: string | null;
+  expired: boolean;
   impoundId: string;
   impoundName: string;
   impoundVehicleId: number;
   canRetrieveHere: boolean;
+  allowPersonalUnimpound: boolean;
+  allowReturn: boolean;
 }

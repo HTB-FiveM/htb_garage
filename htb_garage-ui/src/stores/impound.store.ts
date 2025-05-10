@@ -59,6 +59,7 @@ export const useImpoundStore = defineStore("impound", {
       this.storeVehicle = {
         ...(this.storeVehicle ?? newStoreVehicle()),
         vehiclePlate: messageData.vehiclePlate,
+        retrievePrice: messageData.retrievePrice
       };
 
       this.availableImpounds = [...messageData.availableImpounds];
@@ -67,7 +68,6 @@ export const useImpoundStore = defineStore("impound", {
     setImpoundRetrieveVehicle(messageData: SetupImpoundRetrieveVehicleData) {
       this.mode = "retrieve";
       this.retrieveVehicle = {
-        userIsImpoundManager: messageData.userIsImpoundManager,
         vehicles: [...messageData.vehicles],
       };
     },
@@ -100,9 +100,6 @@ export const useImpoundStore = defineStore("impound", {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           vehicle: { ...vehicle },
-          userIsImpoundManager: !this.retrieveVehicle
-            ? false
-            : this.retrieveVehicle.userIsImpoundManager,
         }),
       };
 
@@ -117,6 +114,7 @@ function newStoreVehicle(): ImpoundStoreVehicle {
     impoundId: null,
     reasonForImpound: null,
     expiryHours: null,
-    allowPersonalUnimpound: false,
+    allowPersonalUnimpound: true,
+    retrievePrice: 0,
   };
 }

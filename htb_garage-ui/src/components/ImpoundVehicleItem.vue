@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { ImpoundVehicle } from "../types/impoundTypes";
+import Label from "@/components/Label.vue";
 
 import { useCurrency } from "@/composables/useCurrency";
 
@@ -44,8 +45,8 @@ const formatCurrency = (amount: number) => {
     </div>
     <div class="impound-details">
       <div>{{ veh.impoundName }}</div>
-      <div v-if="veh.timeLeft">{{ veh.timeLeft }} hours</div>
-      <div v-else>Ready</div>
+      <div v-if="veh.timeLeft">{{ veh.timeLeft }} remaining</div>
+      <div v-else><Label class="ready">Ready</Label></div>
     </div>
   </div>
   <div v-if="showDetails" class="details-body">
@@ -192,5 +193,13 @@ VehicleAttribute {
 /* if you want the .vehicle-details to take all the space up to the impound div */
 .vehicle-details {
   /* flex: 1;   <-- only if you need it to grow/shrink */
+}
+
+.ready {
+  background-color: #259D44;
+  text-align: center;
+  border-radius: 5px;
+  margin: 4px 0 10px 0;
+  padding: 10px 0;
 }
 </style>

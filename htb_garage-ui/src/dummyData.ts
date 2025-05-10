@@ -92,6 +92,7 @@ export default function initialiseDummyData(
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
         20, 21, 22, 23, 24,
       ],
+      retrievePrice: 1800,
     } as SetupImpoundStoreVehicleData);
   }
 
@@ -103,7 +104,6 @@ export default function initialiseDummyData(
 
     handlers["setupImpoundRetrieveVehicle"]({
       type: "setupImpoundRetrieveVehicle",
-      userIsImpoundManager: false,
       vehicles: [
         {
           type: "adder",
@@ -113,11 +113,14 @@ export default function initialiseDummyData(
           spawnName: "34534543",
           import: false,
           priceToRelease: 1000,
-          timeLeft: 0,
+          expired: true,
+          timeLeft: null,
           impoundId: "LosSantos",
           impoundName: "David Sherriff Station",
           impoundVehicleId: 5,
-          canRetrieveHere: false
+          canRetrieveHere: false,
+          allowPersonalUnimpound: true,
+          allowReturn: false
         },
         {
           type: "zentorno",
@@ -127,11 +130,46 @@ export default function initialiseDummyData(
           spawnName: "657457",
           import: true,
           priceToRelease: 700,
-          timeLeft: 3,
+          expired: false,
+          timeLeft: "2h 12m 5s",
           impoundId: "David_Sherriff_Station",
           impoundName: "David Sherriff Station",
           impoundVehicleId: 56,
-          canRetrieveHere: true
+          canRetrieveHere: true,
+          allowPersonalUnimpound: true,
+          allowReturn: true
+        },
+        {
+          type: "adder",
+          plate: "ghi789",
+          displayName: "w00t!!",
+          modelName: "asdasd",
+          spawnName: "dfghdfgh",
+          import: false,
+          priceToRelease: 1000,
+          expired: true,
+          timeLeft: null,
+          impoundId: "LosSantos",
+          impoundName: "David Sherriff Station",
+          impoundVehicleId: 5,
+          canRetrieveHere: true,
+          allowPersonalUnimpound: true
+        },
+        {
+          type: "adder",
+          plate: "jkl321",
+          displayName: "nootch",
+          modelName: "asdasd",
+          spawnName: "dfghdfgh",
+          import: false,
+          priceToRelease: 0,
+          expired: true,
+          timeLeft: null,
+          impoundId: "LosSantos",
+          impoundName: "David Sherriff Station",
+          impoundVehicleId: 5,
+          canRetrieveHere: true,
+          allowPersonalUnimpound: false
         },
       ],
     } as SetupImpoundRetrieveVehicleData);

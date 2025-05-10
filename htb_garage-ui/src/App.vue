@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, onUnmounted, watch, ref, provide } from "vue";
+import { onMounted, onUnmounted, watch, computed, ref, provide } from "vue";
 import { RouterView, useRoute, useRouter } from "vue-router";
 import { useAppStore } from "./stores/app.store";
 import { useGarageStore } from "@/stores/garage.store";
@@ -13,6 +13,12 @@ const route = useRoute();
 const appStore = useAppStore();
 const garageStore = useGarageStore();
 const impoundStore = useImpoundStore();
+
+const containerWidth = computed(() => {
+  // route.meta.containerWidth is typed as unknown by default,
+  // so we coerce it to a string
+  return (route.meta.containerWidth as string) || '100%'
+})
 
 // Map all the NUI messages to handler functions
 const handlers: MessageHandlers = {
@@ -106,16 +112,33 @@ function onClickOutside(event: MouseEvent) {
 </script>
 
 <template>
-  <section ref="appContainer" class="page-content">
+  <section
+    ref="appContainer"
+    class="page-content"
+    :style="{ width: containerWidth }">
     <router-view />
   </section>
 </template>
 
 <style scoped>
 .page-content {
-  flex: 1;
+  /* all the old `#app` rules go here: */
   display: flex;
+  position: absolute;
+  top: 50.5%;
+  left: 50.5%;
+  transform: translate(-50%, -50.1%);
+  max-width: 80%;
+  max-height: 80vh;
+  overflow-y: hidden;
+  padding: 8px;
+  background-color: gray;
+  border-radius: 13px;
+
+  /* plus your flex/grid for child alignment: */
   flex-direction: column;
-  min-height: 0;
+  margin: auto;
+  /* transition: width 0.3s ease; */
 }
+
 </style>

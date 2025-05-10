@@ -45,11 +45,11 @@ export interface SetupImpoundStoreVehicleData {
   vehiclePlate: "abc123";
   availableImpounds: Impound[];
   timePeriods: number[];
+  retrievePrice: number;
 }
 
 export interface SetupImpoundRetrieveVehicleData {
   type: "setupImpoundRetrieveVehicle";
-  userIsImpoundManager: boolean;
   vehicles: ImpoundVehicle[];
 }
 
