@@ -1,6 +1,6 @@
 RegisterNetEvent("htb_garage:ShowClientNotification")
 AddEventHandler("htb_garage:ShowClientNotification", function(message)
-	FrameworkCtx:ShowNotification(message)
+	FW:ShowNotification(message)
 end)
 
 --- Returns a table with the future game time after adding n hours.

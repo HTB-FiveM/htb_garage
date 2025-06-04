@@ -72,7 +72,7 @@ RegisterCommand("impound", function()
 	local veh = GetVehicleInFrontCone(5.0, 90)
 
 	if veh == nil then
-		FrameworkCtx:ShowNotification(_U("no_vehicles_nearby"))
+		FW:ShowNotification(_U("no_vehicles_nearby"))
 		return
 	end
 
@@ -109,7 +109,7 @@ AddEventHandler("htb_garage:ImpoundResult", function(data)
 	DeleteEntity(vehicleEntity)
 	ToggleGUI(false)
 
-	FrameworkCtx:ShowNotification(data.message)
+	FW:ShowNotification(data.message)
 end)
 
 function FetchImpoundedPlayerVehicles(impoundName)
@@ -140,7 +140,7 @@ end
 RegisterNetEvent("htb_garage:client:ReturnImpoundedPlayerVehicles")
 AddEventHandler("htb_garage:client:ReturnImpoundedPlayerVehicles", function(impoundedPlayerVehicles)
 	if not impoundedPlayerVehicles or #impoundedPlayerVehicles < 1 then
-		FrameworkCtx:ShowNotification(_U("no_vehicles_impounded"))
+		FW:ShowNotification(_U("no_vehicles_impounded"))
 		return
 	end
 
@@ -155,7 +155,7 @@ RegisterNUICallback("impoundRetrieve", function(vehicle, cb)
 	local spawnPoint = DetermineImpoundRetrieveSpawnLocation(Config.Impounds[vehicle.impoundId].SpawnPoints)
 
 	if spawnPoint == nil then
-		FrameworkCtx:ShowNotification(_U("spawn_point_occupied"))
+		FW:ShowNotification(_U("spawn_point_occupied"))
 		return
 	end
 
@@ -171,13 +171,13 @@ AddEventHandler("htb_garage:client:VehicleImpoundRetrieved", function(vehicle, s
 	TriggerEvent("qb-vehiclekeys:client:AddKeys", vehicle.plate)
 
 	local message = (_U("impound_vehicle_released")):format()
-	FrameworkCtx:ShowNotification(message)
+	FW:ShowNotification(message)
 	ToggleGUI(false)
 end)
 
 RegisterNUICallback("returnToOwner", function(data, cb)
 	if data.userIsImpoundManager == nil or data.userIsImpoundManager == false then
-		FrameworkCtx:ShowNotification(_U("return_not_auth"))
+		FW:ShowNotification(_U("return_not_auth"))
 		return
 	end
 	if data ~= nil and data.vehicle ~= nil then
@@ -189,13 +189,13 @@ end)
 
 RegisterNetEvent("htb_garage:client:VehicleReturnedToOwner")
 AddEventHandler("htb_garage:client:VehicleReturnedToOwner", function(message)
-	FrameworkCtx:ShowNotification(message)
+	FW:ShowNotification(message)
 	ToggleGUI(false)
 end)
 
 RegisterNetEvent("htb_garage:Released")
 AddEventHandler("htb_garage:Released", function(message, carplate)
-	FrameworkCtx:ShowNotification(message)
+	FW:ShowNotification(message)
 
 	-- Charge the player
 

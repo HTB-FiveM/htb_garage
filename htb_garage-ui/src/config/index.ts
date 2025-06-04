@@ -1,11 +1,13 @@
 export interface AppConfig {
-    locale:          string
-    currency:        string
+    locale: string,
+    fallbackLocale?: string,
+    currency: string,
     maxFractionDigits: number
 }
   
 export const config: AppConfig = {
-    locale:           'en-AU',
-    currency:         'AUD',
-    maxFractionDigits: 0,
+    locale: 'fr',
+    fallbackLocale: 'en',
+    currency: 'AUD',
+    maxFractionDigits: 0
 }

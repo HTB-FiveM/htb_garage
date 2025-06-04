@@ -16,13 +16,22 @@ end)
 local qu = SQL[Config.RolePlayFramework]
 -------------------------------------------------------------------------------------------
 
-FrameworkCtx:RunStartupStuff()
+FW:RunStartupStuff()
 
 -------------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+-- When players login we need to send them a copy of the vehicleInstances
+------------------------------------------------------------------------------
+RegisterNetEvent("htb_garage:playerLoaded")
+AddEventHandler("htb_garage:playerLoaded", function()
+	TriggerClientEvent("htb_garage:UpdateLocalVehicleInstances", source, vehicleInstances)
+end)
+
 RegisterNetEvent("htb_garage:SetVehicleName")
 AddEventHandler("htb_garage:SetVehicleName", function(plate, newName)
 	local _source = source
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
 
 	MySQL.Sync.execute(qu.SqlSetVehicleName.handle, {
 		["@newName"] = newName,
@@ -34,7 +43,7 @@ end)
 RegisterNetEvent("htb_garage:GetPlayerVehicles")
 AddEventHandler("htb_garage:GetPlayerVehicles", function(type, garageName)
 	local _source = source
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
 
 	local results = MySQL.Sync.fetchAll(qu.SqlGetAllVehicles.handle, {
 		["@identifier"] = identifier,
@@ -47,7 +56,7 @@ end)
 RegisterNetEvent("htb_garage:GetVehicleForSpawn")
 AddEventHandler("htb_garage:GetVehicleForSpawn", function(plate, garage)
 	local _source = source
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
 
 	local results = MySQL.Sync.fetchAll(qu.SqlGetVehicle.handle, {
 		["@identifier"] = identifier,
@@ -59,19 +68,13 @@ end)
 RegisterNetEvent("htb_garage:SetVehicleStored")
 AddEventHandler("htb_garage:SetVehicleStored", function(plate, stored)
 	local _source = source
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
 
 	MySQL.Sync.execute(qu.SqlSetVehicleStored.handle, {
 		["@stored"] = stored,
 		["@identifier"] = identifier,
 		["@plate"] = plate,
 	})
-end)
-
--- When players login we need to send them a copy of the vehicleInstances
-RegisterNetEvent("htb_garage:playerLoaded")
-AddEventHandler("htb_garage:playerLoaded", function()
-	TriggerClientEvent("htb_garage:UpdateLocalVehicleInstances", source, vehicleInstances)
 end)
 
 RegisterNetEvent("htb_garage:StartTrackingEntity")
@@ -128,7 +131,7 @@ end)
 RegisterNetEvent("htb_garage:MakePayment")
 AddEventHandler("htb_garage:MakePayment", function(account, amount)
 	local _source = source
-	FrameworkCtx:MakePayment(_source, account, amount)
+	FW:MakePayment(_source, account, amount)
 end)
 
 RegisterNetEvent("htb_garage:fetchNearbyPlayers")
@@ -144,7 +147,7 @@ AddEventHandler("htb_garage:fetchNearbyPlayers", function(maxPlayers)
 	local tree = nil
 	local players = {}
 
-	local allPlayerNames = FrameworkCtx:GetAllPlayerNames()
+	local allPlayerNames = FW:GetAllPlayerNames()
 
 	for _, playerIdStr in pairs(GetPlayers()) do
 		local playerId = tonumber(playerIdStr)
@@ -234,7 +237,7 @@ RegisterNetEvent("htb_garage:server:SetupForImpoundVehicle")
 AddEventHandler("htb_garage:server:SetupForImpoundVehicle", function(plate)
 	local _source = source
 
-	local playerJob = FrameworkCtx:GetPlayerJob(_source)
+	local playerJob = FW:GetPlayerJob(_source)
 
 	if Config.AllowedImpoundJobs[playerJob.jobName] then
 		local isCitizen = MySQL.scalar.await(qu.SqlIsCitizenVehicle.handle, {
@@ -269,8 +272,8 @@ RegisterNetEvent("htb_garage:ImpoundVehicle")
 AddEventHandler("htb_garage:ImpoundVehicle", function(impoundData)
 	local _source = source
 
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
-	local playerJob = FrameworkCtx:GetPlayerJob(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
+	local playerJob = FW:GetPlayerJob(_source)
 
 	if Config.AllowedImpoundJobs[playerJob.jobName] then
 		local expiryTime = GetTimePlusHours(impoundData.expiryHours)
@@ -324,7 +327,7 @@ AddEventHandler("htb_garage:server:ImpoundRetrieveVehicle", function(vehicle, sp
 	local _source = source
 
 	if vehicle.priceToRelease ~= nil and vehicle.priceToRelease > 0 then
-		local success = FrameworkCtx:TryDeductPlayerMoney(_source, vehicle.priceToRelease)
+		local success = FW:TryDeductPlayerMoney(_source, vehicle.priceToRelease)
 		if not success then
 			TriggerClientEvent(
 				"htb_garage:ShowClientNotification",
@@ -342,7 +345,7 @@ AddEventHandler("htb_garage:server:ImpoundRetrieveVehicle", function(vehicle, sp
 	})
 
 	-- Now fetch the full details to respawn the vehicle
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
 	local fullVehicle = MySQL.single.await(qu.SqlGetVehicle.handle, {
 		["@identifier"] = identifier,
 		["@plate"] = vehicle.plate,
@@ -368,10 +371,10 @@ RegisterNetEvent("htb_garage:server:FetchImpoundedPlayerVehicles")
 AddEventHandler("htb_garage:server:FetchImpoundedPlayerVehicles", function(impoundName)
 	local _source = source
 
-	local playerJob = FrameworkCtx:GetPlayerJob(_source)
+	local playerJob = FW:GetPlayerJob(_source)
 	local allowedImpoundJob = Config.AllowedImpoundJobs[playerJob.jobName]
 
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source) --PlayerIdentifiers(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source) --PlayerIdentifiers(_source)
 
 	local vehicles = MySQL.Sync.fetchAll(qu.SqlGetImpoundedPlayerVehicles.handle, {
 		["@license"] = identifier,
@@ -413,7 +416,7 @@ end, false)
 
 -- Lifetime is either 'temporary' for a one off key or 'permanent'
 RegisterNetEvent("htb_garage:giveKeys", function(playerServerId, carplate, lifetime)
-	FrameworkCtx:GiveVehicleKeys({ playerServerId = playerServerId, carplate = carplate, lifetime = lifetime })
+	FW:GiveVehicleKeys({ playerServerId = playerServerId, carplate = carplate, lifetime = lifetime })
 end)
 
 RegisterCommand("settime", function(source, args, raw)

@@ -14,8 +14,8 @@ export function useCurrency(
   raw: number | Ref<number>,
   opts?: {
     locale: string,
-    currency: string,
-    decimals: number
+  currency: string,
+  decimals: number
   }
 ) {
   const config = inject<AppConfig>('appConfig', {

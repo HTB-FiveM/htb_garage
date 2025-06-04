@@ -6,7 +6,7 @@ local vehicleInstances = {}
 
 -------------------------------------------------------------------------------------------
 
-FrameworkCtx:RunStartupStuff()
+FW:RunStartupStuff()
 
 -------------------------------------------------------------------------------------------
 function ToggleGUI(explicit_status, type, route)
@@ -101,7 +101,7 @@ function StoreVehicle(vehicleType, deleteZone)
 					-- -- -- 	end
 					-- -- -- end, trailerProps, KindOfVehicle, garage_name, vehicle_type)
 				else
-					FrameworkCtx:ShowNotification(_U("vehicle_error"))
+					FW:ShowNotification(_U("vehicle_error"))
 				end
 			else
 				local networkId = NetworkGetNetworkIdFromEntity(vehicle)
@@ -115,14 +115,14 @@ function StoreVehicle(vehicleType, deleteZone)
 						deleteZone
 					)
 				else
-					FrameworkCtx:ShowNotification(_U("vehicle_error"))
+					FW:ShowNotification(_U("vehicle_error"))
 				end
 			end
 		else
-			FrameworkCtx:ShowNotification(_U("not_driver"))
+			FW:ShowNotification(_U("not_driver"))
 		end
 	else
-		FrameworkCtx:ShowNotification(_U("no_vehicle_to_enter"))
+		FW:ShowNotification(_U("no_vehicle_to_enter"))
 	end
 end
 
@@ -369,7 +369,7 @@ RegisterNUICallback("close", function(data, cb)
 end)
 
 function PayForRetrieve(vehicle)
-	local playerData = FrameworkCtx:GetPlayerData()
+	local playerData = FW:GetPlayerData()
 
 	-- TODO: Should move this to a factory generated class
 	local accountName = ""
@@ -384,7 +384,7 @@ function PayForRetrieve(vehicle)
 			if account.money >= Config.RetrieveVehiclePrice then
 				-- Pay the fee and notify the player
 				TriggerServerEvent("htb_garage:MakePayment", accountName, Config.RetrieveVehiclePrice)
-				FrameworkCtx:ShowNotification(_U("retrieval_fee_paid"))
+				FW:ShowNotification(_U("retrieval_fee_paid"))
 
 				local plate = trim(vehicle.plate)
 				local instance = vehicleInstances[plate]
@@ -397,7 +397,7 @@ function PayForRetrieve(vehicle)
 				end
 				return true
 			else
-				FrameworkCtx:ShowNotification(_U("retrieve_not_enough"))
+				FW:ShowNotification(_U("retrieve_not_enough"))
 				return false
 			end
 		end
@@ -428,14 +428,14 @@ RegisterNUICallback("takeOut", function(data, cb)
 
 	if getTheVehicle then
 		if DoesVehicleExist(vehicle.plate) or IsPlayerDrivingVehicle(vehicle.plate) then
-			FrameworkCtx:ShowNotification(_U("cannot_take_out"))
+			FW:ShowNotification(_U("cannot_take_out"))
 		elseif vehicle.pound == 1 then
-			FrameworkCtx:ShowNotification(_U("vehicle_in_pound"))
+			FW:ShowNotification(_U("vehicle_in_pound"))
 		elseif vehicle.stored == 1 or overrideStored then
 			TriggerServerEvent("htb_garage:GetVehicleForSpawn", vehicle.plate, vehicle.garage)
 			ToggleGUI(false)
 		else
-			FrameworkCtx:ShowNotification(_U("vehicle_already_out"))
+			FW:ShowNotification(_U("vehicle_already_out"))
 		end
 	end
 
@@ -613,7 +613,7 @@ function DoTheSpawn(vehicle, spawnPoint, teleportPlayerToVehicle)
 
 			local playerId = PlayerId()
 			local playerServerId = GetPlayerServerId(playerId)
-			FrameworkCtx:GiveVehicleKeys({
+			FW:GiveVehicleKeys({
 				playerServerId = playerServerId,
 				carplate = carplate,
 				lifetime = "permanent",
@@ -638,7 +638,7 @@ AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageNam
 	local spawnPoint =
 		DetermineSpawnPosition(vehicle.type, garage.SpawnPoint, garage.SpawnPoint.Heading, garage.SpawnPoint.NumSpawns)
 	if spawnPoint == nil then
-		FrameworkCtx:ShowNotification(_U("spawn_point_occupied"))
+		FW:ShowNotification(_U("spawn_point_occupied"))
 	else
 		-- May want to call through to server here depending on how things go with OneSync Infinity and vehicle duplication
 		DoTheSpawn(vehicle.vehicle, spawnPoint, Config.TeleportToVehicleOnSpawn)
@@ -665,7 +665,7 @@ AddEventHandler("htb_garage:VehicleSaveAndStored", function(networkId, plate, ve
 
 	TriggerServerEvent("htb_garage:StopTrackingEntity", plate)
 
-	FrameworkCtx:ShowNotification(_U("vehicle_in_garage"))
+	FW:ShowNotification(_U("vehicle_in_garage"))
 end)
 
 RegisterNetEvent("htb_garage:nearbyPlayersList")
@@ -678,7 +678,7 @@ end)
 
 RegisterNetEvent("htb_garage:TransferOwnershipResult")
 AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSeller, plate, receiverServerId)
-	FrameworkCtx:ShowNotification(outcome)
+	FW:ShowNotification(outcome)
 
 	if amITheSeller then
 		TriggerEvent("qb-vehiclekeys:client:RemoveKeys", plate)
