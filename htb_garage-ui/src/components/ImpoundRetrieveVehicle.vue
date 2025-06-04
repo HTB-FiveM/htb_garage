@@ -8,6 +8,13 @@ import TextInput from "@/components/TextInput.vue";
 import Button from "@/components/Button.vue";
 import Alert from "@/components/Alert.vue";
 
+// import { useI18n } from 'vue-i18n';
+// const {
+//   // locale,
+//   t
+// } = useI18n({ useScope: 'global' });
+// // locale.value = 'en';
+
 const store = useImpoundStore();
 
 const searchTerm = ref("");
@@ -73,7 +80,7 @@ const returnToOwner = async (vehicle: ImpoundVehicle) => {
             <div class="item-buttons">
               <div v-if="vehicle.canRetrieveHere && vehicle.allowPersonalUnimpound">
                 <Button v-if="vehicle.expired" @click="spawnVehicle(vehicle)"
-                    >Pay for retrieve</Button
+                    >Pay for retrieve {{ $t('greeting', { name: 'Alice' }) }}</Button
                 >
                 <Alert v-else>Your vehicle will be available for release in {{ vehicle.timeLeft }}</Alert>
               </div>

@@ -5,6 +5,7 @@ const routes: RouteRecordRaw[] = [
       path: '/vehicleMenu',
       name: 'vehicleMenu',
       component: () => import('@/views/VehicleMenu.vue'),
+      meta: { containerWidth: '20%' }
   },
   {
     path: '/impound',
