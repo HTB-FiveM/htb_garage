@@ -1,11 +1,11 @@
 import { Player } from './../types/garageTypes';
 import { defineStore } from "pinia";
 import { Vehicle, GarageStore } from '../types/garageTypes';
-import { NuiMessageData } from '../types/nuiMessageTypes';
+import { EnableGarageData, InitVehicleStatsData, SetNearbyPlayersListData, SetVehiclesData, TransferCompleteData } from '../types/nuiMessageTypes';
+import { useAppStore } from './app.store';
 
 export const useGarageStore = defineStore('garage', {
   state: () => ({
-    isVisible: false,
     vehicles: [],
     showFuel: false,
     showEngine: false,
@@ -36,41 +36,33 @@ export const useGarageStore = defineStore('garage', {
     
   },
   actions: {
-    initStore(data: unknown) {
-      const messageData = data as NuiMessageData;
-      switch (messageData.type) {
-        case 'enable':
-          this.isVisible = messageData.isVisible;
-          this.showFuel = messageData.showFuel;
-          this.showEngine = messageData.showEngine;
-          this.showBody = messageData.showBody;
-          break;
-
-        case 'setVehicles':
-          this.vehicles = JSON.parse(messageData.vehicles);
-          break;
-
-        case 'setNearbyPlayersList':
-          this.nearbyPlayers = JSON.parse(messageData.nearbyPlayers);
-          this.nearbyPlayersLoaded = true;
-          break;
-
-        case 'transferComplete':
-            if(messageData.plate) {
-                const index = this.vehicles.findIndex(vehicle => vehicle.plate === messageData.plate);
-                if (index !== -1) {
-                    this.vehicles.splice(index, 1);
-                }
+    // Handle messages from game client
+    initStore(messageData: EnableGarageData) {
+        const appStore = useAppStore();
+        appStore.isVisible = messageData.isVisible;
+    },
+    initVehicleStats(messageData: InitVehicleStatsData) {
+        this.showFuel = messageData.showFuel;
+        this.showEngine = messageData.showEngine;
+        this.showBody = messageData.showBody;
+    },
+    setVehicles(messageData: SetVehiclesData) {
+        this.vehicles = JSON.parse(messageData.vehicles);
+    },
+    setNearbyPlayersList(messageData: SetNearbyPlayersListData) {
+        this.nearbyPlayers = JSON.parse(messageData.nearbyPlayers);
+        this.nearbyPlayersLoaded = true;
+    },
+    transferComplete(messageData: TransferCompleteData) {
+        if(messageData.plate) {
+            const index = this.vehicles.findIndex(vehicle => vehicle.plate === messageData.plate);
+            if (index !== -1) {
+                this.vehicles.splice(index, 1);
             }
-            break;
+        }      
+    },
 
-      }
-      // Handle other types as needed
-    },
-    async close() {      
-      await fetch("https://htb_garage/close");
-      
-    },
+    // Actions specific to business of the Vue interface
     async takeOut(vehicle: Vehicle, payForRetrieve: boolean) {
         const requestOptions = {
             method: "POST",
@@ -83,7 +75,6 @@ export const useGarageStore = defineStore('garage', {
         };
         await fetch("https://htb_garage/takeOut", requestOptions);
 
-        this.close();
     },
     async setGpsMarker(vehicle: Vehicle) {
         const requestOptions = {

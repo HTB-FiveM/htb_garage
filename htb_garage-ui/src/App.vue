@@ -1,263 +1,160 @@
-<script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, computed } from "vue";
-import VehicleItem from "./components/VehicleItem.vue";
-import { useGarageStore } from "./stores/garage.store";
+<script lang="ts" setup>
+import { onMounted, onUnmounted, watch, computed, ref, provide } from "vue";
+import { RouterView, useRoute, useRouter } from "vue-router";
+import { useAppStore } from "./stores/app.store";
+import { useGarageStore } from "@/stores/garage.store";
+import { useImpoundStore } from "@/stores/impound.store";
+import type { MessageHandlers, NuiMessageData } from "@/types/nuiMessageTypes";
+import initialiseDummyData from "./dummyData";
 
-const store = useGarageStore();
+const router = useRouter();
+const route = useRoute();
 
+const appStore = useAppStore();
+const garageStore = useGarageStore();
+const impoundStore = useImpoundStore();
 
-const searchBox = ref<HTMLInputElement | null>(null);
-// const focusOnSearchBox = () => {
-//   if(searchBox.value) {
-//     searchBox.value.focus();
-//   }
-// };
+const containerWidth = computed(() => {
+  // route.meta.containerWidth is typed as unknown by default,
+  // so we coerce it to a string
+  return (route.meta.containerWidth as string) || '100%'
+})
 
-onMounted(() => {
-  //focusOnSearchBox();
+// Map all the NUI messages to handler functions
+const handlers: MessageHandlers = {
+  toggleVisibility: (msg) => (appStore.isVisible = msg.isVisible),
 
-  initialise();
+  enableGarage: (msg) => garageStore.initStore(msg),
+  initVehicleStats: (msg) => garageStore.initVehicleStats(msg),
+  setVehicles: (msg) => garageStore.setVehicles(msg),
+  setNearbyPlayersList: (msg) => garageStore.setNearbyPlayersList(msg),
+  transferComplete: (msg) => garageStore.transferComplete(msg),
 
-  window.addEventListener('keydown', onEscKey);
-
-  const unwatch = watch(
-    () => store.isVisible,
-    (newValue) => {
-      document.body.style.display = newValue ? "block" : "none";
-    },
-    {
-      immediate: true,
-    }
-  );
-
-  onUnmounted(() => {
-    unwatch();
-    window.removeEventListener('keydown', onEscKey);
-  });
-});
-
-const onEscKey = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
-    store.close();
-  }
+  enableImpound: (msg) => impoundStore.initStore(msg),
+  setupImpoundStoreVehicle: (msg) => impoundStore.setupImpoundStoreVehicle(msg),
+  setupImpoundRetrieveVehicle: (msg) => impoundStore.setImpoundRetrieveVehicle(msg),
 };
 
-const initialise = () => {
-  if (window.location.host.startsWith("cfx-nui-")) {
-    // Running in FiveM initialisation
-    window.addEventListener("message", (event) => {
-      store.initStore(event.data);
-    });
-    
-  } else {
-    // Development mode initialisation
-    store.initStore({
-      type: "enable",
-      isVisible: true,
-      showFuel: true,
-      showEngine: true,
-      showBody: true,
-    });
+function onNuiMessage(e: MessageEvent) {
+  const msg = e.data as NuiMessageData;
 
-    store.initStore({
-      type: "setVehicles",
-      vehicles: JSON.stringify([
-        {
-          type: "adder",
-          plate: "abc123",
-          displayName: "Bob",
-          modelName: "adssadads",
-          spawnName: "34534543",
-          import: 0,
-          pound: 0,
-          stored: 1,
-          htmlId: "adsadad",
-          fuel: 80,
-          engine: 243,
-          body: 675,
-        },
-        {
-          type: "zentorno",
-          plate: "def567",
-          displayName: "Snoogans",
-          modelName: "dsfgsdfg",
-          spawnName: "657457",
-          import: 1,
-          pound: 0,
-          stored: 0,
-          htmlId: "sdfg",
-          fuel: 59,
-          engine: 567,
-          body: 567,
-        },
-      ]),
-    });
+  // Navigate to the page's route
+  if ("route" in msg && msg.route) {
+    const r = msg.route as string
+    if (r.startsWith("/")) {
+      // treat as path
+      router.push(r)
+    } else {
+      // treat as name
+      router.push({ name: r })
+    }
+  }
+  if ("isVisible" in msg) {
+    appStore.isVisible = msg.isVisible;
+  }
 
+  // Invoke the incoming message event's target function
+  if (msg.type) {
+    const fn = handlers[msg.type];
+    if (fn) {
+      fn(msg as any);
+    }
+  }
+}
+
+onMounted(async () => {
+  await router.isReady();
+
+  window.addEventListener("keydown", onEscKey);
+  window.addEventListener("message", onNuiMessage);
+  document.addEventListener("mousedown", onClickOutside);
+
+  // Determine if the display loads dummy data for development purposes
+  const isNui = window.location.host.startsWith("cfx-nui-");
+  if (!isNui) {
+    initialiseDummyData(handlers, route.path);
+  }
+});
+
+onUnmounted(() => {
+  unwatch();
+  window.removeEventListener("keydown", onEscKey);
+  window.removeEventListener("message", onNuiMessage);
+  document.removeEventListener("mousedown", onClickOutside);
+});
+
+const unwatch = watch(
+  () => appStore.isVisible,
+  (newValue) => {
+    document.body.style.display = newValue ? "block" : "none";
+  },
+  {
+    immediate: true,
+  }
+);
+
+// here for debugging meta values on routes
+// watch(
+//   () => route.meta.containerWidth,
+//   (w) => {
+//     console.log('containerWidth changed to', w)
+//   },
+//   { immediate: true }
+// )
+
+
+const onEscKey = (event: KeyboardEvent) => {
+  if (event.key === "Escape") {
+    close();
   }
 };
 
 const close = async () => {
-  await store.close();
+  await fetch("https://htb_garage/close");
 };
 
-const searchTerm = ref("");
+provide("closeApp", close);
 
-const filteredVehicles = computed(() => {
-  return store.filteredVehicles(searchTerm.value);
-});
+const appContainer = ref<HTMLElement | null>(null);
+function onClickOutside(event: MouseEvent) {
+  // if click happened outside of `container`
+  if (
+    appContainer.value &&
+    !appContainer.value.contains(event.target as Node)
+  ) {
+    close();
+  }
+}
 </script>
 
 <template>
-  <div id="app-border">
-    <div class="menu-header">
-      <div class="top-row">
-        <div>
-          <span id="vehicle-count-title">Total vehicles: </span>
-          <span id="vehicle-count">{{ store.vehicles.length }}</span>
-        </div>
-        <button class="noselect btn btn-danger btn-sm" @click="close()">CLOSE</button>
-      </div>
-
-      <input
-        type="text"
-        ref="searchBox"
-        class="form-control"
-        placeholder="Search vehicle by plate or name"
-        v-model="searchTerm"
-      />
-    </div>
-
-    <div class="car-list">
-      <li v-for="vehicle in filteredVehicles" class="garage-list-item">
-        <VehicleItem :veh="vehicle"></VehicleItem>
-      </li>
-    </div>
-  </div>
+  <section
+    ref="appContainer"
+    class="page-content"
+    :style="{ width: containerWidth }">
+    <router-view :key="route.fullPath" />
+  </section>
 </template>
 
 <style scoped>
-#app-border {
-  background-color: darkgray;
-  padding: 10px 10px 15px 15px;
-  border-radius: 7px;
-}
-
-.menu-header {
-  margin-bottom: 5px;
-}
-
-.menu-header,
-.top-row {
-  margin-bottom: 10px;
-}
-
-.top-row {
+.page-content {
+  /* all the old `#app` rules go here: */
   display: flex;
-  flex-wrap: nowrap;
-  justify-content: space-between;
+  position: absolute;
+  top: 50.5%;
+  left: 50.5%;
+  transform: translate(-50%, -50.1%);
+  max-width: 80%;
+  max-height: 80vh;
+  overflow-y: hidden;
+  padding: 8px;
+  background-color: gray;
+  border-radius: 13px;
+
+  /* plus your flex/grid for child alignment: */
+  flex-direction: column;
+  margin: auto;
+  /* transition: width 0.3s ease; */
 }
 
-#vehicle-count-title {
-  font-weight: 800;
-}
-
-#vehicle-count {
-  font-weight: 500;
-}
-
-.car-list /*You could also use an ID*/ {
-  height: 50vh;
-  overflow-y: auto;
-}
-
-.car-list::-webkit-scrollbar-track
-{
-	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-	border-radius: 2px;
-	background-color: #F5F5F5;
-}
-
-.car-list::-webkit-scrollbar
-{
-	width: 12px;
-    background-color: #F5F5F5;
-    border-radius:2px;
-}
-
-.car-list::-webkit-scrollbar-thumb
-{
-	border-radius: 2px;
-	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
-	background-color: #999;
-}
-
-.garage-list-item {
-  border-radius: 5px;
-  margin-top: 1px;
-  margin-bottom: 1px;
-  background-color: dimgray;
-  color: ghostwhite;
-}
-
-.car-list {
-  border-width: 5px;
-}
-
-ul,
-.garage-list-item {
-  list-style-type: none;
-  position: relative;
-  display: block;
-  padding: 0.6rem .7rem;
-  border: 1px solid rgba(0, 0, 0, 0.125);
-}
-
-.carModel,
-.carName,
-.impoundItem,
-.vehicleListItem {
-  text-transform: capitalize;
-}
-
-.setVehicleName {
-  margin-top: 10px;
-  margin-left: 15px;
-}
-
-.setVehicleName .nameField {
-  width: 100%;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.setVehicleName button {
-  margin-right: 10px;
-}
-
-.transferOwnership {
-  margin-left: 15px;
-}
-
-.transferOwnership .dd {
-  width: 100%;
-}
-
-.transferOwnership .buyer {
-  width: 100%;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.transferOwnership .buyer .button {
-  width: 100%;
-}
-
-.transferOwnership .dropdown-item,
-.dropdown-menu {
-  width: 100%;
-}
-
-.transferOwnership button {
-  margin-right: 10px;
-}
 </style>

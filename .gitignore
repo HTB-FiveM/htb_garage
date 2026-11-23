@@ -42,6 +42,8 @@ luac.out
 /.vs
 .vscode
 
+.vite/
+
 fxmanifest.lua
 
 /htb_garage-ui/.vs

@@ -6,3 +6,23 @@ ALTER TABLE player_vehicles
   ADD COLUMN `type` varchar(10) NOT NULL DEFAULT 'car',
   ADD COLUMN job varchar(50) DEFAULT NULL
 ;
+
+--
+-- Create the impound_vehicle where a record of vehicle imponds are recorded 
+--
+CREATE TABLE impound_vehicle_htb (
+  id int UNSIGNED NOT NULL AUTO_INCREMENT,
+  vehiclePlate varchar(12) DEFAULT NULL,
+  impoundName varchar(50) NOT NULL,
+  reasonForImpound varchar(300) DEFAULT NULL,
+  releaseDateTime varchar(50) DEFAULT NULL,
+  allowPersonalUnimpound tinyint(1) DEFAULT NULL,
+  priceToRelease int UNSIGNED NOT NULL DEFAULT 0,
+  impoundedByUser varchar(60) NOT NULL,
+  active tinyint(1) NOT NULL DEFAULT 1,
+
+  PRIMARY KEY (id),
+  -- impoundedByUser holds the player's license. QBCore's players.license is not unique
+  -- (one license can own several characters) so it can't be used as a foreign key target.
+  CONSTRAINT FK_impoundvehicle_playervehicle FOREIGN KEY (vehiclePlate) REFERENCES player_vehicles (plate)
+);

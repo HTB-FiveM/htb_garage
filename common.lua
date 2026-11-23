@@ -209,4 +209,5 @@ end
 function GetFunctionName(level)
     local info = debug.getinfo(level, "n")
     return (info.name or "anonymous")
-  end
+end
+

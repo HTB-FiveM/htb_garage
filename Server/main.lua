@@ -1,77 +1,39 @@
 local vehicleInstances = {}
 
-local SqlGetAllVehicles = -1
-local SqlGetVehicle = -1
-local SqlSetVehicleStored = -1
-local SqlSaveAndStoreVehicle = -1
-local SqlSetVehicleName = -1
-local SqlTransferOwnership = -1
-local SqlImpoundVehicle = -1
-
 local garageDebug = false
 
+-- Store all the SQL Queries
 MySQL.ready(function()
-	MySQL.Async.store(
-		SQL[Config.RolePlayFramework].SqlGetAllVehicles,
-		function(storeId)
-			SqlGetAllVehicles = storeId
-		end
-	)
-
-	MySQL.Async.store(
-		SQL[Config.RolePlayFramework].SqlGetVehicle,
-		function(storeId)
-			SqlGetVehicle = storeId
-		end
-	)
-
-	MySQL.Async.store(
-		SQL[Config.RolePlayFramework].SqlSetVehicleStored,
-		function(storeId)
-			SqlSetVehicleStored = storeId
-		end
-	)
-
-	MySQL.Async.store(
-		SQL[Config.RolePlayFramework].SqlSaveAndStoreVehicle,
-		function(storeId)
-			SqlSaveAndStoreVehicle = storeId
-		end
-	)
-
-	MySQL.Async.store(
-		SQL[Config.RolePlayFramework].SqlSetVehicleName,
-		function(storeId)
-			SqlSetVehicleName = storeId
-		end
-	)
-
-	MySQL.Async.store(
-		SQL[Config.RolePlayFramework].SqlTransferOwnership,
-		function(storeId)
-			SqlTransferOwnership = storeId
-		end
-	)
-
-	MySQL.Async.store(
-		SQL[Config.RolePlayFramework].SqlImpoundVehicle,
-		function(storeId)
-			SqlImpoundVehicle = storeId
-		end
-	)
+	local cfg = SQL[Config.RolePlayFramework]
+	for name, entry in pairs(cfg) do
+		MySQL.Async.store(entry.query, function(id)
+			entry.handle = id
+		end)
+	end
 end)
 
+-- Assign a shortcut to the SQL query list
+local qu = SQL[Config.RolePlayFramework]
 -------------------------------------------------------------------------------------------
 
-FrameworkCtx:RunStartupStuff()
+FW:RunStartupStuff()
 
 -------------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+-- When players login we need to send them a copy of the vehicleInstances
+------------------------------------------------------------------------------
+RegisterNetEvent("htb_garage:playerLoaded")
+AddEventHandler("htb_garage:playerLoaded", function()
+	TriggerClientEvent("htb_garage:UpdateLocalVehicleInstances", source, vehicleInstances)
+end)
+
 RegisterNetEvent("htb_garage:SetVehicleName")
 AddEventHandler("htb_garage:SetVehicleName", function(plate, newName)
 	local _source = source
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
 
-	MySQL.Sync.execute(SqlSetVehicleName, {
+	MySQL.Sync.execute(qu.SqlSetVehicleName.handle, {
 		["@newName"] = newName,
 		["@identifier"] = identifier,
 		["@plate"] = plate,
@@ -81,44 +43,72 @@ end)
 RegisterNetEvent("htb_garage:GetPlayerVehicles")
 AddEventHandler("htb_garage:GetPlayerVehicles", function(type, garageName)
 	local _source = source
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
 
-	local results = MySQL.Sync.fetchAll(SqlGetAllVehicles, {
+	local results = MySQL.Sync.fetchAll(qu.SqlGetAllVehicles.handle, {
 		["@identifier"] = identifier,
 		["@type"] = type,
-	}) 
+	})
 
 	TriggerClientEvent("htb_garage:GetPlayerVehiclesResults", _source, results, garageName)
 end)
 
 RegisterNetEvent("htb_garage:GetVehicleForSpawn")
-AddEventHandler("htb_garage:GetVehicleForSpawn", function(plate, garage)
+AddEventHandler("htb_garage:GetVehicleForSpawn", function(plate, garage, payForRetrieve)
 	local _source = source
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
 
-	local results = MySQL.Sync.fetchAll(SqlGetVehicle, {
+	local results = MySQL.Sync.fetchAll(qu.SqlGetVehicle.handle, {
 		["@identifier"] = identifier,
 		["@plate"] = plate,
 	})
-	TriggerClientEvent("htb_garage:ResultsForVehicleSpawn", _source, results[1], garage)
+
+	local vehicle = results[1]
+	if not vehicle then
+		return -- not this player's vehicle
+	end
+
+	-- oxmysql may return TINYINT(1) columns as booleans, so accept either form
+	local function isSet(value)
+		return value == true or value == 1
+	end
+
+	if isSet(vehicle.pound) then
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("vehicle_in_pound"))
+		return
+	end
+
+	-- Vehicle is out in the world: it can only be brought back by paying the
+	-- retrieval fee, which is charged here rather than trusting the client.
+	local retrieved = false
+	if not isSet(vehicle.stored) then
+		if not payForRetrieve then
+			TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("vehicle_already_out"))
+			return
+		end
+
+		if not FW:TryDeductPlayerMoney(_source, Config.RetrieveVehiclePrice) then
+			TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("retrieve_not_enough"))
+			return
+		end
+
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("retrieval_fee_paid"))
+		retrieved = true
+	end
+
+	TriggerClientEvent("htb_garage:ResultsForVehicleSpawn", _source, vehicle, garage, retrieved)
 end)
 
 RegisterNetEvent("htb_garage:SetVehicleStored")
 AddEventHandler("htb_garage:SetVehicleStored", function(plate, stored)
 	local _source = source
-	local identifier = FrameworkCtx:GetPlayerIdentifierFromId(_source)
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
 
-	MySQL.Sync.execute(SqlSetVehicleStored, {
+	MySQL.Sync.execute(qu.SqlSetVehicleStored.handle, {
 		["@stored"] = stored,
 		["@identifier"] = identifier,
 		["@plate"] = plate,
 	})
-end)
-
--- When players login we need to send them a copy of the vehicleInstances
-RegisterNetEvent("htb_garage:playerLoaded")
-AddEventHandler("htb_garage:playerLoaded", function()
-	TriggerClientEvent("htb_garage:UpdateLocalVehicleInstances", source, vehicleInstances)
 end)
 
 RegisterNetEvent("htb_garage:StartTrackingEntity")
@@ -156,7 +146,7 @@ AddEventHandler("htb_garage:SaveAndStoreVehicle", function(vehicleProps, network
 	-- prevent the owner from having to pay a retrieval fee
 	local vehprop = json.encode(vehicleProps)
 
-	MySQL.Sync.execute(SqlSaveAndStoreVehicle, {
+	MySQL.Sync.execute(qu.SqlSaveAndStoreVehicle.handle, {
 		["@vehicle"] = vehprop,
 		["@stored"] = 1,
 		["@plate"] = vehicleProps.plate,
@@ -172,13 +162,6 @@ AddEventHandler("htb_garage:SaveAndStoreVehicle", function(vehicleProps, network
 	)
 end)
 
-RegisterNetEvent("htb_garage:MakePayment")
-AddEventHandler("htb_garage:MakePayment", function(account, amount)
-	local _source = source
-	FrameworkCtx:MakePayment(_source, account, amount)
-	
-end)
-
 RegisterNetEvent("htb_garage:fetchNearbyPlayers")
 AddEventHandler("htb_garage:fetchNearbyPlayers", function(maxPlayers)
 	if maxPlayers == nil then
@@ -192,7 +175,7 @@ AddEventHandler("htb_garage:fetchNearbyPlayers", function(maxPlayers)
 	local tree = nil
 	local players = {}
 
-	local allPlayerNames = FrameworkCtx:GetAllPlayerNames()
+	local allPlayerNames = FW:GetAllPlayerNames()
 
 	for _, playerIdStr in pairs(GetPlayers()) do
 		local playerId = tonumber(playerIdStr)
@@ -228,7 +211,7 @@ AddEventHandler("htb_garage:transferOwnership", function(plate, newOwner)
 	local oldOwnerServerId = source
 	local currentOwnerIdentifier = PlayerIdentifiers(oldOwnerServerId)
 
-	local result = MySQL.Sync.execute(SqlTransferOwnership, {
+	local result = MySQL.Sync.execute(qu.SqlTransferOwnership.handle, {
 		["@newOwner"] = newOwner.identifier,
 		["@currentOwner"] = currentOwnerIdentifier,
 		["@plate"] = plate,
@@ -236,7 +219,13 @@ AddEventHandler("htb_garage:transferOwnership", function(plate, newOwner)
 	--print('TransferOwnership Result: ' .. json.encode(result))
 
 	if result then
-		TriggerClientEvent("htb_garage:TransferOwnershipResult", oldOwnerServerId, "Sold vehicle " .. plate, true, plate)
+		TriggerClientEvent(
+			"htb_garage:TransferOwnershipResult",
+			oldOwnerServerId,
+			"Sold vehicle " .. plate,
+			true,
+			plate
+		)
 		TriggerClientEvent(
 			"htb_garage:TransferOwnershipResult",
 			newOwner.serverId,
@@ -245,10 +234,10 @@ AddEventHandler("htb_garage:transferOwnership", function(plate, newOwner)
 		)
 
 		-- if the vehicle is out then give the keys to the buyer
-			local theVeh = vehicleInstances[trim(plate)]
-			if theVeh then
-				TriggerClientEvent('qb-vehiclekeys:client:AddKeys', newOwner.serverId, plate)
-			end
+		local theVeh = vehicleInstances[trim(plate)]
+		if theVeh then
+			TriggerClientEvent("qb-vehiclekeys:client:AddKeys", newOwner.serverId, plate)
+		end
 	else
 		TriggerClientEvent(
 			"htb_garage:TransferOwnershipResult",
@@ -272,24 +261,206 @@ AddEventHandler("htb_garage:TeleportAllInVehicleToDock", function(serverIds, pos
 	end
 end)
 
-RegisterNetEvent("htb_garage:ImpoundVehicle")
-AddEventHandler("htb_garage:ImpoundVehicle", function(plate, actionByJob)
-	if Config.AllowedImpoundJobs[actionByJob] then
-		MySQL.Sync.execute(SqlImpoundVehicle, {
-			["@pound"] = 1,
+RegisterNetEvent("htb_garage:server:SetupForImpoundVehicle")
+AddEventHandler("htb_garage:server:SetupForImpoundVehicle", function(plate)
+	local _source = source
+
+	local playerJob = FW:GetPlayerJob(_source)
+
+	if Config.AllowedImpoundJobs[playerJob.jobName] then
+		local isCitizen = MySQL.scalar.await(qu.SqlIsCitizenVehicle.handle, {
+			["@plate"] = plate,
 		})
-		TriggerClientEvent("htb_garage:Impounded", source, "Vehicle '" .. plate .. "' has been impounded")
+		if not isCitizen then
+			TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("citizen_vehicle_only_impound"))
+			return
+		end
+
+		-- Get Impound details from config
+		local impounds = {}
+		for impoundKey, v in pairs(Config.Impounds) do
+			table.insert(impounds, {
+				impoundId = impoundKey,
+				displayName = v.RetrievePoint.Name,
+			})
+		end
+
+		local ret = {
+			impounds = impounds,
+			data = plate,
+		}
+
+		TriggerClientEvent("htb_garage:client:SetupForImpoundVehicleResults", _source, ret)
 	else
-		TriggerClientEvent("htb_garage:Impounded", source, "You are not authorised to impound vehicles")
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, "You are not authorised to impound vehicles")
 	end
 end)
 
-RegisterNetEvent("htb_garage:ReleaseVehicle")
-AddEventHandler("htb_garage:ReleaseVehicle", function(plate)
-	MySQL.Sync.execute(SqlImpoundVehicle, {
-		["@pound"] = 0,
+RegisterNetEvent("htb_garage:ImpoundVehicle")
+AddEventHandler("htb_garage:ImpoundVehicle", function(impoundData)
+	local _source = source
+
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
+	local playerJob = FW:GetPlayerJob(_source)
+
+	if Config.AllowedImpoundJobs[playerJob.jobName] then
+		local expiryTime = GetTimePlusHours(impoundData.expiryHours)
+		impoundData.releaseDateTime = os.date("%Y-%m-%d %H:%M:%S", expiryTime)
+
+		local isCitizen = MySQL.Sync.fetchScalar(qu.SqlIsCitizenVehicle.handle, {
+			["@plate"] = impoundData.vehiclePlate,
+		})
+
+		if not isCitizen then
+			TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("citizen_vehicle_only_impound"))
+			return
+		end
+
+		local id = MySQL.Sync.insert(qu.SqlAddImpoundEntry.handle, {
+			["@vehiclePlate"] = impoundData.vehiclePlate,
+			["@impoundName"] = impoundData.impoundId,
+			["@reasonForImpound"] = impoundData.reasonForImpound,
+			["@releaseDateTime"] = impoundData.releaseDateTime,
+			["@allowPersonalUnimpound"] = impoundData.allowPersonalUnimpound,
+			["@priceToRelease"] = impoundData.retrievePrice,
+			["@impoundedByUser"] = identifier,
+		})
+		local updated = MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
+			["@pound"] = 1,
+			["@plate"] = impoundData.vehiclePlate,
+		})
+
+		local data = {
+			message = "Vehicle '" .. impoundData.vehiclePlate .. "' has been impounded",
+			plate = impoundData.vehiclePlate,
+		}
+
+		TriggerClientEvent("htb_garage:ImpoundResult", _source, data)
+	else
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, "You are not authorised to impound vehicles")
+	end
+end)
+
+RegisterNetEvent("htb_garage:server:ImpoundRetrieveVehicle")
+AddEventHandler("htb_garage:server:ImpoundRetrieveVehicle", function(vehicle, spawnPoint)
+	local _source = source
+
+	if type(vehicle) ~= "table" or type(vehicle.plate) ~= "string" then
+		return
+	end
+
+	-- Never trust the client's copy of the impound record: look it up and confirm
+	-- the requesting player owns the vehicle and it is actually impounded.
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
+	local impound = MySQL.single.await(qu.SqlGetActiveImpoundByPlate.handle, {
+		["@plate"] = vehicle.plate,
 	})
-	TriggerClientEvent("htb_garage:Released", source, "Vehicle '" .. plate .. "' has been released", plate)
+
+	if not impound or impound.owner ~= identifier then
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("no_vehicles_impounded"))
+		return
+	end
+
+	local price = tonumber(impound.priceToRelease) or 0
+	if price > 0 then
+		local success = FW:TryDeductPlayerMoney(_source, price)
+		if not success then
+			TriggerClientEvent(
+				"htb_garage:ShowClientNotification",
+				_source,
+				"Unable to charge retrieval fee due to lack of funds"
+			)
+			return
+		end
+	end
+
+	-- If successful then release the vehicle
+	-- Unimpound the vehicle
+	MySQL.Sync.execute(qu.SqlReleaseImpoundVehicle.handle, {
+		["@plate"] = vehicle.plate,
+	})
+
+	-- Now fetch the full details to respawn the vehicle
+	local fullVehicle = MySQL.single.await(qu.SqlGetVehicle.handle, {
+		["@identifier"] = identifier,
+		["@plate"] = vehicle.plate,
+	})
+
+	TriggerClientEvent("htb_garage:client:VehicleImpoundRetrieved", _source, fullVehicle, spawnPoint)
+end)
+
+RegisterNetEvent("htb_garage:server:ReturnVehicleToOwner")
+AddEventHandler("htb_garage:server:ReturnVehicleToOwner", function(vehicle)
+	local _source = source
+
+	if type(vehicle) ~= "table" or type(vehicle.plate) ~= "string" then
+		return
+	end
+
+	-- Only impound staff may release a vehicle without payment
+	local playerJob = FW:GetPlayerJob(_source)
+	if not playerJob or not Config.AllowedImpoundJobs[playerJob.jobName] then
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("return_not_auth"))
+		return
+	end
+
+	local impound = MySQL.single.await(qu.SqlGetActiveImpoundByPlate.handle, {
+		["@plate"] = vehicle.plate,
+	})
+	if not impound then
+		return
+	end
+
+	-- Corruption prevention: staff can't waive the fee on their own vehicles
+	if impound.owner == FW:GetPlayerIdentifierFromId(_source) then
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("return_not_auth"))
+		return
+	end
+
+	-- Set the vehicle as unimpounded
+	MySQL.Sync.execute(qu.SqlReleaseImpoundVehicle.handle, {
+		["@plate"] = vehicle.plate,
+	})
+
+	local message = ("Vehicle %s has been returned to the owner"):format(vehicle.plate)
+	TriggerClientEvent("htb_garage:client:VehicleReturnedToOwner", _source, message)
+end)
+
+RegisterNetEvent("htb_garage:server:FetchImpoundedPlayerVehicles")
+AddEventHandler("htb_garage:server:FetchImpoundedPlayerVehicles", function(impoundName)
+	local _source = source
+
+	local playerJob = FW:GetPlayerJob(_source)
+	local allowedImpoundJob = Config.AllowedImpoundJobs[playerJob.jobName]
+
+	local identifier = FW:GetPlayerIdentifierFromId(_source) --PlayerIdentifiers(_source)
+
+	local vehicles = MySQL.Sync.fetchAll(qu.SqlGetImpoundedPlayerVehicles.handle, {
+		["@license"] = identifier,
+		["@impoundName"] = impoundName,
+	})
+
+	for k, veh in pairs(vehicles) do
+		local releaseTs = ParseDateTime(veh.releaseDateTime)
+		local h, m, s = GetTimeRemaining(releaseTs)
+
+		if h == 0 and m == 0 and s == 0 then
+			veh.timeLeft = nil
+			veh.expired = true
+		else
+			veh.timeLeft = ("%dh %dm %ds"):format(h, m, s)
+			veh.expired = false
+		end
+
+		veh.impoundName = Config.Impounds[veh.impoundId].RetrievePoint.Name
+		--veh.import = IsImportVehicle(veh.model)
+		-- print("Veh Import: " .. json.encode(veh.import))
+
+		-- if the vehicle impounded is the cop's then prevent them "returning to owner" in the retrieve UI. Corruption prevention!
+		veh.allowReturn = not allowedImpoundJob
+	end
+
+	TriggerClientEvent("htb_garage:client:ReturnImpoundedPlayerVehicles", _source, vehicles)
 end)
 
 RegisterCommand("garageToggleDebug", function(source, args, raw)
@@ -303,6 +474,21 @@ RegisterCommand("dumpVehicleInstances", function(source, args, raw)
 end, false)
 
 -- Lifetime is either 'temporary' for a one off key or 'permanent'
-RegisterNetEvent('htb_garage:giveKeys', function(playerServerId, carplate, lifetime)
-	FrameworkCtx:GiveVehicleKeys({ playerServerId = playerServerId, carplate = carplate, lifetime = lifetime})
+RegisterNetEvent("htb_garage:giveKeys", function(playerServerId, carplate, lifetime)
+	FW:GiveVehicleKeys({ playerServerId = playerServerId, carplate = carplate, lifetime = lifetime })
 end)
+
+RegisterCommand("settime", function(source, args, raw)
+	if source ~= 0 then
+		print("This command must be run from the server console or RCON.")
+		return
+	end
+
+	local hour = tonumber(args[1]) or 12
+	local minute = tonumber(args[2]) or 0
+	local second = tonumber(args[3]) or 0
+
+	print(("→ Setting time to %02d:%02d:%02d"):format(hour, minute, second))
+	-- -1 sends to all clients
+	TriggerClientEvent("timeSync:updateTime", -1, hour, minute, second)
+end, false)

@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { inject, ref } from "vue";
 import { Vehicle, Player } from "../types/garageTypes";
 import VehicleAttribute from "./VehicleAttribute.vue";
 
 import { useGarageStore } from "../stores/garage.store";
 
 const store = useGarageStore();
+
+const closeApp = inject<() => void>('closeApp')!;
+function onCloseClick() {
+  closeApp()
+}
 
 defineProps<{ veh: Vehicle }>();
 
@@ -43,10 +48,13 @@ const setVehicleName = async (vehicle: Vehicle) => {
 
 const takeOutVehicle = async (vehicle: Vehicle) => {
   await store.takeOut(vehicle, false);
+  onCloseClick();
+
 };
 
 const retrieveVehicle = async (vehicle: Vehicle) => {
   await store.takeOut(vehicle, true);
+  onCloseClick();
 };
 
 const showNoPlayersMessage = ref(false);
