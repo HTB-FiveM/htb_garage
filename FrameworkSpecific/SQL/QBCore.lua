@@ -86,7 +86,7 @@ SQL["qbcore"] = {
 		query = [[
       UPDATE player_vehicles
       SET pound_htb = @pound
-      WHERE plate = @vehiclePlate
+      WHERE plate = @plate
     ]],
 		handle = nil,
 	},
@@ -123,7 +123,7 @@ SQL["qbcore"] = {
         i.allowPersonalUnimpound,
         o.pound_htb AS isImpounded
       FROM impound_vehicle_htb AS i
-      INNER JOIN owned_vehicles AS o
+      INNER JOIN player_vehicles AS o
         ON i.vehiclePlate = o.plate
       WHERE i.vehiclePlate = @vehiclePlate
         AND o.pound_htb    = 1
@@ -140,7 +140,7 @@ SQL["qbcore"] = {
         i.allowPersonalUnimpound,
         o.pound_htb AS isImpounded
       FROM impound_vehicle_htb AS i
-      INNER JOIN owned_vehicles AS o
+      INNER JOIN player_vehicles AS o
         ON i.vehiclePlate = o.plate
       WHERE o.pound_htb = 1
     ]],
@@ -150,7 +150,7 @@ SQL["qbcore"] = {
 	SqlIsCitizenVehicle = {
 		query = [[
       SELECT plate
-      FROM owned_vehicles
+      FROM player_vehicles
       WHERE plate = @plate
       LIMIT 1
     ]],
@@ -163,7 +163,7 @@ SELECT
   ov.type,
   ov.plate,
   ov.vehiclename AS displayName,
-  CAST(json_value(ov.vehicle, '$.model') AS SIGNED) model,
+  CAST(json_value(ov.mods, '$.model') AS SIGNED) model,
   iv.priceToRelease,
   iv.impoundName AS impoundId,
   iv.id AS impoundVehicleId,
@@ -175,13 +175,33 @@ SELECT
   END AS canRetrieveHere
                                      
 
-FROM owned_vehicles ov
+FROM player_vehicles ov
   INNER JOIN impound_vehicle_htb iv
     ON ov.plate = iv.vehiclePlate
 
 WHERE ov.pound_htb = 1
-  AND ov.owner = @license
+  AND ov.license = @license
   AND iv.active = 1
+    ]],
+		handle = nil,
+	},
+
+	-- Authoritative impound details for a plate. Used server side so the price/owner
+	-- is never taken from what the client sends.
+	SqlGetActiveImpoundByPlate = {
+		query = [[
+SELECT
+  pv.license AS owner,
+  iv.priceToRelease,
+  iv.impoundName
+FROM player_vehicles pv
+  INNER JOIN impound_vehicle_htb iv
+    ON pv.plate = iv.vehiclePlate
+WHERE pv.plate = @plate
+  AND pv.pound_htb = 1
+  AND iv.active = 1
+ORDER BY iv.id DESC
+LIMIT 1
     ]],
 		handle = nil,
 	},
@@ -189,7 +209,7 @@ WHERE ov.pound_htb = 1
 	SqlReleaseImpoundVehicle = {
 		query = [[
 UPDATE impound_vehicle_htb iv
-JOIN owned_vehicles ov ON iv.vehiclePlate = ov.plate
+JOIN player_vehicles ov ON iv.vehiclePlate = ov.plate
 SET iv.active = 0,
     ov.pound_htb = 0,
     ov.`stored` = 0

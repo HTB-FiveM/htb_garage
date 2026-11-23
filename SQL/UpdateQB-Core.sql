@@ -22,6 +22,7 @@ CREATE TABLE impound_vehicle_htb (
   active tinyint(1) NOT NULL DEFAULT 1,
 
   PRIMARY KEY (id),
-  CONSTRAINT FK_impoundvehicle_ownedvehicle FOREIGN KEY (vehiclePlate) REFERENCES owned_vehicles (plate),
-  CONSTRAINT FK_impoundvehicle_users FOREIGN KEY (impoundedByUser) REFERENCES users (identifier) ON UPDATE CASCADE
+  -- impoundedByUser holds the player's license. QBCore's players.license is not unique
+  -- (one license can own several characters) so it can't be used as a foreign key target.
+  CONSTRAINT FK_impoundvehicle_playervehicle FOREIGN KEY (vehiclePlate) REFERENCES player_vehicles (plate)
 );

@@ -192,12 +192,3 @@ AddEventHandler("htb_garage:client:VehicleReturnedToOwner", function(message)
 	FW:ShowNotification(message)
 	ToggleGUI(false)
 end)
-
-RegisterNetEvent("htb_garage:Released")
-AddEventHandler("htb_garage:Released", function(message, carplate)
-	FW:ShowNotification(message)
-
-	-- Charge the player
-
-	-- Spawn the vehicle
-end)

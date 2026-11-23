@@ -368,75 +368,38 @@ RegisterNUICallback("close", function(data, cb)
 	cb("ok")
 end)
 
-function PayForRetrieve(vehicle)
-	local playerData = FW:GetPlayerData()
-
-	-- TODO: Should move this to a factory generated class
-	local accountName = ""
-	if Config.RolePlayFramework == "esx" then
-		accountName = "money"
-	elseif Config.RolePlayFramework == "qbcore" then
-		accountName = "cash"
-	end
-
-	for _, account in pairs(playerData.accounts) do
-		if account.name == "money" then
-			if account.money >= Config.RetrieveVehiclePrice then
-				-- Pay the fee and notify the player
-				TriggerServerEvent("htb_garage:MakePayment", accountName, Config.RetrieveVehiclePrice)
-				FW:ShowNotification(_U("retrieval_fee_paid"))
-
-				local plate = trim(vehicle.plate)
-				local instance = vehicleInstances[plate]
-				if instance then
-					local vehicleEntity = NetworkGetEntityFromNetworkId(instance.networkId)
-					if DoesEntityExist(vehicleEntity) then
-						DeleteEntity(vehicleEntity)
-						TriggerServerEvent("htb_garage:StopTrackingEntity", plate)
-					end
-				end
-				return true
-			else
-				FW:ShowNotification(_U("retrieve_not_enough"))
-				return false
-			end
+-- Called once the server has charged the retrieval fee: remove the copy of the
+-- vehicle that is still out in the world so it isn't duplicated.
+local function DespawnRetrievedVehicle(plate)
+	plate = trim(plate)
+	local instance = vehicleInstances[plate]
+	if instance then
+		local vehicleEntity = NetworkGetEntityFromNetworkId(instance.networkId)
+		if DoesEntityExist(vehicleEntity) then
+			DeleteEntity(vehicleEntity)
+			TriggerServerEvent("htb_garage:StopTrackingEntity", plate)
 		end
 	end
-
-	Citizen.Trace(
-		"function PayForRetrieve: Unable to find account '"
-			.. accountName
-			.. "' for player "
-			.. playerData.identifier
-			.. "\n"
-	)
-	return false
 end
 
 RegisterNUICallback("takeOut", function(data, cb)
 	local vehicle = data.vehicle
 	local payForRetrieve = data.payForRetrieve
 
-	local getTheVehicle = true
-	local overrideStored = false
+	-- These checks are for player feedback only; the server re-checks the
+	-- stored/impound state and charges any retrieval fee itself.
 	if payForRetrieve then
-		getTheVehicle = PayForRetrieve(vehicle)
-		if getTheVehicle then
-			overrideStored = true
-		end
-	end
-
-	if getTheVehicle then
-		if DoesVehicleExist(vehicle.plate) or IsPlayerDrivingVehicle(vehicle.plate) then
-			FW:ShowNotification(_U("cannot_take_out"))
-		elseif vehicle.pound == 1 then
-			FW:ShowNotification(_U("vehicle_in_pound"))
-		elseif vehicle.stored == 1 or overrideStored then
-			TriggerServerEvent("htb_garage:GetVehicleForSpawn", vehicle.plate, vehicle.garage)
-			ToggleGUI(false)
-		else
-			FW:ShowNotification(_U("vehicle_already_out"))
-		end
+		TriggerServerEvent("htb_garage:GetVehicleForSpawn", vehicle.plate, vehicle.garage, true)
+		ToggleGUI(false)
+	elseif DoesVehicleExist(vehicle.plate) or IsPlayerDrivingVehicle(vehicle.plate) then
+		FW:ShowNotification(_U("cannot_take_out"))
+	elseif vehicle.pound == 1 then
+		FW:ShowNotification(_U("vehicle_in_pound"))
+	elseif vehicle.stored == 1 then
+		TriggerServerEvent("htb_garage:GetVehicleForSpawn", vehicle.plate, vehicle.garage, false)
+		ToggleGUI(false)
+	else
+		FW:ShowNotification(_U("vehicle_already_out"))
 	end
 
 	cb("ok")
@@ -631,7 +594,11 @@ GarageTypeMapping = {
 }
 
 RegisterNetEvent("htb_garage:ResultsForVehicleSpawn")
-AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageName)
+AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageName, retrieved)
+	if retrieved then
+		DespawnRetrievedVehicle(vehicle.plate)
+	end
+
 	local GarageKey = GarageTypeMapping[vehicle.type]
 	local garage = Config[GarageKey][garageName]
 

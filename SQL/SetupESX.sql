@@ -8,14 +8,14 @@ CREATE TABLE owned_vehicles (
   owner varchar(100) NOT NULL,
   `stored` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'State of the vehicle',
   garage_name varchar(50) NOT NULL DEFAULT 'Garage_Centre',
-  pound tinyint(1) NOT NULL DEFAULT 0,
+  pound_htb tinyint(4) NOT NULL DEFAULT 0,
   vehiclename varchar(50) DEFAULT NULL,
   plate varchar(50) NOT NULL,
   type varchar(10) NOT NULL DEFAULT 'car',
   job varchar(50) DEFAULT NULL,
 
   PRIMARY KEY (plate),
-  CONSTRAINT FK_ownedvehicles_users FOREIGN KEY (owner) REFERENCES users (identifier) ON DELETE CASCADE ON UPDATE CASCADE;
+  CONSTRAINT FK_ownedvehicles_users FOREIGN KEY (owner) REFERENCES users (identifier) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 --

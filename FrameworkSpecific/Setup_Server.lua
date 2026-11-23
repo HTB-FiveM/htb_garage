@@ -14,7 +14,7 @@ end)
 
 local showNotificationMapping = {
 	esx = ShowNotificationEsx,
-	qb = ShowNotificationQbCore,
+	qbcore = ShowNotificationQbCore,
 }
 
 -----------------------------------------------------------------------------------------

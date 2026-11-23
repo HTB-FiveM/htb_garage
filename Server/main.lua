@@ -54,7 +54,7 @@ AddEventHandler("htb_garage:GetPlayerVehicles", function(type, garageName)
 end)
 
 RegisterNetEvent("htb_garage:GetVehicleForSpawn")
-AddEventHandler("htb_garage:GetVehicleForSpawn", function(plate, garage)
+AddEventHandler("htb_garage:GetVehicleForSpawn", function(plate, garage, payForRetrieve)
 	local _source = source
 	local identifier = FW:GetPlayerIdentifierFromId(_source)
 
@@ -62,7 +62,41 @@ AddEventHandler("htb_garage:GetVehicleForSpawn", function(plate, garage)
 		["@identifier"] = identifier,
 		["@plate"] = plate,
 	})
-	TriggerClientEvent("htb_garage:ResultsForVehicleSpawn", _source, results[1], garage)
+
+	local vehicle = results[1]
+	if not vehicle then
+		return -- not this player's vehicle
+	end
+
+	-- oxmysql may return TINYINT(1) columns as booleans, so accept either form
+	local function isSet(value)
+		return value == true or value == 1
+	end
+
+	if isSet(vehicle.pound) then
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("vehicle_in_pound"))
+		return
+	end
+
+	-- Vehicle is out in the world: it can only be brought back by paying the
+	-- retrieval fee, which is charged here rather than trusting the client.
+	local retrieved = false
+	if not isSet(vehicle.stored) then
+		if not payForRetrieve then
+			TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("vehicle_already_out"))
+			return
+		end
+
+		if not FW:TryDeductPlayerMoney(_source, Config.RetrieveVehiclePrice) then
+			TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("retrieve_not_enough"))
+			return
+		end
+
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("retrieval_fee_paid"))
+		retrieved = true
+	end
+
+	TriggerClientEvent("htb_garage:ResultsForVehicleSpawn", _source, vehicle, garage, retrieved)
 end)
 
 RegisterNetEvent("htb_garage:SetVehicleStored")
@@ -126,12 +160,6 @@ AddEventHandler("htb_garage:SaveAndStoreVehicle", function(vehicleProps, network
 		vehicleType,
 		deleteZone
 	)
-end)
-
-RegisterNetEvent("htb_garage:MakePayment")
-AddEventHandler("htb_garage:MakePayment", function(account, amount)
-	local _source = source
-	FW:MakePayment(_source, account, amount)
 end)
 
 RegisterNetEvent("htb_garage:fetchNearbyPlayers")
@@ -313,21 +341,29 @@ AddEventHandler("htb_garage:ImpoundVehicle", function(impoundData)
 	end
 end)
 
-RegisterNetEvent("htb_garage:ReleaseVehicle")
-AddEventHandler("htb_garage:ReleaseVehicle", function(plate)
-	MySQL.Sync.execute(qu.SqlImpoundVehicle.handle, {
-		["@pound"] = 0,
-		["@plate"] = plate,
-	})
-	TriggerClientEvent("htb_garage:Released", source, "Vehicle '" .. plate .. "' has been released", plate)
-end)
-
 RegisterNetEvent("htb_garage:server:ImpoundRetrieveVehicle")
 AddEventHandler("htb_garage:server:ImpoundRetrieveVehicle", function(vehicle, spawnPoint)
 	local _source = source
 
-	if vehicle.priceToRelease ~= nil and vehicle.priceToRelease > 0 then
-		local success = FW:TryDeductPlayerMoney(_source, vehicle.priceToRelease)
+	if type(vehicle) ~= "table" or type(vehicle.plate) ~= "string" then
+		return
+	end
+
+	-- Never trust the client's copy of the impound record: look it up and confirm
+	-- the requesting player owns the vehicle and it is actually impounded.
+	local identifier = FW:GetPlayerIdentifierFromId(_source)
+	local impound = MySQL.single.await(qu.SqlGetActiveImpoundByPlate.handle, {
+		["@plate"] = vehicle.plate,
+	})
+
+	if not impound or impound.owner ~= identifier then
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("no_vehicles_impounded"))
+		return
+	end
+
+	local price = tonumber(impound.priceToRelease) or 0
+	if price > 0 then
+		local success = FW:TryDeductPlayerMoney(_source, price)
 		if not success then
 			TriggerClientEvent(
 				"htb_garage:ShowClientNotification",
@@ -345,7 +381,6 @@ AddEventHandler("htb_garage:server:ImpoundRetrieveVehicle", function(vehicle, sp
 	})
 
 	-- Now fetch the full details to respawn the vehicle
-	local identifier = FW:GetPlayerIdentifierFromId(_source)
 	local fullVehicle = MySQL.single.await(qu.SqlGetVehicle.handle, {
 		["@identifier"] = identifier,
 		["@plate"] = vehicle.plate,
@@ -357,6 +392,30 @@ end)
 RegisterNetEvent("htb_garage:server:ReturnVehicleToOwner")
 AddEventHandler("htb_garage:server:ReturnVehicleToOwner", function(vehicle)
 	local _source = source
+
+	if type(vehicle) ~= "table" or type(vehicle.plate) ~= "string" then
+		return
+	end
+
+	-- Only impound staff may release a vehicle without payment
+	local playerJob = FW:GetPlayerJob(_source)
+	if not playerJob or not Config.AllowedImpoundJobs[playerJob.jobName] then
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("return_not_auth"))
+		return
+	end
+
+	local impound = MySQL.single.await(qu.SqlGetActiveImpoundByPlate.handle, {
+		["@plate"] = vehicle.plate,
+	})
+	if not impound then
+		return
+	end
+
+	-- Corruption prevention: staff can't waive the fee on their own vehicles
+	if impound.owner == FW:GetPlayerIdentifierFromId(_source) then
+		TriggerClientEvent("htb_garage:ShowClientNotification", _source, _U("return_not_auth"))
+		return
+	end
 
 	-- Set the vehicle as unimpounded
 	MySQL.Sync.execute(qu.SqlReleaseImpoundVehicle.handle, {

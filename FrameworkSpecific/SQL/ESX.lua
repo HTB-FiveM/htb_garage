@@ -179,6 +179,26 @@ WHERE ov.pound_htb = 1
 		handle = nil,
 	},
 
+	-- Authoritative impound details for a plate. Used server side so the price/owner
+	-- is never taken from what the client sends.
+	SqlGetActiveImpoundByPlate = {
+		query = [[
+SELECT
+  ov.owner,
+  iv.priceToRelease,
+  iv.impoundName
+FROM owned_vehicles ov
+  INNER JOIN impound_vehicle_htb iv
+    ON ov.plate = iv.vehiclePlate
+WHERE ov.plate = @plate
+  AND ov.pound_htb = 1
+  AND iv.active = 1
+ORDER BY iv.id DESC
+LIMIT 1
+    ]],
+		handle = nil,
+	},
+
 	SqlReleaseImpoundVehicle = {
 		query = [[
 UPDATE impound_vehicle_htb iv
