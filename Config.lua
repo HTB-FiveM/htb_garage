@@ -82,11 +82,25 @@ Config.Security = {
 	SpawnTicketSeconds = 60, -- How long a client has to report a vehicle it was allowed to spawn
 }
 
--- Set the RP framework, supported values are:
---      none
---      esx
---      qbcore
---      custom
+-- The RP framework:
+--      esx             ESX Legacy
+--      qbcore          QBCore
+--      auto            whichever of the above is running
+-- To support another framework, add files to Bridge/framework/client, Bridge/framework/server
+-- and Bridge/queries (copy the esx ones). Bridge/registry.lua lists what each must provide.
 Config.RolePlayFramework = "esx"
 
-Config.UsingEsxLegacy = true
+-- Who shows notifications:
+--      framework       ESX's or QBCore's own (the game's feed when running without one)
+--      ox_lib          ox_lib notifications
+--      gta             the game's notification feed above the minimap
+-- To use something else, add a file to Bridge/notify (copy one of the existing ones).
+Config.Notify = "framework"
+
+-- Which resource handles vehicle keys:
+--      auto            whichever of the supported ones below is running, otherwise none
+--      vehicles_keys   jaksam's vehicles_keys
+--      qb-vehiclekeys  QBCore's qb-vehiclekeys
+--      none            no keys needed
+-- To use something else, add a file to Bridge/keys (copy one of the existing ones).
+Config.VehicleKeys = "auto"

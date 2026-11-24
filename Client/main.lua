@@ -5,10 +5,6 @@ local isVisible = false
 local vehicleInstances = {}
 
 -------------------------------------------------------------------------------------------
-
-FW:RunStartupStuff()
-
--------------------------------------------------------------------------------------------
 function ToggleGUI(explicit_status, type, route)
 	if explicit_status ~= nil then
 		isVisible = explicit_status
@@ -73,7 +69,7 @@ function StoreVehicle(vehicleType, garageName)
 					-- -- -- 	end
 					-- -- -- end, trailerProps, KindOfVehicle, garage_name, vehicle_type)
 				else
-					FW:ShowNotification(_U("vehicle_error"))
+					Notify.send(_U("vehicle_error"))
 				end
 			else
 				local networkId = NetworkGetNetworkIdFromEntity(vehicle)
@@ -87,14 +83,14 @@ function StoreVehicle(vehicleType, garageName)
 						garageName
 					)
 				else
-					FW:ShowNotification(_U("vehicle_error"))
+					Notify.send(_U("vehicle_error"))
 				end
 			end
 		else
-			FW:ShowNotification(_U("not_driver"))
+			Notify.send(_U("not_driver"))
 		end
 	else
-		FW:ShowNotification(_U("no_vehicle_to_enter"))
+		Notify.send(_U("no_vehicle_to_enter"))
 	end
 end
 
@@ -350,14 +346,14 @@ RegisterNUICallback("takeOut", function(data, cb)
 		TriggerServerEvent("htb_garage:GetVehicleForSpawn", vehicle.plate, vehicle.garage, true)
 		ToggleGUI(false)
 	elseif DoesVehicleExist(vehicle.plate) or IsPlayerDrivingVehicle(vehicle.plate) then
-		FW:ShowNotification(_U("cannot_take_out"))
+		Notify.send(_U("cannot_take_out"))
 	elseif vehicle.pound == 1 or vehicle.pound == true then
-		FW:ShowNotification(_U("vehicle_in_pound"))
+		Notify.send(_U("vehicle_in_pound"))
 	elseif vehicle.stored == 1 or vehicle.stored == true then -- TINYINT(1) columns arrive as booleans
 		TriggerServerEvent("htb_garage:GetVehicleForSpawn", vehicle.plate, vehicle.garage, false)
 		ToggleGUI(false)
 	else
-		FW:ShowNotification(_U("vehicle_already_out"))
+		Notify.send(_U("vehicle_already_out"))
 	end
 
 	cb("ok")
@@ -370,7 +366,7 @@ RegisterNUICallback("setGpsMarker", function(data, cb)
 
 	-- Not tracked, or too far away for this client to see it
 	if vehicleEntity == 0 or not DoesEntityExist(vehicleEntity) then
-		FW:ShowNotification(_U("someone_driving"))
+		Notify.send(_U("someone_driving"))
 		cb("ok")
 		return
 	end
@@ -537,16 +533,9 @@ function DoTheSpawn(vehicle, spawnPoint, teleportPlayerToVehicle)
 			local carplate = GetVehicleNumberPlateText(callback_vehicle)
 
 			-- The server already marked the vehicle as out; this registers the entity
-			-- against the spawn ticket the server issued for it
+			-- against the spawn ticket the server issued for it. The server hands out the
+			-- keys once it has confirmed the spawn.
 			TriggerServerEvent("htb_garage:StartTrackingEntity", carplate, networkId)
-
-			local playerId = PlayerId()
-			local playerServerId = GetPlayerServerId(playerId)
-			FW:GiveVehicleKeys({
-				playerServerId = playerServerId,
-				carplate = carplate,
-				lifetime = "permanent",
-			})
 		end,
 		true
 	)
@@ -568,13 +557,12 @@ AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageNam
 	local spawnPoint =
 		DetermineSpawnPosition(vehicle.type, garage.SpawnPoint, garage.SpawnPoint.Heading, garage.SpawnPoint.NumSpawns)
 	if spawnPoint == nil then
-		FW:ShowNotification(_U("spawn_point_occupied"))
+		Notify.send(_U("spawn_point_occupied"))
 		-- Let the server put the vehicle back in the garage
 		TriggerServerEvent("htb_garage:SpawnCancelled", vehicle.plate)
 	else
 		-- May want to call through to server here depending on how things go with OneSync Infinity and vehicle duplication
 		DoTheSpawn(vehicle.vehicle, spawnPoint, Config.TeleportToVehicleOnSpawn)
-		TriggerEvent("qb-vehiclekeys:client:AddKeys", vehicle.plate)
 	end
 end)
 
@@ -588,7 +576,7 @@ AddEventHandler("htb_garage:VehicleSaveAndStored", function(networkId, vehicleTy
 		TaskLeaveVehicle(PlayerPedId(), vehicleEntity, 0)
 	end
 
-	FW:ShowNotification(_U("vehicle_in_garage"))
+	Notify.send(_U("vehicle_in_garage"))
 end)
 
 RegisterNetEvent("htb_garage:nearbyPlayersList")
@@ -601,10 +589,10 @@ end)
 
 RegisterNetEvent("htb_garage:TransferOwnershipResult")
 AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSeller, plate, receiverServerId)
-	FW:ShowNotification(outcome)
+	Notify.send(outcome)
 
+	-- The seller's keys are removed by the server
 	if amITheSeller then
-		TriggerEvent("qb-vehiclekeys:client:RemoveKeys", plate)
 		SendNUIMessage({
 			type = "transferComplete",
 			plate = plate,

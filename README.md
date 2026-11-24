@@ -21,7 +21,25 @@
 
 # Changelog
 
-## [Unreleased] – 
+## [Unreleased]
+
+### Added
+- `Config.Notify` chooses who shows notifications: the framework's own (default), ox_lib or the game's feed. Others can be added as a small file in `Bridge/notify`.
+- `Config.VehicleKeys` chooses the vehicle keys resource: `auto` (default), jaksam's `vehicles_keys`, `qb-vehiclekeys` or `none`. Others can be added as a small file in `Bridge/keys`.
+
+### Changed
+- The framework layer (`FrameworkSpecific`, the Strategy/Context classes) is replaced by plain adapters in `Bridge/`: framework, queries, notifications and keys. See *Framework bridge*. Re-copy your manifest and run `refresh`.
+- `Config.RolePlayFramework` also accepts `auto`. The unused `none` and `custom` options and `Config.UsingEsxLegacy` have been removed (ESX is found automatically).
+- Charging cash then bank is written once for all frameworks instead of once per framework.
+- Vehicle keys are handed out by the server once it has confirmed a spawn, instead of the client asking for them. The `htb_garage:giveKeys` network event has been removed.
+- Transfers take the keys from the seller and give them to the buyer through the configured keys resource, on every framework.
+
+### Fixed
+- ESX: the transfer list could show the wrong names, or none, for nearby players.
+- The SQL queries were registered with the database twice on start.
+- QBCore key events were sent after every spawn and impound retrieve even on servers without qb-vehiclekeys.
+
+## [2.1.0] – 2026-11-24
 
 ### Added
 - Support for dynamic route-aware dummy data loader.  
@@ -97,7 +115,7 @@ I'd been developing for FiveM for almost 12 months now. I had never worked with 
 
 **Future Direction**
 
-Since the initial release I've applied many changes to help make the code cleaner and more abstracted away from the the specific implementations of certain frameworks. I have implemented a Strategy pattern inspired approach to providing ways to plug in and ESX and QBCore way of performing specific actions. I've also provided the ability to switch to framework specific SQL for the frameworks in use, for example ESX will store the vehicle configuration in the 'vehicle' column from owned_vehicles, whereas QBCore will use the 'mods' column on the player_vehicles table. This is switched by using the correct fxmanifest file and setting the role place framework Config string. If a framework in use provides a different definition then this system needs to customised by the server developers and I'll probably never see a pull request to back integrate...plus it's likely to be a bandaid hack, so I'd rather provide a clean and modular way to provide support for different Role Play frameworks out of the box as well as accomodate custom frameworks allowing the server developers to put their custom code into a dedicated source file without needing to modify the core system.
+Since the initial release I've applied many changes to help make the code cleaner and more abstracted away from the the specific implementations of certain frameworks. Everything that differs between frameworks lives in the `Bridge` folder as small, swappable adapters (see *Framework bridge* below), including the framework specific SQL: for example ESX stores the vehicle configuration in the 'vehicle' column of owned_vehicles, whereas QBCore uses the 'mods' column of player_vehicles. Pick the framework with the matching fxmanifest file and `Config.RolePlayFramework`. If a framework in use provides a different definition then this system needs to customised by the server developers and I'll probably never see a pull request to back integrate...plus it's likely to be a bandaid hack, so I'd rather provide a clean and modular way to provide support for different Role Play frameworks out of the box as well as accomodate custom frameworks allowing the server developers to put their custom code into a dedicated source file without needing to modify the core system.
 
 I plan to be actively maintaining this project and I'm open to suggestions and pull requests to merge back any fixes to issues that people with to contribute.
 
@@ -125,9 +143,31 @@ Impounds have dedicated parking spaces and releasing a vehicle will spawn it to 
 The queries use `JSON_VALUE`, so you need MySQL 8.0.21+ or MariaDB 10.3+. The queries and the upgrade scripts have been run against MySQL 9.3 and MariaDB 11.7.
 
 
-**My 'Strategy Pattern'**
+**Framework bridge**
 
-I have defined a base abstract class type LUA table for creating a "Strategy" A Strategy is instantiated with Strategy:new(<<some function>>) here <<some function>> is an anonymous function, or pointer to an existing function that can be invoked on the wrapper Strategy instance by calling .execute(). A "Context" class needs to be created where these Strategies will be invoked from. In my case I have a Context "class" that is instantiated with a list of Strategies. A set of Strategy functions is selected at started based on the Config.RolePlayFramework value, so if it's set to qbcore the qbcore version of the functions will be executed by the wrapper Context functions. It's a cleaner system than was there before.  
+Anything that differs from server to server is an *adapter*: a plain Lua table of functions registered under a name. `Config.lua` picks one of each kind by name, or `auto` picks whichever matching resource is running.
+
+| Kind | Side | Adapters | Config |
+|---|---|---|---|
+| `framework` | client and server | `esx`, `qbcore` | `Config.RolePlayFramework` |
+| `queries` | server | `esx`, `qbcore` (follows the framework) | |
+| `notify` | client | `esx`, `qbcore`, `ox_lib`, `gta` | `Config.Notify` |
+| `keys` | server | `vehicles_keys`, `qb-vehiclekeys`, `none` | `Config.VehicleKeys` |
+
+The rest of the resource calls them directly, e.g. `Framework.getIdentifier(playerId)`, `Notify.send(message)` or `Keys.give(playerId, plate, "permanent")`. Rules that are the same for every framework, such as charging cash before bank, are written once in the resource and use the adapter's small building blocks (`getBalance`, `removeMoney`).
+
+To add your own, copy an existing file in `Bridge/<kind>`, give it a new name and set that name in `Config.lua`:
+
+```lua
+-- Bridge/notify/okokNotify.lua
+RegisterAdapter("notify", "okokNotify", {
+    send = function(message, kind)
+        exports["okokNotify"]:Alert("Garage", message, 5000, kind or "info")
+    end,
+})
+```
+
+`Bridge/registry.lua` lists the functions each kind must provide. They're checked when the resource starts, so a missing one is reported by name straight away (*The keys adapter 'mine' is missing: remove*) rather than failing later in game. After adding a file, run `refresh` before restarting the resource.
 
 
 **Installation**
@@ -145,6 +185,7 @@ I have defined a base abstract class type LUA table for creating a "Strategy" A 
 
     The `Upgrade-2.1.0` scripts upgrade an existing install in place and keep your data. They're not a step to run on top of `SetupESX.sql` / `Update*.sql`: those already create the 2.1.0 schema. See *Upgrading from 2.0.x* below.
 * Rename `fxmanifest-esx.lua` or `fxmanifest-qb.lua` to `fxmanifest.lua` based on the Role Play framework you're running, and set `Config.RolePlayFramework` to match.
+* Check `Config.Notify` (who shows notifications) and `Config.VehicleKeys` (your keys resource). The defaults use your framework's notifications and whichever supported keys resource is running.
 
 **Upgrading from 2.0.x**
 * **oxmysql is now required.** The resource uses oxmysql's `MySQL.single.await` / `MySQL.scalar.await` and will not run on mysql-async. Swap the dependency in your server.cfg.
@@ -152,7 +193,7 @@ I have defined a base abstract class type LUA table for creating a "Strategy" A 
 * **Config changes.** If you are carrying over a customised `Config.lua`:
     * `Config.ImpoundPrice` has been renamed to `Config.RetrieveVehiclePrice` (the fee to recall a vehicle that is out in the world).
     * New impound settings: `Config.Blips.impound`, `Config.ImpoundMarkerType`, `Config.ImpoundTimePeriods`, `Config.ImpoundDefaultRetrievePrice`, `Config.UseInGameClock` and `Config.InGameHourSeconds`. Impound locations live in `Configs/Impounds.lua`.
-* **Manifest changes.** New script files were added (`constants.lua`, `Server/security.lua`, `Client/utils.lua`, `Client/impound.lua`) and `Configs/*.lua` is now loaded server side. Re-copy `fxmanifest-esx.lua` or `fxmanifest-qb.lua` over your `fxmanifest.lua`.
+* **Manifest changes.** New script files were added (`constants.lua`, `Server/security.lua`, `Client/utils.lua`, `Client/impound.lua`) and `Configs/*.lua` is now loaded server side. Re-copy `fxmanifest-esx.lua` or `fxmanifest-qb.lua` over your `fxmanifest.lua`, then run `refresh` in the server console before `restart htb_garage` (or restart the whole server). A plain restart doesn't pick up new files in a manifest.
 * **OneSync is required.** It is on by default when using txAdmin and is required by ESX Legacy.
 * **Vehicle tracking from other resources.** If you triggered `htb_garage:StartTrackingEntity` / `htb_garage:StopTrackingEntity` from another resource, switch to the server exports described under *Security*.
 

@@ -141,7 +141,7 @@ cmd("t_store", function()
         NetworkGetNetworkIdFromEntity(veh), "car", "<garage>")
 end)
 
--- ⚑ Keys for a vehicle you don't own
+-- Keys for a vehicle you don't own (this event was removed; keys only come from the server now)
 cmd("t_keys", function() TriggerServerEvent("htb_garage:giveKeys", GetPlayerServerId(PlayerId()), "VICTIM", "permanent") end)
 
 -- ⚑ Open a garage / spawn a vehicle from across the map
@@ -193,7 +193,7 @@ end)
 |---|---|
 | `t_store` (far from a store point) | ⚑ "stored a vehicle away from garage". B's vehicle unchanged in the DB |
 | `t_store` (at a store point, driving your own car) | ⚑ "doesn't match the vehicle's plate". Nothing saved |
-| `t_keys` | ⚑ "requested keys for vehicle ... they don't own". No keys |
+| `t_keys` | Nothing happens: the event no longer exists (the server console may note an unknown event). No keys |
 | `t_list`, `t_spawn` (far from that garage) | ⚑ "from a distance" / "away from garage". No menu, no vehicle |
 | `t_track` | Ignored (no spawn ticket). Not in `dumpVehicleInstances` |
 | `t_retrieve` (away from the lot) | ⚑ "away from impound". No charge, still impounded |
@@ -208,7 +208,7 @@ end)
 | `t_spam` | At most a few requests processed; server stays responsive |
 | `t_removed` | Nothing happens: no teleport, no state change, no money change. The server console may log that the events aren't registered for network use |
 
-- [ ] Set `Config.Security.KickOnSuspicious = true`, restart, run `t_keys`: the player is kicked with the configured message. Set it back afterwards.
+- [ ] Set `Config.Security.KickOnSuspicious = true`, restart, run `t_list` away from a garage: the player is kicked with the configured message. Set it back afterwards.
 - [ ] A non-admin runs `garageToggleDebug`: refused.
 
 ## 10. Exports (from another server resource)
@@ -229,6 +229,13 @@ end, false)
 - [ ] Server restart with cars out: after restart they can be recalled with "Pay for retrieve".
 - [ ] Server console stays free of `Couldn't confirm the spawn of ...` warnings during normal take-outs. If one appears, the server didn't see the new car in time; note the plate and check the car isn't later put back in the garage while it's still out.
 - [ ] Two officers impound the same car at the same moment: only one impound record is created.
+
+### 11.1 Notifications and keys
+- [ ] Server console on start shows `[htb_garage] notify: using '...'` on the client (F8) and, after the first take-out, `[htb_garage] keys: using '...'` on the server, naming what you expect.
+- [ ] Take a car out: you get its keys (with a keys resource running). Impound retrieve: same.
+- [ ] Transfer a car that's out: the buyer gets keys, the seller loses them (qb-vehiclekeys; vehicles_keys doesn't remove).
+- [ ] `Config.Notify = "gta"` then `"ox_lib"` (if installed): notifications appear in that style.
+- [ ] `Config.VehicleKeys = "typo"`: the resource fails to start with "No keys adapter called 'typo'", listing the valid names.
 
 ## 12. QBCore (only if shipping QBCore support)
 Repeat sections 2, 3, 4, 7 and 8 on a QBCore server with `fxmanifest-qb.lua` and `Config.RolePlayFramework = "qbcore"`.
