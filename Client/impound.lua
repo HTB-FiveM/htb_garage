@@ -72,7 +72,7 @@ RegisterCommand("impound", function()
 	local veh = GetVehicleInFrontCone(5.0, 90)
 
 	if veh == nil or not NetworkGetEntityIsNetworked(veh) then
-		FW:ShowNotification(_U("no_vehicles_nearby"))
+		Notify.send(_U("no_vehicles_nearby"))
 		return
 	end
 
@@ -106,7 +106,7 @@ AddEventHandler("htb_garage:ImpoundResult", function(data)
 	-- The server has already removed the vehicle from the world
 	ToggleGUI(false)
 
-	FW:ShowNotification(data.message)
+	Notify.send(data.message)
 end)
 
 function FetchImpoundedPlayerVehicles(impoundName)
@@ -137,7 +137,7 @@ end
 RegisterNetEvent("htb_garage:client:ReturnImpoundedPlayerVehicles")
 AddEventHandler("htb_garage:client:ReturnImpoundedPlayerVehicles", function(impoundedPlayerVehicles)
 	if not impoundedPlayerVehicles or #impoundedPlayerVehicles < 1 then
-		FW:ShowNotification(_U("no_vehicles_impounded"))
+		Notify.send(_U("no_vehicles_impounded"))
 		return
 	end
 
@@ -152,7 +152,7 @@ RegisterNUICallback("impoundRetrieve", function(vehicle, cb)
 	local spawnPoint = DetermineImpoundRetrieveSpawnLocation(Config.Impounds[vehicle.impoundId].SpawnPoints)
 
 	if spawnPoint == nil then
-		FW:ShowNotification(_U("spawn_point_occupied"))
+		Notify.send(_U("spawn_point_occupied"))
 		return
 	end
 
@@ -165,16 +165,15 @@ RegisterNetEvent("htb_garage:client:VehicleImpoundRetrieved")
 AddEventHandler("htb_garage:client:VehicleImpoundRetrieved", function(vehicle, spawnPoint)
 	-- May want to call through to server here depending on how things go with OneSync Infinity and vehicle duplication
 	DoTheSpawn(vehicle.vehicle, spawnPoint, false)
-	TriggerEvent("qb-vehiclekeys:client:AddKeys", vehicle.plate)
 
 	local message = (_U("impound_vehicle_released")):format()
-	FW:ShowNotification(message)
+	Notify.send(message)
 	ToggleGUI(false)
 end)
 
 RegisterNUICallback("returnToOwner", function(data, cb)
 	if data.userIsImpoundManager == nil or data.userIsImpoundManager == false then
-		FW:ShowNotification(_U("return_not_auth"))
+		Notify.send(_U("return_not_auth"))
 		return
 	end
 	if data ~= nil and data.vehicle ~= nil then
@@ -186,6 +185,6 @@ end)
 
 RegisterNetEvent("htb_garage:client:VehicleReturnedToOwner")
 AddEventHandler("htb_garage:client:VehicleReturnedToOwner", function(message)
-	FW:ShowNotification(message)
+	Notify.send(message)
 	ToggleGUI(false)
 end)

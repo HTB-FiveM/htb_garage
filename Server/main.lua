@@ -4,22 +4,17 @@ local pendingImpounds = {} -- [playerId] = { plate, networkId, expires }
 
 local garageDebug = false
 
--- Store all the SQL Queries
+-- The framework's queries (Bridge/queries), registered with the database once it's ready
+local qu = Queries
 MySQL.ready(function()
-	local cfg = SQL[Config.RolePlayFramework]
-	for name, entry in pairs(cfg) do
+	for _, entry in pairs(qu) do
 		MySQL.Async.store(entry.query, function(id)
 			entry.handle = id
 		end)
 	end
 end)
 
--- Assign a shortcut to the SQL query list
-local qu = SQL[Config.RolePlayFramework]
 local sec = Config.Security
--------------------------------------------------------------------------------------------
-
-FW:RunStartupStuff()
 
 -------------------------------------------------------------------------------------------
 -- Helpers
@@ -63,8 +58,22 @@ local function modelHash(model)
 end
 
 local function getPlayerJobName(playerId)
-	local job = FW:GetPlayerJob(playerId)
-	return job and job.jobName or nil
+	local job = Framework.getJob(playerId)
+	return job and job.name or nil
+end
+
+-- Charge a player from cash first, then bank, unless a specific account is given.
+-- Returns false, and charges nothing, if no single account can cover the amount.
+local function chargePlayer(playerId, amount, account)
+	if amount <= 0 then
+		return false
+	end
+	for _, acc in ipairs(account and { account } or { "cash", "bank" }) do
+		if (Framework.getBalance(playerId, acc) or 0) >= amount then
+			return Framework.removeMoney(playerId, acc, amount)
+		end
+	end
+	return false
 end
 
 local function isImpoundStaff(playerId)
@@ -201,7 +210,7 @@ Security.RegisterNetEvent(
 		-- The query only updates vehicles owned by this player
 		MySQL.update.await(qu.SqlSetVehicleName.handle, {
 			["@newName"] = newName,
-			["@identifier"] = FW:GetPlayerIdentifierFromId(playerId),
+			["@identifier"] = Framework.getIdentifier(playerId),
 			["@plate"] = plate,
 		})
 	end
@@ -222,7 +231,7 @@ Security.RegisterNetEvent(
 		end
 
 		local results = MySQL.query.await(qu.SqlGetAllVehicles.handle, {
-			["@identifier"] = FW:GetPlayerIdentifierFromId(playerId),
+			["@identifier"] = Framework.getIdentifier(playerId),
 			["@type"] = vehicleType,
 		})
 
@@ -235,7 +244,7 @@ Security.RegisterNetEvent(
 	{ args = { "string", "string", "boolean?" }, cooldownMs = 1000 },
 	function(playerId, plate, garageName, payForRetrieve)
 		local eventName = "htb_garage:GetVehicleForSpawn"
-		local identifier = FW:GetPlayerIdentifierFromId(playerId)
+		local identifier = Framework.getIdentifier(playerId)
 
 		local vehicle = MySQL.single.await(qu.SqlGetVehicle.handle, {
 			["@identifier"] = identifier,
@@ -281,7 +290,7 @@ Security.RegisterNetEvent(
 					return
 				end
 
-				if not FW:TryDeductPlayerMoney(playerId, Config.RetrieveVehiclePrice) then
+				if not chargePlayer(playerId, Config.RetrieveVehiclePrice) then
 					notify(playerId, _U("retrieve_not_enough"))
 					return
 				end
@@ -359,6 +368,9 @@ Security.RegisterNetEvent(
 
 		spawnTickets[key] = nil
 		setTracked(ticket.plate, networkId)
+
+		-- The spawn is confirmed, so the player who took the vehicle out gets its keys
+		Keys.give(playerId, plate, "permanent")
 	end
 )
 
@@ -492,7 +504,7 @@ Security.RegisterNetEvent("htb_garage:fetchNearbyPlayers", { cooldownMs = 1000 }
 
 	local tree = nil
 	local players = {}
-	local allPlayerNames = FW:GetAllPlayerNames()
+	local allPlayerNames = Framework.getPlayerNames()
 
 	for _, playerIdStr in pairs(GetPlayers()) do
 		local otherId = tonumber(playerIdStr)
@@ -541,8 +553,8 @@ Security.RegisterNetEvent(
 
 		-- Both identifiers come from the server, never from the client
 		local affected = MySQL.update.await(qu.SqlTransferOwnership.handle, {
-			["@newOwner"] = FW:GetPlayerIdentifierFromId(buyerId),
-			["@currentOwner"] = FW:GetPlayerIdentifierFromId(playerId),
+			["@newOwner"] = Framework.getIdentifier(buyerId),
+			["@currentOwner"] = Framework.getIdentifier(playerId),
 			["@plate"] = plate,
 		})
 
@@ -550,9 +562,11 @@ Security.RegisterNetEvent(
 			TriggerClientEvent("htb_garage:TransferOwnershipResult", playerId, "Sold vehicle " .. plate, true, plate)
 			TriggerClientEvent("htb_garage:TransferOwnershipResult", buyerId, "Purchased vehicle " .. plate, false)
 
-			-- if the vehicle is out then give the keys to the buyer
+			-- The keys go with the vehicle: the seller loses theirs, and if the vehicle is
+			-- out the buyer gets a set
+			Keys.remove(playerId, plate)
 			if vehicleInstances[trim(plate)] then
-				TriggerClientEvent("qb-vehiclekeys:client:AddKeys", buyerId, plate)
+				Keys.give(buyerId, plate, "permanent")
 			end
 		else
 			TriggerClientEvent(
@@ -702,7 +716,7 @@ Security.RegisterNetEvent(
 				["@releaseDateTime"] = os.date("%Y-%m-%d %H:%M:%S", GetTimePlusHours(expiryHours)),
 				["@allowPersonalUnimpound"] = impoundData.allowPersonalUnimpound == true,
 				["@priceToRelease"] = price,
-				["@impoundedByUser"] = FW:GetPlayerIdentifierFromId(playerId),
+				["@impoundedByUser"] = Framework.getIdentifier(playerId),
 			})
 			MySQL.update.await(qu.SqlImpoundVehicle.handle, {
 				["@pound"] = 1,
@@ -753,7 +767,7 @@ Security.RegisterNetEvent(
 		Security.WithLock("vehicle:" .. Security.NormalisePlate(vehicle.plate), function()
 			-- Never trust the client's copy of the impound record: look it up and confirm
 			-- the requesting player owns the vehicle and it is actually impounded.
-			local identifier = FW:GetPlayerIdentifierFromId(playerId)
+			local identifier = Framework.getIdentifier(playerId)
 			local impound = MySQL.single.await(qu.SqlGetActiveImpoundByPlate.handle, {
 				["@plate"] = vehicle.plate,
 			})
@@ -779,7 +793,7 @@ Security.RegisterNetEvent(
 			end
 
 			local price = tonumber(impound.priceToRelease) or 0
-			if price > 0 and not FW:TryDeductPlayerMoney(playerId, price) then
+			if price > 0 and not chargePlayer(playerId, price) then
 				notify(playerId, _U("impound_fee_not_enough"))
 				return
 			end
@@ -829,7 +843,7 @@ Security.RegisterNetEvent(
 			end
 
 			-- Corruption prevention: staff can't waive the fee on their own vehicles
-			if impound.owner == FW:GetPlayerIdentifierFromId(playerId) then
+			if impound.owner == Framework.getIdentifier(playerId) then
 				notify(playerId, _U("return_not_auth"))
 				return
 			end
@@ -869,7 +883,7 @@ Security.RegisterNetEvent(
 		end
 
 		local vehicles = MySQL.query.await(qu.SqlGetImpoundedPlayerVehicles.handle, {
-			["@license"] = FW:GetPlayerIdentifierFromId(playerId),
+			["@license"] = Framework.getIdentifier(playerId),
 			["@impoundName"] = impoundName,
 		}) or {}
 
@@ -899,33 +913,6 @@ Security.RegisterNetEvent(
 )
 
 -------------------------------------------------------------------------------------------
--- Keys
--------------------------------------------------------------------------------------------
-
--- Lifetime is either 'temporary' for a one off key or 'permanent'.
--- Clients can only request keys for themselves, for vehicles they own.
-Security.RegisterNetEvent(
-	"htb_garage:giveKeys",
-	{ args = { "number?", "string", "string?" }, cooldownMs = 1000 },
-	function(playerId, _, carplate, lifetime)
-		local owned = MySQL.single.await(qu.SqlGetVehicle.handle, {
-			["@identifier"] = FW:GetPlayerIdentifierFromId(playerId),
-			["@plate"] = trim(carplate),
-		})
-		if not owned then
-			Security.Flag(playerId, "htb_garage:giveKeys", "requested keys for vehicle " .. carplate .. " they don't own")
-			return
-		end
-
-		FW:GiveVehicleKeys({
-			playerServerId = playerId,
-			carplate = carplate,
-			lifetime = lifetime == "temporary" and "temporary" or "permanent",
-		})
-	end
-)
-
--------------------------------------------------------------------------------------------
 -- Server exports for other resources. Clients can't call exports, so these are the safe
 -- way for other server scripts (e.g. a vehicle shop) to integrate.
 -------------------------------------------------------------------------------------------
@@ -950,7 +937,7 @@ end)
 
 --- Give a player keys using the configured key system.
 exports("GiveVehicleKeys", function(playerId, plate, lifetime)
-	FW:GiveVehicleKeys({ playerServerId = playerId, carplate = plate, lifetime = lifetime or "permanent" })
+	Keys.give(playerId, plate, lifetime == "temporary" and "temporary" or "permanent")
 end)
 
 -------------------------------------------------------------------------------------------

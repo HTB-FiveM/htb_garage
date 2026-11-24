@@ -1,20 +1,21 @@
--- define each SQL statement as { query = <SQL>, handle = nil }
-SQL["esx"] = {
+-- The queries htb_garage runs against the QBCore database tables.
+-- Each entry is { query = <SQL> }; the server registers them with the database on start.
+RegisterAdapter("queries", "qbcore", {
 	SqlGetAllVehicles = {
 		query = [[
       SELECT 
-        CAST(json_value(vehicle, '$.model')      AS SIGNED) model,
-        CAST(json_value(vehicle, '$.bodyHealth') AS SIGNED) body,
-        CAST(json_value(vehicle, '$.engineHealth') AS SIGNED) engine,
-        CAST(json_value(vehicle, '$.fuelLevel')  AS SIGNED) fuel,
+        CAST(json_value(mods,        '$.model')      AS SIGNED) model,
+        CAST(json_value(mods,        '$.bodyHealth') AS SIGNED) body,
+        CAST(json_value(mods,        '$.engineHealth') AS SIGNED) engine,
+        CAST(json_value(mods,        '$.fuelLevel')  AS SIGNED) fuel,
         `stored`,
-        pound_htb       AS pound,
+        pound_htb      AS pound,
         vehiclename,
         plate
-      FROM owned_vehicles
-      WHERE owner = @identifier
-        AND type   = @type
-        AND job    IS NULL
+      FROM player_vehicles
+      WHERE license = @identifier
+        AND type    = @type
+        AND job     IS NULL
     ]],
 		handle = nil,
 	},
@@ -22,15 +23,15 @@ SQL["esx"] = {
 	SqlGetVehicle = {
 		query = [[
       SELECT
-        vehicle,
+        mods      AS vehicle,
         `stored`,
-        pound_htb   AS pound,
+        pound_htb AS pound,
         vehiclename,
         plate,
         type
-      FROM owned_vehicles
-      WHERE owner = @identifier
-        AND plate = @plate
+      FROM player_vehicles
+      WHERE license = @identifier
+        AND plate   = @plate
     ]],
 		handle = nil,
 	},
@@ -39,13 +40,13 @@ SQL["esx"] = {
 	SqlGetVehicleByPlate = {
 		query = [[
       SELECT
-        owner,
-        vehicle,
+        license   AS owner,
+        mods      AS vehicle,
         `stored`,
         pound_htb AS pound,
         plate,
         type
-      FROM owned_vehicles
+      FROM player_vehicles
       WHERE plate = @plate
       LIMIT 1
     ]],
@@ -54,47 +55,54 @@ SQL["esx"] = {
 
 	SqlSetVehicleStored = {
 		query = [[
-      UPDATE owned_vehicles
+      UPDATE player_vehicles
       SET `stored` = @stored
-      WHERE owner = @identifier
-        AND plate = @plate
+      WHERE license = @identifier
+        AND plate   = @plate
     ]],
 		handle = nil,
 	},
 
 	SqlSaveAndStoreVehicle = {
 		query = [[
-      UPDATE owned_vehicles
-      SET vehicle = @vehicle,
+      UPDATE player_vehicles
+      SET mods     = @vehicle,
           `stored` = @stored
-      WHERE plate = @plate
+      WHERE plate   = @plate
     ]],
 		handle = nil,
 	},
 
 	SqlSetVehicleName = {
 		query = [[
-      UPDATE owned_vehicles
+      UPDATE player_vehicles
       SET vehiclename = @newName
-      WHERE owner = @identifier
-        AND plate = @plate
+      WHERE license = @identifier
+        AND plate   = @plate
     ]],
 		handle = nil,
 	},
 
 	SqlTransferOwnership = {
 		query = [[
-      UPDATE owned_vehicles
-      SET owner = @newOwner
-      WHERE owner = @currentOwner
-        AND plate = @plate
+      UPDATE player_vehicles
+      SET license   = @newOwner,
+          citizenid = (
+            SELECT citizenid
+            FROM players
+            WHERE license = @newOwner
+            ORDER BY last_updated DESC
+            LIMIT 1
+          )
+      WHERE license = @currentOwner
+        AND plate   = @plate
     ]],
 		handle = nil,
 	},
 
 	SqlImpoundVehicle = {
 		query = [[
-      UPDATE owned_vehicles
+      UPDATE player_vehicles
       SET pound_htb = @pound
       WHERE plate = @plate
     ]],
@@ -133,7 +141,7 @@ SQL["esx"] = {
         i.allowPersonalUnimpound,
         o.pound_htb AS isImpounded
       FROM impound_vehicle_htb AS i
-      INNER JOIN owned_vehicles AS o
+      INNER JOIN player_vehicles AS o
         ON i.vehiclePlate = o.plate
       WHERE i.vehiclePlate = @vehiclePlate
         AND o.pound_htb    = 1
@@ -150,7 +158,7 @@ SQL["esx"] = {
         i.allowPersonalUnimpound,
         o.pound_htb AS isImpounded
       FROM impound_vehicle_htb AS i
-      INNER JOIN owned_vehicles AS o
+      INNER JOIN player_vehicles AS o
         ON i.vehiclePlate = o.plate
       WHERE o.pound_htb = 1
     ]],
@@ -160,7 +168,7 @@ SQL["esx"] = {
 	SqlIsCitizenVehicle = {
 		query = [[
       SELECT plate
-      FROM owned_vehicles
+      FROM player_vehicles
       WHERE plate = @plate
       LIMIT 1
     ]],
@@ -173,7 +181,7 @@ SELECT
   ov.type,
   ov.plate,
   ov.vehiclename AS displayName,
-  CAST(json_value(ov.vehicle, '$.model') AS SIGNED) model,
+  CAST(json_value(ov.mods, '$.model') AS SIGNED) model,
   iv.priceToRelease,
   iv.impoundName AS impoundId,
   iv.id AS impoundVehicleId,
@@ -185,12 +193,12 @@ SELECT
   END AS canRetrieveHere
                                      
 
-FROM owned_vehicles ov
+FROM player_vehicles ov
   INNER JOIN impound_vehicle_htb iv
     ON ov.plate = iv.vehiclePlate
 
 WHERE ov.pound_htb = 1
-  AND ov.owner = @license
+  AND ov.license = @license
   AND iv.active = 1
     ]],
 		handle = nil,
@@ -201,14 +209,14 @@ WHERE ov.pound_htb = 1
 	SqlGetActiveImpoundByPlate = {
 		query = [[
 SELECT
-  ov.owner,
+  pv.license AS owner,
   iv.priceToRelease,
   iv.impoundName
-FROM owned_vehicles ov
+FROM player_vehicles pv
   INNER JOIN impound_vehicle_htb iv
-    ON ov.plate = iv.vehiclePlate
-WHERE ov.plate = @plate
-  AND ov.pound_htb = 1
+    ON pv.plate = iv.vehiclePlate
+WHERE pv.plate = @plate
+  AND pv.pound_htb = 1
   AND iv.active = 1
 ORDER BY iv.id DESC
 LIMIT 1
@@ -219,7 +227,7 @@ LIMIT 1
 	SqlReleaseImpoundVehicle = {
 		query = [[
 UPDATE impound_vehicle_htb iv
-JOIN owned_vehicles ov ON iv.vehiclePlate = ov.plate
+JOIN player_vehicles ov ON iv.vehiclePlate = ov.plate
 SET iv.active = 0,
     ov.pound_htb = 0,
     ov.`stored` = 0
@@ -227,21 +235,4 @@ WHERE ov.plate = @plate;
     ]],
 		handle = nil,
 	},
-}
-
--- Then, in your client.lua (or shared init), store them all in one loop:
-MySQL.ready(function()
-	local cfg = SQL[Config.RolePlayFramework] -- e.g. SQL['esx'] or SQL['qbcore']
-	for _, entry in pairs(cfg) do
-		MySQL.Async.store(entry.query, function(storeId)
-			entry.handle = storeId
-		end)
-	end
-end)
-
--- Usage example:
--- MySQL.Async.fetchAll(
---   SQL[Config.RolePlayFramework].SqlGetAllVehicles.handle,
---   { identifier = someIdentifier, type = 'car' },
---   function(results) … end
--- )
+})
