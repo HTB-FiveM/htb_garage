@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ImpoundVehicle } from "../types/impoundTypes";
+import type { ImpoundVehicle } from '@/types/impoundTypes';
 import Label from "@/components/Label.vue";
 
-import { useCurrency } from "@/composables/useCurrency";
+import { useCurrency } from '@/composables/useCurrency';
 
 defineProps<{ veh: ImpoundVehicle }>();
 
 const modelName = (vehicle: ImpoundVehicle) => {
-  if (!vehicle.modelName || vehicle.modelName === "null") {
+  if (!vehicle.modelName || vehicle.modelName === 'null') {
     return vehicle.spawnName;
   }
 
@@ -33,7 +33,7 @@ const formatCurrency = (amount: number) => {
         <span v-if="veh.plate" class="badge badge-light">{{ veh.plate }}</span>
         <span v-if="veh.displayName"> - {{ veh.displayName }}</span>
       </div>
-      <div style="color: #466f52">{{ formatCurrency(veh.priceToRelease) }}</div>
+      <div style="color: #6fcf97">{{ formatCurrency(veh.priceToRelease) }}</div>
     </div>
     <div class="impound-details">
       <div>{{ veh.impoundName }}</div>

@@ -1,4 +1,4 @@
-import {
+import type {
   EnableGarageData,
   EnableImpoundData,
   SetupImpoundStoreVehicleData,
@@ -6,8 +6,8 @@ import {
   MessageHandlers,
   SetVehiclesData,
   SetupImpoundRetrieveVehicleData,
-} from "@/types/nuiMessageTypes";
-import { Impound } from "./types/impoundTypes";
+} from '@/types/nuiMessageTypes';
+import type { Impound } from '@/types/impoundTypes';
 
 export default function initialiseDummyData(
   handlers: MessageHandlers,

@@ -17,9 +17,13 @@ const routes: RouteRecordRaw[] = [
     path: '/retrieve',
     name: 'retrieve',
     component: () => import('@/views/Impound.vue'),
-    meta: { containerWidth: '20%' }
+    meta: { containerWidth: '30%' },
   },
-
+  {
+    path: '/testing',
+    name: 'testing',
+    component: () => import('@/views/VehicleSearchView.vue'),
+  },
 ];
 
 const router = createRouter({

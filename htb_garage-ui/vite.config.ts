@@ -1,18 +1,23 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { viteSingleFile } from 'vite-plugin-singlefile';
 import { fileURLToPath, URL } from 'node:url';
-import VueI18n from '@intlify/unplugin-vue-i18n/vite';
 import { resolve } from 'path';
+import { viteSingleFile } from 'vite-plugin-singlefile';
 
-// https://vitejs.dev/config/
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import vueJsx from '@vitejs/plugin-vue-jsx';
+import vueDevTools from 'vite-plugin-vue-devtools';
+import VueI18n from '@intlify/unplugin-vue-i18n/vite';
+
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
+    vueJsx(),
+    vueDevTools(),
     VueI18n({
-      include: resolve(__dirname, './src/locales/**')
+      include: resolve(__dirname, './src/locales/**'),
     }),
-    viteSingleFile()
+    viteSingleFile(),
   ],
   resolve: {
     alias: {
@@ -21,11 +26,11 @@ export default defineConfig({
   },
   build: {
     outDir: '../UI', // Set your desired output directory here
-    emptyOutDir: true
+    emptyOutDir: true,
   },
   server: {
     host: '0.0.0.0',
     port: 5175,
-    cors: true
-  }
-})
+    cors: true,
+  },
+});

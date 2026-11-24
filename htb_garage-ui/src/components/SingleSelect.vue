@@ -71,8 +71,15 @@ function onChange(e: Event) {
     box-sizing: border-box;
     transition: box-shadow 0.3s ease;
     font-family: inherit;
-    background-color: #fff;
+    background-color: #111;
+    color: #eee;
+    border-color: #444;
     appearance: none;
+}
+
+.select-input option {
+    background-color: #111;
+    color: #eee;
 }
 
 .select-input:focus {
@@ -84,7 +91,8 @@ box-shadow:
 }
 
 .select-input:disabled {
-    background-color: #f5f5f5;
+    background-color: #2a2a2a;
+    color: #888;
     cursor: not-allowed;
 }
 </style>

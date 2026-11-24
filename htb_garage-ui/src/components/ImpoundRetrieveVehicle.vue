@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useImpoundStore } from "@/stores/impound.store";
-import { ImpoundVehicle } from "@/types/impoundTypes";
+import type { ImpoundVehicle } from "@/types/impoundTypes";
 import { computed, inject, ref } from "vue";
 
 import ImpoundVehiceItem from "@/components/ImpoundVehicleItem.vue";
@@ -128,9 +128,10 @@ ul {
 
 .impound-list-item {
   /* box-shadow: horizontal-offset vertical-offset blur-radius spread-radius color */
-  box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid #3a3a3a;
 
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 1rem;
 }
 

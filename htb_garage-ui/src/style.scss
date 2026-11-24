@@ -1,0 +1,122 @@
+//@import '@/style/globals'; // if you separate later
+
+/* kill the gray behind the panel */
+#app {
+  background: transparent !important;
+  box-shadow: none; /* if you had any shadow on #app */
+}
+
+body {
+  margin: 0;
+  background: #0a0a0a;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+input::placeholder {
+  color: #bbb; /* or #aaa if you want it even softer */
+  opacity: 1; /* Important: avoid Chrome/Firefox reducing opacity */
+}
+
+input[type='text'],
+input[type='range'],
+input[type='checkbox'],
+input[type='radio'],
+button,
+select,
+textarea {
+  border: 1px solid #444;
+  background: #111;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  outline: none;
+  transition: all 0.2s ease;
+  // transition:
+  //   box-shadow 0.25s ease,
+  //   border-color 0.25s ease;
+}
+
+input[type='text']:focus,
+input[type='range']:focus,
+input[type='checkbox']:focus,
+input[type='radio']:focus,
+button:focus,
+select:focus,
+textarea:focus {
+  box-shadow:
+    0 0 8px 2px rgba(0, 100, 255, 0.75),
+    0 0 2px white;
+  border-color: white;
+}
+
+/* Base reset for your slider */
+.panel-content input[type='range'] {
+  -webkit-appearance: none; /* remove default */
+  -moz-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 14px;
+  background: transparent; /* let the track pseudo-element show */
+  margin: 1rem 0; /* vertical spacing */
+  padding: 0;
+}
+
+/* THE SLIM TRACK */
+.panel-content input[type='range']::-webkit-slider-runnable-track {
+  height: 6px; /* thin track */
+  background: rgba(100, 100, 100, 0.6);
+  border-radius: 3px;
+}
+
+.panel-content input[type='range']::-moz-range-track {
+  height: 6px;
+  background: rgba(100, 100, 100, 0.6);
+  border-radius: 3px;
+}
+
+.panel-content input[type='range']::-ms-track {
+  height: 6px;
+  background: transparent; /* required to show the fill */
+  border-color: transparent;
+  color: transparent;
+}
+
+.panel-content input[type='range']::-ms-fill-lower,
+.panel-content input[type='range']::-ms-fill-upper {
+  background: transparent; // rgba(100, 100, 100, 0.6);
+  border-radius: 3px;
+}
+
+/* THE CIRCULAR HANDLE */
+.panel-content input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none; /* remove default */
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(200, 200, 200, 0.9);
+  border: 2px solid rgba(150, 67, 67, 0.8);
+  /* center the thumb: (thumbHeight - trackHeight) / -2 = (14 - 6) / -2 = -4px */
+  margin-top: -4px;
+  cursor: pointer;
+}
+
+.panel-content input[type='range']::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(200, 200, 200, 0.9);
+  border: 2px solid rgba(150, 67, 67, 0.8);
+  cursor: pointer;
+}
+
+.panel-content input[type='range']::-ms-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(200, 200, 200, 0.9);
+  border: 2px solid rgba(150, 67, 67, 0.8);
+  /* IE/Edge ignore negative margins on thumbs, but their track is already aligned */
+  cursor: pointer;
+}

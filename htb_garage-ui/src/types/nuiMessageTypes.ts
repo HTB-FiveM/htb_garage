@@ -1,4 +1,4 @@
-import { Impound, ImpoundVehicle } from "./impoundTypes";
+import type { Impound, ImpoundVehicle } from '@/types/impoundTypes';
 
 export interface ToggleVisibilityData {
   type: "toggleVisibility";

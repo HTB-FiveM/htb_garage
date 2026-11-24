@@ -60,8 +60,9 @@ const filteredVehicles = computed(() => {
   flex-direction: column; /* stack header + list vertically */
   flex: 1; /* fill all of its parent’s height */
   min-height: 0; /* allow children to shrink below content */
-  background-color: darkgray;
-  padding: 10px 10px 15px 15px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid #3a3a3a;
+  padding: 12px;
   border-radius: 7px;
 }
 
@@ -96,28 +97,26 @@ const filteredVehicles = computed(() => {
 }
 
 .car-list::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  border-radius: 2px;
-  background-color: #f5f5f5;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .car-list::-webkit-scrollbar {
-  width: 12px;
-  background-color: #f5f5f5;
-  border-radius: 2px;
+  width: 8px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
 
 .car-list::-webkit-scrollbar-thumb {
-  border-radius: 2px;
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  background-color: #999;
+  border-radius: 4px;
+  background-color: rgba(150, 67, 67, 0.8);
 }
 
 .garage-list-item {
-  border-radius: 5px;
+  border-radius: 6px;
   margin-top: 1px;
-  margin-bottom: 1px;
-  background-color: dimgray;
+  margin-bottom: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
   color: ghostwhite;
 }
 
@@ -131,7 +130,7 @@ ul,
   position: relative;
   display: block;
   padding: 0.6rem 0.7rem;
-  border: 1px solid rgba(0, 0, 0, 0.125);
+  border: 1px solid #3a3a3a;
 }
 
 .carModel,

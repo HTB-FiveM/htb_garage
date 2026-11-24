@@ -65,15 +65,18 @@ const impoundVehicle = () => {
 
 <style scoped>
 #app-border {
-  background-color: darkgray;
-  padding: 10px 10px 15px 15px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid #3a3a3a;
+  padding: 12px;
   border-radius: 7px;
 }
 
 .menu-header {
   margin-bottom: 5px;
-  background-color: rgb(132, 131, 131);
-  color: ghostwhite;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #3a3a3a;
+  color: #f0f0f0;
+  font-size: 1.1rem;
 }
 
 .menu-header,
@@ -97,12 +100,12 @@ const impoundVehicle = () => {
 
 <style>
 .summarise {
-  color: rgb(84, 84, 84);
+  color: #a8a8a8;
 }
 
 .summary {
   margin-left: 0.5rem;
-  color: #111;
+  color: #ddd;
 }
 
 .action-bar {

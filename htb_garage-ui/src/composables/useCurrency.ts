@@ -30,12 +30,12 @@ export function useCurrency(
   const decimals = opts?.decimals ?? config.maxFractionDigits
 
   return computed<string>(() => {
-    const value = unref(raw) ?? 0
+    const value = unref(raw) ?? 0;
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
-    }).format(value)
-  })
+    }).format(value);
+  });
 }
