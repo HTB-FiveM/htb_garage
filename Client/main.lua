@@ -26,35 +26,6 @@ function ToggleGUI(explicit_status, type, route)
 	SendNUIMessage(messageData)
 end
 
-function HandleVehicleSpecifics(vehicleEntity, vehicleType, deleteZone)
-	if vehicleType == "boat" and deleteZone.DryPoint then
-		local pos = deleteZone.DryPoint
-
-		-- Get all peds so we can spawn them all on dry land
-		local numberOfSeats = GetVehicleModelNumberOfSeats(GetEntityModel(vehicleEntity))
-		local playerServerIds = {}
-		local driverSeat = -1
-		local lastSeat = driverSeat + numberOfSeats - 1
-
-		for seat = driverSeat, lastSeat, 1 do
-			local playerPed = GetPedInVehicleSeat(vehicleEntity, seat)
-			local svrId = GetPlayerServerId(NetworkGetPlayerIndexFromPed(playerPed))
-			if svrId > 0 then
-				table.insert(playerServerIds, svrId)
-			end
-
-			local netIds = NetworkGetNetworkIdFromEntity(playerPed)
-		end
-
-		TriggerServerEvent("htb_garage:TeleportAllInVehicleToDock", playerServerIds, {
-			x = deleteZone.DryPoint.x,
-			y = deleteZone.DryPoint.y,
-			z = deleteZone.DryPoint.z,
-			h = deleteZone.DryPoint.h,
-		})
-	end
-end
-
 RegisterNetEvent("htb_garage:UpdateLocalVehicleInstances")
 AddEventHandler("htb_garage:UpdateLocalVehicleInstances", function(vehicles)
 	vehicleInstances = vehicles
@@ -78,7 +49,8 @@ AddEventHandler("htb_garage:HandleWarpToDock", function(pos)
 	SetEntityHeading(ped, --[[ Entity ]] pos.h --[[ number ]])
 end)
 
-function StoreVehicle(vehicleType, deleteZone)
+-- garageName is the config key of the garage; the server looks up the zone itself
+function StoreVehicle(vehicleType, garageName)
 	local playerPed = PlayerPedId()
 	if IsPedInAnyVehicle(playerPed, false) then
 		local vehicle = GetVehiclePedIsIn(playerPed, false)
@@ -112,7 +84,7 @@ function StoreVehicle(vehicleType, deleteZone)
 						vehicleProps,
 						networkId,
 						vehicleType,
-						deleteZone
+						garageName
 					)
 				else
 					FW:ShowNotification(_U("vehicle_error"))
@@ -202,7 +174,7 @@ function DrawMarkers(garages, markerType, vehicleType)
 										end
 									else
 										if zoneName == "DeletePoint" then
-											StoreVehicle(vehicleType, zone)
+											StoreVehicle(vehicleType, k)
 										end
 										--if zoneName == "Impound" then OpenImpound(zone, k, "car") end
 									end
@@ -368,20 +340,6 @@ RegisterNUICallback("close", function(data, cb)
 	cb("ok")
 end)
 
--- Called once the server has charged the retrieval fee: remove the copy of the
--- vehicle that is still out in the world so it isn't duplicated.
-local function DespawnRetrievedVehicle(plate)
-	plate = trim(plate)
-	local instance = vehicleInstances[plate]
-	if instance then
-		local vehicleEntity = NetworkGetEntityFromNetworkId(instance.networkId)
-		if DoesEntityExist(vehicleEntity) then
-			DeleteEntity(vehicleEntity)
-			TriggerServerEvent("htb_garage:StopTrackingEntity", plate)
-		end
-	end
-end
-
 RegisterNUICallback("takeOut", function(data, cb)
 	local vehicle = data.vehicle
 	local payForRetrieve = data.payForRetrieve
@@ -393,9 +351,9 @@ RegisterNUICallback("takeOut", function(data, cb)
 		ToggleGUI(false)
 	elseif DoesVehicleExist(vehicle.plate) or IsPlayerDrivingVehicle(vehicle.plate) then
 		FW:ShowNotification(_U("cannot_take_out"))
-	elseif vehicle.pound == 1 then
+	elseif vehicle.pound == 1 or vehicle.pound == true then
 		FW:ShowNotification(_U("vehicle_in_pound"))
-	elseif vehicle.stored == 1 then
+	elseif vehicle.stored == 1 or vehicle.stored == true then -- TINYINT(1) columns arrive as booleans
 		TriggerServerEvent("htb_garage:GetVehicleForSpawn", vehicle.plate, vehicle.garage, false)
 		ToggleGUI(false)
 	else
@@ -408,9 +366,16 @@ end)
 RegisterNUICallback("setGpsMarker", function(data, cb)
 	local vehicle = data.vehicle
 	local instance = vehicleInstances[trim(vehicle.plate)]
-	local vehicleEntity = NetworkGetEntityFromNetworkId(instance.networkId)
-	local coords = GetEntityCoords(vehicleEntity)
+	local vehicleEntity = instance and NetworkGetEntityFromNetworkId(instance.networkId) or 0
 
+	-- Not tracked, or too far away for this client to see it
+	if vehicleEntity == 0 or not DoesEntityExist(vehicleEntity) then
+		FW:ShowNotification(_U("someone_driving"))
+		cb("ok")
+		return
+	end
+
+	local coords = GetEntityCoords(vehicleEntity)
 	SetNewWaypoint(coords.x, coords.y)
 
 	cb("ok")
@@ -571,7 +536,8 @@ function DoTheSpawn(vehicle, spawnPoint, teleportPlayerToVehicle)
 
 			local carplate = GetVehicleNumberPlateText(callback_vehicle)
 
-			TriggerServerEvent("htb_garage:SetVehicleStored", carplate, 0)
+			-- The server already marked the vehicle as out; this registers the entity
+			-- against the spawn ticket the server issued for it
 			TriggerServerEvent("htb_garage:StartTrackingEntity", carplate, networkId)
 
 			local playerId = PlayerId()
@@ -594,11 +560,8 @@ GarageTypeMapping = {
 }
 
 RegisterNetEvent("htb_garage:ResultsForVehicleSpawn")
-AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageName, retrieved)
-	if retrieved then
-		DespawnRetrievedVehicle(vehicle.plate)
-	end
-
+AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageName)
+	-- Any copy left out in the world has already been removed by the server
 	local GarageKey = GarageTypeMapping[vehicle.type]
 	local garage = Config[GarageKey][garageName]
 
@@ -606,6 +569,8 @@ AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageNam
 		DetermineSpawnPosition(vehicle.type, garage.SpawnPoint, garage.SpawnPoint.Heading, garage.SpawnPoint.NumSpawns)
 	if spawnPoint == nil then
 		FW:ShowNotification(_U("spawn_point_occupied"))
+		-- Let the server put the vehicle back in the garage
+		TriggerServerEvent("htb_garage:SpawnCancelled", vehicle.plate)
 	else
 		-- May want to call through to server here depending on how things go with OneSync Infinity and vehicle duplication
 		DoTheSpawn(vehicle.vehicle, spawnPoint, Config.TeleportToVehicleOnSpawn)
@@ -614,23 +579,14 @@ AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageNam
 end)
 
 RegisterNetEvent("htb_garage:VehicleSaveAndStored")
-AddEventHandler("htb_garage:VehicleSaveAndStored", function(networkId, plate, vehicleType, deleteZone)
+-- The server has saved the vehicle. It removes the vehicle itself (and moves boat
+-- passengers onto the dock) once the driver has climbed out.
+AddEventHandler("htb_garage:VehicleSaveAndStored", function(networkId, vehicleType)
 	local vehicleEntity = NetworkGetEntityFromNetworkId(networkId)
 
-	local playerPed = PlayerPedId()
-	if vehicleType ~= "boat" and Config.AnimateExitOnStore then
-		TaskLeaveVehicle(playerPed, vehicleEntity, 0)
-		while IsPedInVehicle(playerPed, vehicleEntity, true) do
-			Citizen.Wait(0)
-		end
-
-		Citizen.Wait(1000)
+	if vehicleType ~= "boat" and Config.AnimateExitOnStore and DoesEntityExist(vehicleEntity) then
+		TaskLeaveVehicle(PlayerPedId(), vehicleEntity, 0)
 	end
-
-	HandleVehicleSpecifics(vehicleEntity, vehicleType, deleteZone)
-	DeleteEntity(vehicleEntity)
-
-	TriggerServerEvent("htb_garage:StopTrackingEntity", plate)
 
 	FW:ShowNotification(_U("vehicle_in_garage"))
 end)

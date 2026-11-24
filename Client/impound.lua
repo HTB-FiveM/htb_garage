@@ -71,14 +71,13 @@ end
 RegisterCommand("impound", function()
 	local veh = GetVehicleInFrontCone(5.0, 90)
 
-	if veh == nil then
+	if veh == nil or not NetworkGetEntityIsNetworked(veh) then
 		FW:ShowNotification(_U("no_vehicles_nearby"))
 		return
 	end
 
-	local plate = GetVehicleNumberPlateText(veh)
-
-	TriggerServerEvent("htb_garage:server:SetupForImpoundVehicle", plate)
+	-- Send the network id so the server can check the real vehicle (plate, distance)
+	TriggerServerEvent("htb_garage:server:SetupForImpoundVehicle", NetworkGetNetworkIdFromEntity(veh))
 end, false)
 
 RegisterNetEvent("htb_garage:client:SetupForImpoundVehicleResults")
@@ -104,9 +103,7 @@ end)
 
 RegisterNetEvent("htb_garage:ImpoundResult")
 AddEventHandler("htb_garage:ImpoundResult", function(data)
-	local vehicleEntity = GetVehicleByPlate(data.plate)
-	--HandleVehicleSpecifics(vehicleEntity, vehicleType, deleteZone)
-	DeleteEntity(vehicleEntity)
+	-- The server has already removed the vehicle from the world
 	ToggleGUI(false)
 
 	FW:ShowNotification(data.message)

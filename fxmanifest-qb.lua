@@ -33,6 +33,7 @@ server_scripts({
 	"Config.lua",
 	"Configs/*.lua",
 	"Server/utils.lua",
+	"Server/security.lua",
 	"FrameworkSpecific/Interfaces.lua",
 	"FrameworkSpecific/Server/*.lua",
 	"FrameworkSpecific/Setup_Server.lua",

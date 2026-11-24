@@ -17,7 +17,7 @@
  * If the vehicle is marked as impounded you won't be able to spawn it.
  * Transfer ownership to another player.
  * All players occupying seats of a boat will be spawned on the dock rather than dropped in the water where the boat was prior to despawn.
- * Event handlers provided to allow vehicles instances to be tracked to avoid vehicle duplication. eg, esx_vehicle shop adds an owned_vehicles record but if you don't put the vehicle away first you can get the vehicle out and have a duplicate, at least with some garages. So you can Trigger these events passing the vehicle instance and plate to allow tracking. This could also be useful if using an external vehicle impound system where you want to mark a vehicle as disposed when impounded or to track it again once released from impound.
+ * Server exports allow vehicle instances to be tracked to avoid vehicle duplication. eg, esx_vehicleshop adds an owned_vehicles record but if you don't put the vehicle away first you can get the vehicle out and have a duplicate, at least with some garages. Call `exports.htb_garage:StartTrackingVehicle(plate, networkId)` from your server code when another resource spawns an owned vehicle, and `exports.htb_garage:StopTrackingVehicle(plate)` when it removes one (e.g. an external impound system). See *Security* below.
 
 # Changelog
 
@@ -36,6 +36,10 @@
 - Handling messages from NUI engine in a more modular way allowing messages to typed and then call any function in the system to handle specific messages more cleanly.
 - **Breaking:** oxmysql replaces mysql-async. See *Upgrading from 2.0.x* below.
 - **Breaking:** `Config.ImpoundPrice` renamed to `Config.RetrieveVehiclePrice`.
+- **Breaking:** OneSync is required. The server now checks real vehicle entities and player positions.
+- **Breaking:** the `htb_garage:StartTrackingEntity` / `htb_garage:StopTrackingEntity` events no longer accept calls from other resources' clients. Use the `StartTrackingVehicle` / `StopTrackingVehicle` server exports instead.
+- Every network event is now registered through a guard that rejects non-player sources, rate limits callers and type checks arguments. Suspicious requests fire `htb_garage:server:suspiciousActivity` for server owners to hook into.
+- The server now owns vehicle state: it marks vehicles as out when handing them over, removes stored and impounded vehicles itself and moves boat passengers to the dock itself.
 - Retrieval fee for vehicles left out in the world is now charged by the server instead of the client.
 - Impound release fees, vehicle ownership and impound job permissions are now validated server side rather than trusting values sent by the client.
 
@@ -49,6 +53,16 @@
 - ESX: `SetupESX.sql` created the impound column as `pound` instead of `pound_htb`, and had a syntax error in the `owned_vehicles` table.
 - Impound markers had no marker type configured.
 - Framework manifests were missing the new impound script files.
+- Any player could overwrite another player's saved vehicle (including changing its model) through the store event.
+- Any player could give themselves keys to any vehicle.
+- Any player could teleport other players to any position through the boat dock event.
+- Vehicles could be duplicated by marking them as stored while still out in the world.
+- The transfer screen sent every player's license identifier to the client.
+- Vehicle transfers trusted the buyer's identifier sent by the client.
+- Impounds could be made remotely, for vehicles already impounded, or with invalid lots, hold times or prices.
+- Debug commands could be run by any player.
+- A car retrieved for a fee could occasionally be marked as stored while still out in the world, because the clean-up of unclaimed spawns could run in the middle of the retrieve.
+- The GPS marker option errored when the car wasn't tracked or was too far away to be seen.
 
 ### TODO:
 - Confirm that vehicle health stats are being saved and re-applied correctly
@@ -97,9 +111,9 @@ If you need any assistance feel free to reach out at https://discord.gg/Ngg75byB
 
 ![image](https://user-images.githubusercontent.com/6404476/138875659-dcb9efa5-065e-463f-aeb8-5d1e1b2db2c9.png)
 
-**Important note regarding MySQL**
+**Database version**
 
-The SQL I'm using is using some specific JSON fetch functions which aren't available in MySQL and therefore at this time you must be running MariaDB. I've tested with 10.7 so use that as a minimum. There'll be an update at some point once I work out how to implement a decent factory pattern to make the specific platform plugin code a little better.
+The queries use `JSON_VALUE`, so you need MySQL 8.0.21+ or MariaDB 10.3+. The queries and the upgrade scripts have been run against MySQL 9.3 and MariaDB 11.7.
 
 
 **My 'Strategy Pattern'**
@@ -112,19 +126,50 @@ I have defined a base abstract class type LUA table for creating a "Strategy" A 
 * Install ft_libs https://github.com/FivemTools/ft_libs if you don't already have it and add the ensure statement to your server.cfg
 * Install VehicleDeformation https://github.com/Kiminaze/VehicleDeformation if you don't already have it and add the ensure statement to you server.cfg
 * Install htb_garage and add the ensure statement after oxmysql and ft_libs in the server.cfg
-* Run the SQL script for your framework:
-    * ESX without an existing owned_vehicles table: `SQL/SetupESX.sql`
-    * ESX with an existing owned_vehicles table (e.g. stock ESX Legacy from the fxserver recipe deployer): `SQL/UpdateESX.sql`
-    * QBCore: `SQL/UpdateQB-Core.sql`
+* Run **one** SQL script, picked from the table below. Each script builds the complete, current database schema (impound table included), so you never need to run more than one. Back up your database first.
+
+    | Your server | ESX | QBCore |
+    |---|---|---|
+    | No vehicles table yet | `SQL/SetupESX.sql` | n/a (qb-core creates `player_vehicles`) |
+    | Has a vehicles table, htb_garage never installed (e.g. stock ESX Legacy from the fxserver recipe deployer, or stock qb-core) | `SQL/UpdateESX.sql` | `SQL/UpdateQB-Core.sql` |
+    | htb_garage already installed (any older version) | `SQL/Upgrade-2.1.0-ESX.sql` | `SQL/Upgrade-2.1.0-QBCore.sql` |
+
+    The `Upgrade-2.1.0` scripts upgrade an existing install in place and keep your data. They're not a step to run on top of `SetupESX.sql` / `Update*.sql`: those already create the 2.1.0 schema. See *Upgrading from 2.0.x* below.
 * Rename `fxmanifest-esx.lua` or `fxmanifest-qb.lua` to `fxmanifest.lua` based on the Role Play framework you're running, and set `Config.RolePlayFramework` to match.
 
 **Upgrading from 2.0.x**
 * **oxmysql is now required.** The resource uses oxmysql's `MySQL.single.await` / `MySQL.scalar.await` and will not run on mysql-async. Swap the dependency in your server.cfg.
-* **New impound table.** Create the `impound_vehicle_htb` table by running only the `CREATE TABLE impound_vehicle_htb` statement from `SQL/UpdateESX.sql` or `SQL/UpdateQB-Core.sql`. Don't re-run the `ALTER TABLE` at the top of those scripts: those columns were added by the previous version and re-running it fails with duplicate column errors.
+* **Database.** Back up your database, then run `SQL/Upgrade-2.1.0-ESX.sql` or `SQL/Upgrade-2.1.0-QBCore.sql` with HeidiSQL or the mysql/mariadb command line client (it works on MySQL and MariaDB). It upgrades the database in place from any earlier version, is safe to run more than once, and finishes with two review queries (impounds pointing at unknown lots, and vehicles stuck as impounded) to check before starting the server. Don't re-run the old `Update*.sql` scripts on an existing database.
 * **Config changes.** If you are carrying over a customised `Config.lua`:
     * `Config.ImpoundPrice` has been renamed to `Config.RetrieveVehiclePrice` (the fee to recall a vehicle that is out in the world).
     * New impound settings: `Config.Blips.impound`, `Config.ImpoundMarkerType`, `Config.ImpoundTimePeriods`, `Config.ImpoundDefaultRetrievePrice`, `Config.UseInGameClock` and `Config.InGameHourSeconds`. Impound locations live in `Configs/Impounds.lua`.
-* **Manifest changes.** New script files were added (`constants.lua`, `Client/utils.lua`, `Client/impound.lua`) and `Configs/*.lua` is now loaded server side. Re-copy `fxmanifest-esx.lua` or `fxmanifest-qb.lua` over your `fxmanifest.lua`.
+* **Manifest changes.** New script files were added (`constants.lua`, `Server/security.lua`, `Client/utils.lua`, `Client/impound.lua`) and `Configs/*.lua` is now loaded server side. Re-copy `fxmanifest-esx.lua` or `fxmanifest-qb.lua` over your `fxmanifest.lua`.
+* **OneSync is required.** It is on by default when using txAdmin and is required by ESX Legacy.
+* **Vehicle tracking from other resources.** If you triggered `htb_garage:StartTrackingEntity` / `htb_garage:StopTrackingEntity` from another resource, switch to the server exports described under *Security*.
+
+**Security**
+
+Never trust the client: cheat menus can run code inside this resource's client scripts and send any event with any values, so a secret key sent by the client can't stop them. Instead every request is checked on the server:
+* Network events are registered through `Security.RegisterNetEvent` (`Server/security.lua`), which only accepts connected players, rate limits each player per event and type checks the arguments.
+* Each handler validates against the database, the config and the real game entities: vehicle ownership, prices, impound lots, the vehicle's plate and model, and that the player is actually standing at the garage, impound or vehicle.
+* Limits and distances can be tuned in `Config.Security`.
+
+Requests that could only come from a modified client are printed to the server console and fire a server-only event you can connect to your own anticheat, ban system or logging:
+
+```lua
+AddEventHandler("htb_garage:server:suspiciousActivity", function(playerId, eventName, reason)
+    -- e.g. log to Discord, notify staff or ban
+end)
+```
+
+Never `RegisterNetEvent` that event name, or clients will be able to send fake reports. Set `Config.Security.KickOnSuspicious = true` to kick automatically.
+
+Other server resources should use the exports rather than network events. Clients can't call exports:
+* `exports.htb_garage:StartTrackingVehicle(plate, networkId)`
+* `exports.htb_garage:StopTrackingVehicle(plate)`
+* `exports.htb_garage:GiveVehicleKeys(playerId, plate, lifetime)` where lifetime is `permanent` or `temporary`
+
+The admin commands `garageToggleDebug` and `dumpVehicleInstances` are restricted. Grant them with `add_ace group.admin command.garageToggleDebug allow`.
 
 **Note regarding ESX-Legacy**
 

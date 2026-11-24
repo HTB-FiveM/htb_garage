@@ -35,6 +35,23 @@ SQL["esx"] = {
 		handle = nil,
 	},
 
+	-- Vehicle by plate regardless of owner (used to validate stores and impounds server side)
+	SqlGetVehicleByPlate = {
+		query = [[
+      SELECT
+        owner,
+        vehicle,
+        `stored`,
+        pound_htb AS pound,
+        plate,
+        type
+      FROM owned_vehicles
+      WHERE plate = @plate
+      LIMIT 1
+    ]],
+		handle = nil,
+	},
+
 	SqlSetVehicleStored = {
 		query = [[
       UPDATE owned_vehicles

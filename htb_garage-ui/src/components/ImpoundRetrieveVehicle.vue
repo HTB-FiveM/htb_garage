@@ -80,7 +80,7 @@ const returnToOwner = async (vehicle: ImpoundVehicle) => {
             <div class="item-buttons">
               <div v-if="vehicle.canRetrieveHere && vehicle.allowPersonalUnimpound">
                 <Button v-if="vehicle.expired" @click="spawnVehicle(vehicle)"
-                    >Pay for retrieve {{ $t('greeting', { name: 'Alice' }) }}</Button
+                    >Pay for retrieve</Button
                 >
                 <Alert v-else>Your vehicle will be available for release in {{ vehicle.timeLeft }}</Alert>
               </div>

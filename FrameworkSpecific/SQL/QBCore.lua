@@ -35,6 +35,23 @@ SQL["qbcore"] = {
 		handle = nil,
 	},
 
+	-- Vehicle by plate regardless of owner (used to validate stores and impounds server side)
+	SqlGetVehicleByPlate = {
+		query = [[
+      SELECT
+        license   AS owner,
+        mods      AS vehicle,
+        `stored`,
+        pound_htb AS pound,
+        plate,
+        type
+      FROM player_vehicles
+      WHERE plate = @plate
+      LIMIT 1
+    ]],
+		handle = nil,
+	},
+
 	SqlSetVehicleStored = {
 		query = [[
       UPDATE player_vehicles

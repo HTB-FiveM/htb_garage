@@ -63,6 +63,25 @@ Config.ExcludeIdentifierPrefix = false
 
 Config.MaxPlayersInTransferList = 5
 
+-- Server side protection against modified clients. Requires OneSync (on by default
+-- with txAdmin and required by ESX Legacy) so the server can check real positions/entities.
+Config.Security = {
+	DefaultCooldownMs = 250, -- Minimum time between calls to the same event by one player
+	KickOnSuspicious = false, -- Kick players whose requests could only come from a modified client
+	KickMessage = "Kicked by htb_garage: suspicious activity",
+
+	InteractionDistance = 10.0, -- Max distance from a garage / impound marker when using it
+	VehicleDistance = 10.0, -- Max distance from a vehicle being impounded
+	TransferDistance = 15.0, -- Max distance between buyer and seller when transferring
+	NearbyPlayersRadius = 15.0, -- Radius used to list buyers for a transfer
+
+	MaxImpoundPrice = 1000000,
+	MaxImpoundReasonLength = 300,
+	MaxVehicleNameLength = 50,
+	MaxVehiclePropsBytes = 65536, -- Size limit for a vehicle's saved properties
+	SpawnTicketSeconds = 60, -- How long a client has to report a vehicle it was allowed to spawn
+}
+
 -- Set the RP framework, supported values are:
 --      none
 --      esx

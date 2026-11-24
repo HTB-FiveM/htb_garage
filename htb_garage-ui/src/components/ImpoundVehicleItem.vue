@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { ImpoundVehicle } from "../types/impoundTypes";
 import Label from "@/components/Label.vue";
 
@@ -7,20 +6,12 @@ import { useCurrency } from "@/composables/useCurrency";
 
 defineProps<{ veh: ImpoundVehicle }>();
 
-const showDetails = ref(false);
-
 const modelName = (vehicle: ImpoundVehicle) => {
   if (!vehicle.modelName || vehicle.modelName === "null") {
     return vehicle.spawnName;
   }
 
   return vehicle.modelName;
-};
-
-const toggleDetailsPanel = () => {
-  showDetails.value = !showDetails.value;
-  if (!showDetails.value) {
-  }
 };
 
 // Using the composable this way rather than directly in the template
@@ -31,7 +22,8 @@ const formatCurrency = (amount: number) => {
 </script>
 
 <template>
-  <div class="vehicle-row" @click="toggleDetailsPanel">
+  <!-- Expanding is handled by the parent list (ImpoundRetrieveVehicle.vue) -->
+  <div class="vehicle-row">
     <div class="vehicle-details">
       <div class="vehicleListItem">
         <span
@@ -48,10 +40,6 @@ const formatCurrency = (amount: number) => {
       <div v-if="veh.timeLeft">{{ veh.timeLeft }} remaining</div>
       <div v-else><Label class="ready">Ready</Label></div>
     </div>
-  </div>
-  <div v-if="showDetails" class="details-body">
-    <!-- :id="veh.htmlId">-->
-    <slot />
   </div>
 </template>
 

@@ -27,6 +27,13 @@ function SpawnVehicle(vehicle, coords, heading, cb, networked)
 
 		local networkId = nil
 		if networked == true then
+			-- Wait until the vehicle is registered on the network, so the id sent to the
+			-- server is one the server can resolve
+			local waited = 0
+			while not NetworkGetEntityIsNetworked(vehicle) and waited < 5000 do
+				Citizen.Wait(50)
+				waited = waited + 50
+			end
 			networkId = NetworkGetNetworkIdFromEntity(vehicle)
 			SetNetworkIdCanMigrate(networkId, true) -- Allow player interaction
 			SetEntityAsMissionEntity(vehicle, true, false) -- Ensure no automatic despawn
