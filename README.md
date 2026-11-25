@@ -104,12 +104,21 @@ I plan to be actively maintaining this project and I'm open to suggestions and p
 If you need any assistance feel free to reach out at https://discord.gg/Ngg75byBbB
 
 **Sample Screenshots**
+<img width="906" height="700" alt="image" src="https://github.com/user-attachments/assets/f197edcf-1a51-40cb-8860-5cb4fefcafe1" />
 
-![image](https://user-images.githubusercontent.com/6404476/138875460-cdc771df-56cc-4ef2-bf1e-f810a01df2a4.png)
+<img width="946" height="891" alt="image" src="https://github.com/user-attachments/assets/56ad87dd-4fdc-4550-aeaf-e7af0a786914" />
 
-![image](https://user-images.githubusercontent.com/6404476/138875085-e65c395e-9083-4452-98d9-aee56dc9275e.png)
+To impound a vehicle be close to it and be facing it then type the command /impound then fill out the details in the form:
+<img width="1272" height="994" alt="image" src="https://github.com/user-attachments/assets/e22b9a90-6b46-478e-8556-aab75b46b23a" />
 
-![image](https://user-images.githubusercontent.com/6404476/138875659-dcb9efa5-065e-463f-aeb8-5d1e1b2db2c9.png)
+When retrieving if a time was specified with "Impound for" you will have to wait for that time period to expire:
+<img width="1664" height="890" alt="image" src="https://github.com/user-attachments/assets/91d074a6-99b9-45ab-aff3-ccfbc99032ee" />
+<img width="1308" height="647" alt="image" src="https://github.com/user-attachments/assets/32049282-1833-4549-b461-6be5dbf9a66e" />
+
+Impounds have dedicated parking spaces and releasing a vehicle will spawn it to a random unoccupied space:
+<img width="2509" height="1616" alt="image" src="https://github.com/user-attachments/assets/f89805ff-4ec8-4b24-b40b-e080074ca518" />
+<img width="2558" height="1738" alt="image" src="https://github.com/user-attachments/assets/1a31d539-76d2-4cd0-9a74-95c3e638055b" />
+
 
 **Database version**
 
