@@ -10,10 +10,43 @@ Config.Blips = {
 	impound = { sprite = 317, color = 33 }, -- TODO Find a blip for here
 }
 
+-- Marker shapes (https://docs.fivem.net/docs/game-references/markers/). Sizes and colours are
+-- per point in Configs/*.lua: Marker = { w = 1.5, h = 1.0, r = 0, g = 255, b = 0 }, where you
+-- can also add a = (transparency 0-255) and type = (shape) to override these for one point.
 Config.GarageMarkerType = 1 --27
 Config.BoatDockMarkerType = 1
 Config.HangarMarkerType = 1
 Config.ImpoundMarkerType = 1
+
+-- How garage, dock, hangar and impound points are shown. The defaults are the classic look.
+-- Any setting can be one value for everything, or set per kind of point, for example:
+--      Display = { car = "marker", boat = "marker", plane = "marker", impound = "none" }
+--      Prompt  = { default = "help", impound = "text3d" }
+Config.Zones = {
+	-- What is drawn on the ground:
+	--      marker      a coloured marker (the shapes above)
+	--      none        nothing; standing on the spot still shows the prompt
+	Display = "marker",
+
+	-- How "Press E to ..." is shown while standing on a point:
+	--      help        GTA's help box, top left
+	--      text3d      floating text above the point
+	--      ox_lib      ox_lib's text UI (uses help if ox_lib isn't running)
+	--      none        no prompt (the key still works)
+	Prompt = "help",
+
+	ShowLabels = false, -- Float the garage / impound name above its point
+	ShowBlips = true, -- Map blips (sprites and colours are in Config.Blips)
+	DrawDistance = 20.0, -- Markers are drawn within this many metres (plus the marker's size)
+	MarkerAlpha = 255, -- Marker transparency, 0 (invisible) to 255 (solid)
+	BobUpAndDown = false,
+	RotateMarker = false,
+	FaceCamera = false,
+
+	-- Control pressed on a point (38 = E). If you change it, change ~INPUT_PICKUP~ in the
+	-- locale prompts to match (https://docs.fivem.net/docs/game-references/controls/).
+	Key = 38,
+}
 
 Config.DocksEnabled = true
 Config.HangarsEnabled = false

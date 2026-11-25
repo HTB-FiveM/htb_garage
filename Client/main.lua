@@ -94,44 +94,39 @@ function StoreVehicle(vehicleType, garageName)
 	end
 end
 
+-- Marker settings from Configs/*.lua ({ w, h, r, g, b, a?, type? }) in Zones form
+local function zoneMarker(marker, markerType)
+	return {
+		type = marker.type or markerType,
+		size = marker.w,
+		height = marker.h,
+		r = marker.r,
+		g = marker.g,
+		b = marker.b,
+		a = marker.a,
+	}
+end
+
 function DrawImpoundMarkers(impounds, markerType)
 	for impoundName, details in pairs(impounds) do
 		local zone = details.RetrievePoint
-		local spawnPoints = details.SpawnPoints
-		local blip = {
-			text = zone.Name,
-			colorId = Config.Blips.impound.color,
-			imageId = Config.Blips.impound.sprite,
-		}
-		exports.ft_libs:AddArea(("htb_garage_impound_%s"):format(impoundName), {
-			marker = {
-				weight = zone.Marker.w,
-				height = zone.Marker.h,
-				red = zone.Marker.r,
-				green = zone.Marker.g,
-				blue = zone.Marker.b,
-				type = markerType,
+		Zones.Add(("htb_garage_impound_%s"):format(impoundName), {
+			kind = "impound",
+			coords = zone.Pos,
+			radius = zone.Marker.w,
+			marker = zoneMarker(zone.Marker, markerType),
+			blip = {
+				text = zone.Name,
+				sprite = Config.Blips.impound.sprite,
+				color = Config.Blips.impound.color,
 			},
-			trigger = {
-				weight = zone.Marker.w,
-				active = {
-					callback = function()
-						exports.ft_libs:HelpPromt(zone.HelpPrompt)
-						if IsControlJustReleased(0, 38) and IsInputDisabled(0) and GetLastInputMethod(2) then
-							if not IsPedInAnyVehicle(PlayerPedId(), true) then
-								FetchImpoundedPlayerVehicles(impoundName)
-							end
-						end
-					end,
-				},
-				exit = {
-					callback = exitmarker,
-				},
-			},
-			blip = blip,
-			locations = {
-				zone.Pos,
-			},
+			label = zone.Name,
+			prompt = zone.HelpPrompt,
+			onPress = function()
+				if not IsPedInAnyVehicle(PlayerPedId(), true) then
+					FetchImpoundedPlayerVehicles(impoundName)
+				end
+			end,
 		})
 	end
 end
@@ -144,55 +139,40 @@ function DrawMarkers(garages, markerType, vehicleType)
 				if zone.Name ~= nil then
 					blip = {
 						text = zone.Name,
-						colorId = Config.Blips[garage.Type].color,
-						imageId = Config.Blips[garage.Type].sprite,
+						sprite = Config.Blips[garage.Type].sprite,
+						color = Config.Blips[garage.Type].color,
 					}
 				end
 
-				exports.ft_libs:AddArea(("htb_garage_%s_%s_cars"):format(k, zoneName), {
-					marker = {
-						weight = zone.Marker.w,
-						height = zone.Marker.h,
-						red = zone.Marker.r,
-						green = zone.Marker.g,
-						blue = zone.Marker.b,
-						type = markerType,
-					},
-					trigger = {
-						weight = zone.Marker.w,
-						active = {
-							callback = function()
-								exports.ft_libs:HelpPromt(zone.HelpPrompt)
-								if IsControlJustReleased(0, 38) and IsInputDisabled(0) and GetLastInputMethod(2) then
-									if not IsPedInAnyVehicle(PlayerPedId(), true) then
-										if zoneName == "SpawnPoint" then
-											TriggerServerEvent("htb_garage:GetPlayerVehicles", vehicleType, k)
-										end
-									else
-										if zoneName == "DeletePoint" then
-											StoreVehicle(vehicleType, k)
-										end
-										--if zoneName == "Impound" then OpenImpound(zone, k, "car") end
-									end
-								end
-							end,
-						},
-						exit = {
-							callback = exitmarker,
-						},
-					},
+				Zones.Add(("htb_garage_%s_%s_cars"):format(k, zoneName), {
+					kind = vehicleType,
+					coords = zone.Pos,
+					radius = zone.Marker.w,
+					marker = zoneMarker(zone.Marker, markerType),
 					blip = blip,
-					locations = {
-						zone.Pos,
-					},
+					label = zone.Name,
+					prompt = zone.HelpPrompt,
+					onPress = function()
+						if not IsPedInAnyVehicle(PlayerPedId(), true) then
+							if zoneName == "SpawnPoint" then
+								TriggerServerEvent("htb_garage:GetPlayerVehicles", vehicleType, k)
+							end
+						elseif zoneName == "DeletePoint" then
+							StoreVehicle(vehicleType, k)
+						end
+					end,
 				})
 			end
 		end
 	end
 end
 
-RegisterNetEvent("ft_libs:OnClientReady")
-AddEventHandler("ft_libs:OnClientReady", function()
+-- Create the zones once the player is in the session (also straight away after a resource restart)
+CreateThread(function()
+	while not NetworkIsSessionStarted() do
+		Wait(100)
+	end
+
 	DrawMarkers(Config.Garages, Config.GarageMarkerType, "car")
 
 	if Config.DocksEnabled then
@@ -404,6 +384,7 @@ AddEventHandler("htb_garage:DeleteVehicleAfterImpound", function(vehiclePlate) e
 
 RegisterNetEvent("htb_garage:GetPlayerVehiclesResults")
 AddEventHandler("htb_garage:GetPlayerVehiclesResults", function(vehicles, garageName)
+	Zones.Log("server sent", #vehicles, "vehicles for", garageName)
 	local data = {}
 
 	SendNUIMessage({

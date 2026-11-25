@@ -136,6 +136,7 @@ end
 
 RegisterNetEvent("htb_garage:client:ReturnImpoundedPlayerVehicles")
 AddEventHandler("htb_garage:client:ReturnImpoundedPlayerVehicles", function(impoundedPlayerVehicles)
+	Zones.Log("server sent impounded vehicles")
 	if not impoundedPlayerVehicles or #impoundedPlayerVehicles < 1 then
 		Notify.send(_U("no_vehicles_impounded"))
 		return

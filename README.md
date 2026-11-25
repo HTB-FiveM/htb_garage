@@ -24,10 +24,14 @@
 ## [Unreleased]
 
 ### Added
+- `Config.Zones` chooses how garage, dock, hangar and impound points are shown: the ground marker or none, the prompt as GTA's help box, floating text or ox_lib's text UI, optional name labels, blips, draw distance, transparency and marker animation. Each setting can be set per kind of point. A single point can override its marker shape and transparency in `Configs/*.lua`.
+- `/garagezones` (client) prints what happens at a garage point in the F8 console: entering, the key press and the server's reply. Handy when "E does nothing".
+- When the server refuses a garage action because the player is too far away, the server console now says how far, where the server thinks they are, and the likely fix. A common cause is noclip: the server keeps the last position it had until the player reconnects.
 - `Config.Notify` chooses who shows notifications: the framework's own (default), ox_lib or the game's feed. Others can be added as a small file in `Bridge/notify`.
 - `Config.VehicleKeys` chooses the vehicle keys resource: `auto` (default), jaksam's `vehicles_keys`, `qb-vehiclekeys` or `none`. Others can be added as a small file in `Bridge/keys`.
 
 ### Changed
+- **ft_libs is no longer needed.** Markers, blips and prompts are drawn by the resource itself (`Client/zones.lua`) and look the same as before. Remove `ensure ft_libs` if nothing else uses it, re-copy your manifest and run `refresh`.
 - The framework layer (`FrameworkSpecific`, the Strategy/Context classes) is replaced by plain adapters in `Bridge/`: framework, queries, notifications and keys. See *Framework bridge*. Re-copy your manifest and run `refresh`.
 - `Config.RolePlayFramework` also accepts `auto`. The unused `none` and `custom` options and `Config.UsingEsxLegacy` have been removed (ESX is found automatically).
 - Charging cash then bank is written once for all frameworks instead of once per framework.
@@ -35,6 +39,7 @@
 - Transfers take the keys from the seller and give them to the buyer through the configured keys resource, on every framework.
 
 ### Fixed
+- Garage and impound points no longer disappear after restarting htb_garage on a running server.
 - ESX: the transfer list could show the wrong names, or none, for nearby players.
 - The SQL queries were registered with the database twice on start.
 - QBCore key events were sent after every spawn and impound retrieve even on servers without qb-vehiclekeys.
@@ -172,9 +177,8 @@ RegisterAdapter("notify", "okokNotify", {
 
 **Installation**
 * Install oxmysql https://github.com/overextended/oxmysql if you don't already have it and add the ensure statement to your server.cfg. mysql-async is no longer supported.
-* Install ft_libs https://github.com/FivemTools/ft_libs if you don't already have it and add the ensure statement to your server.cfg
 * Install VehicleDeformation https://github.com/Kiminaze/VehicleDeformation if you don't already have it and add the ensure statement to you server.cfg
-* Install htb_garage and add the ensure statement after oxmysql and ft_libs in the server.cfg
+* Install htb_garage and add the ensure statement after oxmysql in the server.cfg
 * Run **one** SQL script, picked from the table below. Each script builds the complete, current database schema (impound table included), so you never need to run more than one. Back up your database first.
 
     | Your server | ESX | QBCore |
@@ -187,6 +191,7 @@ RegisterAdapter("notify", "okokNotify", {
 * Easiest: download `htb_garage-vX.Y.Z-esx.zip` or `htb_garage-vX.Y.Z-qbcore.zip` from the GitHub release. It already has the right `fxmanifest.lua` and the built UI, so just set `Config.RolePlayFramework` to match.
 * From the source code instead: rename `fxmanifest-esx.lua` or `fxmanifest-qb.lua` to `fxmanifest.lua` based on the Role Play framework you're running, and set `Config.RolePlayFramework` to match.
 * Check `Config.Notify` (who shows notifications) and `Config.VehicleKeys` (your keys resource). The defaults use your framework's notifications and whichever supported keys resource is running.
+* Optionally change how garage points look with `Config.Zones`: ground markers or none, the prompt as GTA's help box, floating text or ox_lib's text UI, name labels, blips, draw distance and marker transparency, for everything or per kind of point (car, boat, plane, impound).
 
 **Upgrading from 2.0.x**
 * **oxmysql is now required.** The resource uses oxmysql's `MySQL.single.await` / `MySQL.scalar.await` and will not run on mysql-async. Swap the dependency in your server.cfg.

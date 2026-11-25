@@ -9,9 +9,9 @@ Notation: **A** = vehicle owner, **B** = second player, **P** = player with the 
 ## 0. Preparation
 
 ### 0.1 Server and dependencies
-- [ ] Update FXServer artifacts, txAdmin, `es_extended` (or `qb-core`), `oxmysql`, `ft_libs` and `VehicleDeformation`.
+- [ ] Update FXServer artifacts, txAdmin, `es_extended` (or `qb-core`), `oxmysql` and `VehicleDeformation`.
 - [ ] OneSync is enabled (txAdmin > Settings > FXServer). The security checks need it.
-- [ ] `server.cfg` ensures `oxmysql` and `ft_libs` before `htb_garage`.
+- [ ] `server.cfg` ensures `oxmysql` before `htb_garage`.
 - [ ] Copy `fxmanifest-esx.lua` (or `fxmanifest-qb.lua`) over `fxmanifest.lua`.
 - [ ] `Config.RolePlayFramework` matches the framework.
 - [ ] Admin ace for debug commands: `add_ace group.admin command.garageToggleDebug allow` and `add_ace group.admin command.dumpVehicleInstances allow`.

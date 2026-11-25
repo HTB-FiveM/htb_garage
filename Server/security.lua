@@ -165,7 +165,26 @@ function Security.DistanceToPlayer(playerId, pos)
 end
 
 function Security.IsPlayerNear(playerId, pos, maxDistance)
-	return Security.DistanceToPlayer(playerId, pos) <= maxDistance
+	local distance = Security.DistanceToPlayer(playerId, pos)
+	if distance <= maxDistance then
+		return true
+	end
+
+	-- Say why, so a server problem is easy to tell from a cheater
+	local ped = GetPlayerPed(playerId)
+	if not ped or ped == 0 then
+		print(("^3[htb_garage] The server can't see player %s's character. Is OneSync on?^0"):format(playerId))
+	else
+		local at = GetEntityCoords(ped)
+		local target = toVector3(pos)
+		print(
+			(
+				"^3[htb_garage] Player %s is %.1fm from (%.1f, %.1f, %.1f), limit %.1fm. Server sees them at (%.1f, %.1f, %.1f)."
+				.. " If they're really there, their position isn't reaching the server (e.g. after noclip): reconnecting fixes it.^0"
+			):format(playerId, distance, target.x, target.y, target.z, maxDistance, at.x, at.y, at.z)
+		)
+	end
+	return false
 end
 
 --- Resolve a network id sent by a client to a vehicle entity that really exists.

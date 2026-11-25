@@ -52,6 +52,7 @@ client_scripts({
 	"Bridge/notify/*.lua",
 	"Bridge/init_client.lua",
 	"Client/utils.lua",
+	"Client/zones.lua",
 	"Client/impound.lua",
 	"Client/main.lua",
 })
