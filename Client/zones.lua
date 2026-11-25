@@ -11,6 +11,8 @@
 --       label    = "Name above the point" (optional, shown when Config.Zones.ShowLabels),
 --       prompt   = "Press ~INPUT_PICKUP~ to ...",
 --       onPress  = function(zone) end,  -- the player pressed the key while on it
+--       canShow  = function(zone) end,  -- optional: return false to hide the point for now
+--                                       -- (checked twice a second while the player is near)
 --       onEnter  = function(zone) end,  -- optional
 --       onExit   = function(zone) end,  -- optional
 --   })
@@ -21,7 +23,7 @@ Zones = {}
 
 local DEFAULTS = {
 	Display = "marker",
-	Prompt = "help",
+	Prompt = "framework",
 	ShowLabels = false,
 	ShowBlips = true,
 	DrawDistance = 20.0,
@@ -125,17 +127,31 @@ local function oxLibRunning()
 	return GetResourceState("ox_lib") == "started"
 end
 
+-- Set when the framework can't show a prompt (e.g. ESX without esx_textui)
+local frameworkPromptUnavailable = false
+
+local function frameworkCanPrompt()
+	return not frameworkPromptUnavailable and Framework ~= nil and Framework.showPrompt ~= nil
+end
+
 local function promptStyle(zone)
 	local style = setting("Prompt", zone.kind)
 	if style == "ox_lib" and not oxLibRunning() then
+		return "help"
+	end
+	if style == "framework" and not frameworkCanPrompt() then
 		return "help"
 	end
 	return style
 end
 
 local function hidePrompt()
-	if promptZone and promptZone.shownStyle == "ox_lib" then
-		exports.ox_lib:hideTextUI()
+	if promptZone then
+		if promptZone.shownStyle == "ox_lib" then
+			exports.ox_lib:hideTextUI()
+		elseif promptZone.shownStyle == "framework" then
+			Framework.hidePrompt()
+		end
 	end
 	promptZone = nil
 end
@@ -153,6 +169,12 @@ local function showPrompt(zone)
 		zone.shownStyle = style
 		if style == "ox_lib" then
 			exports.ox_lib:showTextUI(plainPrompt(zone.prompt))
+		elseif style == "framework" then
+			if Framework.showPrompt(plainPrompt(zone.prompt)) == false then
+				frameworkPromptUnavailable = true
+				zone.shownStyle = "help"
+				style = "help"
+			end
 		end
 	end
 
@@ -260,6 +282,8 @@ function Zones.Add(id, def)
 		onPress = def.onPress,
 		onEnter = def.onEnter,
 		onExit = def.onExit,
+		canShow = def.canShow,
+		visible = def.canShow == nil,
 		enabled = def.enabled ~= false,
 		inside = false,
 	}
@@ -324,6 +348,10 @@ CreateThread(function()
 		local found = {}
 		for _, zone in pairs(zones) do
 			if zone.enabled and #(pos - zone.coords) <= zone.drawDistance then
+				if zone.canShow then
+					local ok, show = pcall(zone.canShow, zone)
+					zone.visible = ok and show == true
+				end
 				found[#found + 1] = zone
 			elseif zone.inside then
 				setInside(zone, false)
@@ -344,7 +372,9 @@ CreateThread(function()
 			local current, currentDistance = nil, nil
 
 			for _, zone in ipairs(nearby) do
-				if zone.enabled then
+				if not zone.visible then
+					setInside(zone, false)
+				elseif zone.enabled then
 					if zone.marker then
 						drawMarker(zone)
 					end

@@ -216,6 +216,26 @@ Security.RegisterNetEvent(
 	end
 )
 
+-- Whether the caller owns the vehicle with this plate, so the client only shows store
+-- points for the player's own vehicles. Answers only for the caller's own identifier and
+-- reveals nothing about other owners.
+Security.RegisterNetEvent(
+	"htb_garage:CheckVehicleOwnership",
+	{ args = { "string" }, cooldownMs = 500 },
+	function(playerId, plate)
+		local clean = Security.CleanString(plate, 16)
+		if not clean or clean == "" then
+			return
+		end
+
+		local record = MySQL.single.await(qu.SqlGetVehicleByPlate.handle, { ["@plate"] = clean })
+		local identifier = Framework.getIdentifier(playerId)
+		local owned = record ~= nil and identifier ~= nil and record.owner == identifier
+
+		TriggerClientEvent("htb_garage:VehicleOwnershipResult", playerId, plate, owned, owned and record.type or nil)
+	end
+)
+
 Security.RegisterNetEvent(
 	"htb_garage:GetPlayerVehicles",
 	{ args = { "string", "string" }, cooldownMs = 1000 },

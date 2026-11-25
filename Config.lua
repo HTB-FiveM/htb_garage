@@ -29,11 +29,14 @@ Config.Zones = {
 	Display = "marker",
 
 	-- How "Press E to ..." is shown while standing on a point:
+	--      framework   the framework's own: ESX's text UI (esx_textui) or QBCore's draw text
+	--                  (uses help if the framework can't, e.g. esx_textui isn't running)
 	--      help        GTA's help box, top left
 	--      text3d      floating text above the point
 	--      ox_lib      ox_lib's text UI (uses help if ox_lib isn't running)
 	--      none        no prompt (the key still works)
-	Prompt = "help",
+	-- Store points only show while you're in a vehicle you own.
+	Prompt = "framework",
 
 	ShowLabels = false, -- Float the garage / impound name above its point
 	ShowBlips = true, -- Map blips (sprites and colours are in Config.Blips)

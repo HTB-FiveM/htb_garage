@@ -18,6 +18,8 @@ local contract = {
 	framework = {
 		client = {
 			"onPlayerLoaded", -- onPlayerLoaded(callback): call callback when the player's character has loaded
+			"showPrompt", -- showPrompt(text) -> boolean: show "Press [E] to ..." until hidePrompt; false if it can't
+			"hidePrompt", -- hidePrompt()
 		},
 		server = {
 			"getIdentifier", -- getIdentifier(playerId) -> string?: the id vehicles are owned by in the database

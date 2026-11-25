@@ -21,10 +21,11 @@
 
 # Changelog
 
-## [Unreleased]
+## [2.2.0] – 2026-11-26
 
 ### Added
-- `Config.Zones` chooses how garage, dock, hangar and impound points are shown: the ground marker or none, the prompt as GTA's help box, floating text or ox_lib's text UI, optional name labels, blips, draw distance, transparency and marker animation. Each setting can be set per kind of point. A single point can override its marker shape and transparency in `Configs/*.lua`.
+- `Config.Zones` chooses how garage, dock, hangar and impound points are shown: the ground marker or none, the prompt as the framework's own (ESX text UI or QBCore draw text, the default), GTA's help box, floating text or ox_lib's text UI, optional name labels, blips, draw distance, transparency and marker animation. Each setting can be set per kind of point. A single point can override its marker shape and transparency in `Configs/*.lua`.
+- Store points only appear while you're in a vehicle you own (of the garage's kind), checked with the server.
 - `/garagezones` (client) prints what happens at a garage point in the F8 console: entering, the key press and the server's reply. Handy when "E does nothing".
 - When the server refuses a garage action because the player is too far away, the server console now says how far, where the server thinks they are, and the likely fix. A common cause is noclip: the server keeps the last position it had until the player reconnects.
 - `Config.Notify` chooses who shows notifications: the framework's own (default), ox_lib or the game's feed. Others can be added as a small file in `Bridge/notify`.
@@ -191,7 +192,7 @@ RegisterAdapter("notify", "okokNotify", {
 * Easiest: download `htb_garage-vX.Y.Z-esx.zip` or `htb_garage-vX.Y.Z-qbcore.zip` from the GitHub release. It already has the right `fxmanifest.lua` and the built UI, so just set `Config.RolePlayFramework` to match.
 * From the source code instead: rename `fxmanifest-esx.lua` or `fxmanifest-qb.lua` to `fxmanifest.lua` based on the Role Play framework you're running, and set `Config.RolePlayFramework` to match.
 * Check `Config.Notify` (who shows notifications) and `Config.VehicleKeys` (your keys resource). The defaults use your framework's notifications and whichever supported keys resource is running.
-* Optionally change how garage points look with `Config.Zones`: ground markers or none, the prompt as GTA's help box, floating text or ox_lib's text UI, name labels, blips, draw distance and marker transparency, for everything or per kind of point (car, boat, plane, impound).
+* Optionally change how garage points look with `Config.Zones`: ground markers or none, the prompt as the framework's own (default), GTA's help box, floating text or ox_lib's text UI, name labels, blips, draw distance and marker transparency, for everything or per kind of point (car, boat, plane, impound).
 
 **Upgrading from 2.0.x**
 * **oxmysql is now required.** The resource uses oxmysql's `MySQL.single.await` / `MySQL.scalar.await` and will not run on mysql-async. Swap the dependency in your server.cfg.

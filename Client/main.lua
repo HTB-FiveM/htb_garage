@@ -107,6 +107,44 @@ local function zoneMarker(marker, markerType)
 	}
 end
 
+-- Which vehicles the player owns, asked of the server per plate and remembered briefly
+-- (ownership can change through transfers): [plate] = { owned, type, at, pending }
+local ownership = {}
+local OWNERSHIP_TTL_MS = 30000
+local OWNERSHIP_TIMEOUT_MS = 5000
+
+RegisterNetEvent("htb_garage:VehicleOwnershipResult")
+AddEventHandler("htb_garage:VehicleOwnershipResult", function(plate, owned, vehicleType)
+	ownership[plate] = { owned = owned == true, type = vehicleType, at = GetGameTimer() }
+	Zones.Log("ownership of", plate, owned, vehicleType)
+end)
+
+-- Forget what we knew when ownership may have changed (e.g. after a transfer)
+function ForgetVehicleOwnership()
+	ownership = {}
+end
+
+-- True when the player is in a vehicle they own, of this kind (car, boat or plane)
+local function inOwnVehicle(vehicleType)
+	local ped = PlayerPedId()
+	if not IsPedInAnyVehicle(ped, false) then
+		return false
+	end
+	local plate = trim(GetVehicleNumberPlateText(GetVehiclePedIsIn(ped, false)))
+	local now = GetGameTimer()
+	local known = ownership[plate]
+
+	local stale = not known or (known.pending and now - known.at > OWNERSHIP_TIMEOUT_MS)
+		or (not known.pending and now - known.at > OWNERSHIP_TTL_MS)
+	if stale then
+		ownership[plate] = { pending = true, at = now, owned = known and known.owned, type = known and known.type }
+		TriggerServerEvent("htb_garage:CheckVehicleOwnership", plate)
+		known = ownership[plate]
+	end
+
+	return known.owned == true and known.type == vehicleType
+end
+
 function DrawImpoundMarkers(impounds, markerType)
 	for impoundName, details in pairs(impounds) do
 		local zone = details.RetrievePoint
@@ -152,6 +190,10 @@ function DrawMarkers(garages, markerType, vehicleType)
 					blip = blip,
 					label = zone.Name,
 					prompt = zone.HelpPrompt,
+					-- Store points only show while in a vehicle the player owns
+					canShow = zoneName == "DeletePoint" and function()
+						return inOwnVehicle(vehicleType)
+					end or nil,
 					onPress = function()
 						if not IsPedInAnyVehicle(PlayerPedId(), true) then
 							if zoneName == "SpawnPoint" then
@@ -571,6 +613,7 @@ end)
 RegisterNetEvent("htb_garage:TransferOwnershipResult")
 AddEventHandler("htb_garage:TransferOwnershipResult", function(outcome, amITheSeller, plate, receiverServerId)
 	Notify.send(outcome)
+	ForgetVehicleOwnership()
 
 	-- The seller's keys are removed by the server
 	if amITheSeller then

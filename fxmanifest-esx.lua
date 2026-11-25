@@ -2,7 +2,7 @@ fx_version("cerulean")
 game("gta5")
 
 author("Harry The Bastard")
-version("2.1.0")
+version("2.2.0")
 description("A better garage system")
 lua54("yes")
 

@@ -13,4 +13,19 @@ RegisterAdapter("framework", "esx", {
 		RegisterNetEvent("esx:playerLoaded")
 		AddEventHandler("esx:playerLoaded", callback)
 	end,
+
+	-- ESX's text UI (esx_textui). Without it the zones use GTA's help box instead.
+	showPrompt = function(text)
+		if GetResourceState("esx_textui") ~= "started" then
+			return false
+		end
+		ESX.TextUI(text, "info")
+		return true
+	end,
+
+	hidePrompt = function()
+		if GetResourceState("esx_textui") == "started" then
+			ESX.HideUI()
+		end
+	end,
 })
