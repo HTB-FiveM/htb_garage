@@ -1,0 +1,78 @@
+name: Build and release
+
+# - Pull requests and pushes to main: build the UI and both zips, attach them to
+#   the run as artifacts (to check before releasing).
+# - Pushing a version tag (v2.1.1): the same, then publish a GitHub release with
+#   htb_garage-v2.1.1-esx.zip and htb_garage-v2.1.1-qbcore.zip.
+#   The tag must match version("...") in both fxmanifest files.
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: htb_garage-ui/yarn.lock
+
+      - name: Build UI
+        working-directory: htb_garage-ui
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Work out version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="$(sed -n 's/^version("\(.*\)").*/\1/p' fxmanifest-esx.lua)"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Package
+        run: bash .github/scripts/package.sh "${{ steps.version.outputs.version }}" dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: htb_garage-v${{ steps.version.outputs.version }}-esx
+          path: dist/htb_garage-v${{ steps.version.outputs.version }}-esx.zip
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: htb_garage-v${{ steps.version.outputs.version }}-qbcore
+          path: dist/htb_garage-v${{ steps.version.outputs.version }}-qbcore.zip
+          if-no-files-found: error
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: true

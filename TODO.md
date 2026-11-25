@@ -24,6 +24,6 @@ Outstanding items from the security review of the 2.1.0 changes.
 
 ## Clean up
 
-- [ ] **UI translations aren't compiled into the build.** In `htb_garage-ui/vite.config.ts` the `VueI18n({ include })` pattern is built from the folder path, and `[htb]` in the path is read as a pattern character class, so `src/locales/*.json` is never precompiled. The production build uses the runtime-only vue-i18n, which then throws a `SyntaxError` on any `$t(...)` call (this is what blanked the impound "Pay for retrieve" button). Fix the pattern, e.g. escape the brackets or use a RegExp, before adding translated text to the UI.
+- [ ] **Check translated text in the built UI.** The impound "Pay for retrieve" button went blank because a leftover `$t('greeting', ...)` threw a `SyntaxError` in the built UI (removed). The cause isn't known: it is *not* the `[htb]` folder name (checked: the i18n plugin matches bracketed paths fine, and the HTB resource template builds and renders `$t` text from a `[htb]` folder). Before adding translated text here, build and open the screen in game (or follow the template's built-UI check) to confirm it renders.
 
 - [ ] Remove the `/settime` debug command (`Server/main.lua`) and the `timeSync:updateTime` client handler (`Client/main.lua`).

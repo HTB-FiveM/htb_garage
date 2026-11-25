@@ -184,7 +184,8 @@ RegisterAdapter("notify", "okokNotify", {
     | htb_garage already installed (any older version) | `SQL/Upgrade-2.1.0-ESX.sql` | `SQL/Upgrade-2.1.0-QBCore.sql` |
 
     The `Upgrade-2.1.0` scripts upgrade an existing install in place and keep your data. They're not a step to run on top of `SetupESX.sql` / `Update*.sql`: those already create the 2.1.0 schema. See *Upgrading from 2.0.x* below.
-* Rename `fxmanifest-esx.lua` or `fxmanifest-qb.lua` to `fxmanifest.lua` based on the Role Play framework you're running, and set `Config.RolePlayFramework` to match.
+* Easiest: download `htb_garage-vX.Y.Z-esx.zip` or `htb_garage-vX.Y.Z-qbcore.zip` from the GitHub release. It already has the right `fxmanifest.lua` and the built UI, so just set `Config.RolePlayFramework` to match.
+* From the source code instead: rename `fxmanifest-esx.lua` or `fxmanifest-qb.lua` to `fxmanifest.lua` based on the Role Play framework you're running, and set `Config.RolePlayFramework` to match.
 * Check `Config.Notify` (who shows notifications) and `Config.VehicleKeys` (your keys resource). The defaults use your framework's notifications and whichever supported keys resource is running.
 
 **Upgrading from 2.0.x**

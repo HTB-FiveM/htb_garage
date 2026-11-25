@@ -6,7 +6,7 @@ version("2.1.0")
 description("A better garage system")
 lua54("yes")
 
-ui_page("ui/index.html")
+ui_page("UI/index.html")
 
 -- Switch to this ui_page and uncomment disable_nui_csp when you
 -- need live updates in FiveM for debugging layout changes
