@@ -33,6 +33,7 @@ const formatCurrency = (amount: number) => {
         <span v-if="veh.plate" class="badge badge-light">{{ veh.plate }}</span>
         <span v-if="veh.displayName"> - {{ veh.displayName }}</span>
       </div>
+      <div v-if="veh.ownerName !== undefined" class="owner">Owner: {{ veh.ownerName || "Unknown" }}</div>
       <div style="color: #6fcf97">{{ formatCurrency(veh.priceToRelease) }}</div>
     </div>
     <div class="impound-details">
@@ -181,6 +182,11 @@ VehicleAttribute {
 /* if you want the .vehicle-details to take all the space up to the impound div */
 .vehicle-details {
   /* flex: 1;   <-- only if you need it to grow/shrink */
+}
+
+.owner {
+  color: #a8a8a8;
+  text-transform: capitalize;
 }
 
 .ready {

@@ -1,17 +1,14 @@
 name: Build and release
 
-# - Pull requests and pushes to main: build the UI and both zips, attach them to
-#   the run as artifacts (to check before releasing).
-# - Pushing a version tag (v2.1.1): the same, then publish a GitHub release with
-#   htb_garage-v2.1.1-esx.zip and htb_garage-v2.1.1-qbcore.zip.
-#   The tag must match version("...") in both fxmanifest files.
+# Runs only when a version tag is pushed (git push origin v2.3.0): builds the UI
+# and both zips, then publishes a GitHub release with htb_garage-v2.3.0-esx.zip
+# and htb_garage-v2.3.0-qbcore.zip.
+# The tag must match version("...") in both fxmanifest files.
 
 on:
   push:
-    branches: [main]
     tags: ['v*']
   pull_request:
-  workflow_dispatch:
 
 permissions:
   contents: read

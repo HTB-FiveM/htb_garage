@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import ImpoundStore from "@/components/ImpoundStoreVehicle.vue";
 import ImpoundRetrieve from "@/components/ImpoundRetrieveVehicle.vue";
+import ImpoundRelease from "@/components/ImpoundReleaseVehicle.vue";
 import Button from "@/components/Button.vue";
 import Label from "@/components/Label.vue";
 import { useImpoundStore } from "@/stores/impound.store";
@@ -30,10 +31,15 @@ const impoundVehicle = () => {
         </div>
     </div>
 
+    <div v-if="store.mode === 'release'" class="menu-header">
+        <div><strong>Release an impounded vehicle</strong></div>
+    </div>
+
     <div id="app-border">
         <div class="the-form">
         <ImpoundStore v-if="store.mode === 'store'" />
         <ImpoundRetrieve v-if="store.mode === 'retrieve'" />
+        <ImpoundRelease v-if="store.mode === 'release'" />
         </div>
     </div>
 
@@ -42,6 +48,9 @@ const impoundVehicle = () => {
         <Label
             >Total vehicles: {{ store.retrieveVehicle?.vehicles.length }}</Label
         >
+        </div>
+        <div v-if="store.mode === 'release'" class="summary">
+        <Label>Vehicles impounded: {{ store.releaseVehicles.length }}</Label>
         </div>
         <div class="buttons">
         <Button

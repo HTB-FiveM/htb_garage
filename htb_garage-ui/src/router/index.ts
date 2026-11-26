@@ -20,6 +20,12 @@ const routes: RouteRecordRaw[] = [
     meta: { containerWidth: '30%' },
   },
   {
+    path: '/impoundRelease',
+    name: 'impoundRelease',
+    component: () => import('@/views/Impound.vue'),
+    meta: { containerWidth: '35%' },
+  },
+  {
     path: '/testing',
     name: 'testing',
     component: () => import('@/views/VehicleSearchView.vue'),

@@ -35,6 +35,8 @@ const handlers: MessageHandlers = {
   enableImpound: (msg) => impoundStore.initStore(msg),
   setupImpoundStoreVehicle: (msg) => impoundStore.setupImpoundStoreVehicle(msg),
   setupImpoundRetrieveVehicle: (msg) => impoundStore.setImpoundRetrieveVehicle(msg),
+  setupImpoundReleaseVehicle: (msg) => impoundStore.setupImpoundReleaseVehicle(msg),
+  impoundReleaseComplete: (msg) => impoundStore.impoundReleaseComplete(msg),
 };
 
 function onNuiMessage(e: MessageEvent) {

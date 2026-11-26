@@ -204,7 +204,9 @@ WHERE ov.pound_htb = 1
 SELECT
   ov.owner,
   iv.priceToRelease,
-  iv.impoundName
+  iv.impoundName,
+  iv.allowPersonalUnimpound,
+  iv.releaseDateTime
 FROM owned_vehicles ov
   INNER JOIN impound_vehicle_htb iv
     ON ov.plate = iv.vehiclePlate
@@ -213,6 +215,32 @@ WHERE ov.plate = @plate
   AND iv.active = 1
 ORDER BY iv.id DESC
 LIMIT 1
+    ]],
+		handle = nil,
+	},
+
+	-- Every vehicle currently held, with its owner's name, for the impound release screen
+	SqlGetAllActiveImpounds = {
+		query = [[
+SELECT
+  ov.type,
+  ov.plate,
+  ov.vehiclename AS displayName,
+  CAST(json_value(ov.vehicle, '$.model') AS SIGNED) model,
+  ov.owner,
+  TRIM(CONCAT_WS(' ', u.firstname, u.lastname)) AS ownerName,
+  iv.priceToRelease,
+  iv.impoundName AS impoundId,
+  iv.reasonForImpound,
+  iv.releaseDateTime,
+  iv.allowPersonalUnimpound
+FROM owned_vehicles ov
+  INNER JOIN impound_vehicle_htb iv
+    ON ov.plate = iv.vehiclePlate
+  LEFT JOIN users u
+    ON u.identifier = ov.owner
+WHERE ov.pound_htb = 1
+  AND iv.active = 1
     ]],
 		handle = nil,
 	},
