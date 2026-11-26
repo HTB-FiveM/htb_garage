@@ -341,9 +341,10 @@ function SetVehicleProperties(vehicle, vehicleProps)
 	end
 
 	if vehicleProps["doors"] then
+		-- Saved as a 1-based list: slot 1 = door 0 (driver) ... slot 6 = door 5
 		for doorId = 0, 5, 1 do
-			if vehicleProps["doors"][doorId] ~= false then
-				SetVehicleDoorBroken(vehicle, doorId - 1, true)
+			if vehicleProps["doors"][doorId + 1] == true then
+				SetVehicleDoorBroken(vehicle, doorId, true)
 			end
 		end
 	end

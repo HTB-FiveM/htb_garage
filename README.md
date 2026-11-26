@@ -24,7 +24,15 @@
 
 # Changelog
 
-## [2.3.0] – 2026-11-26
+##
+
+## [2.3.2] – 2026-11-27
+
+### Fixed
+
+- Driver's door was being removed from vehicle when retrieving from garage.
+
+## [2.3.1] – 2026-11-26
 
 ### Added
 
@@ -33,7 +41,7 @@
 
 ### Changed
 
-- **Config change:** the garage menu point in `Configs/Garages.lua`, `Docks.lua` and `Aircraft.lua` is renamed from `SpawnPoint` to `GarageMenuLocation`. See _Upgrading to 2.3.0_.
+- **Config change:** the garage menu point in `Configs/Garages.lua`, `Docks.lua` and `Aircraft.lua` is renamed from `SpawnPoint` to `GarageMenuLocation`. See _Upgrading to 2.3.1_.
 - Positions in `Configs/*.lua` are written as `vector3(x, y, z)`, and dock `DryPoint`s as `vector4(x, y, z, heading)`. The old `{ x = , y = , z = }` tables still work.
 - Staff can't release, or return without payment, a vehicle belonging to **any** of their characters (ESX multicharacter `char1:` / `char2:` identifiers are matched to the same person). In `/ImpoundRelease` those vehicles show a warning instead of the release button.
 
