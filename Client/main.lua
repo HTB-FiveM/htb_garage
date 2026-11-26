@@ -169,10 +169,15 @@ function DrawImpoundMarkers(impounds, markerType)
 	end
 end
 
+-- The points a player walks or drives onto. (A hangar's SpawnPoint is only where the
+-- aircraft appears, so it gets no marker.)
+local GARAGE_ZONES = { "GarageMenuLocation", "DeletePoint" }
+
 function DrawMarkers(garages, markerType, vehicleType)
 	for k, garage in pairs(garages) do
-		for zoneName, zone in pairs(garage) do
-			if zoneName ~= "Type" then
+		for _, zoneName in ipairs(GARAGE_ZONES) do
+			local zone = garage[zoneName]
+			if zone then
 				local blip = nil
 				if zone.Name ~= nil then
 					blip = {
@@ -196,7 +201,7 @@ function DrawMarkers(garages, markerType, vehicleType)
 					end or nil,
 					onPress = function()
 						if not IsPedInAnyVehicle(PlayerPedId(), true) then
-							if zoneName == "SpawnPoint" then
+							if zoneName == "GarageMenuLocation" then
 								TriggerServerEvent("htb_garage:GetPlayerVehicles", vehicleType, k)
 							end
 						elseif zoneName == "DeletePoint" then
@@ -467,6 +472,19 @@ AddEventHandler("htb_garage:GetPlayerVehiclesResults", function(vehicles, garage
 	ToggleGUI(true, "enableGarage", "/vehicleMenu")
 end)
 
+-- A fixed spot away from the menu (hangars). nil when something is in the way.
+local function fixedSpawnPosition(spawnPoint)
+	local pos = spawnPoint.Pos
+	local clearance = (spawnPoint.Clearance or 10.0) + 0.0
+	if IsPositionOccupied(pos.x, pos.y, pos.z, clearance, false, true, true, false, false, 0, false) then
+		return nil
+	end
+	return {
+		Pos = { x = pos.x, y = pos.y, z = pos.z },
+		Heading = spawnPoint.Heading or 0.0,
+	}
+end
+
 function DetermineSpawnPosition(vehicleType, spawnPoint, heading, numSpawns)
 	if vehicleType == "boat" then
 		return {
@@ -577,8 +595,14 @@ AddEventHandler("htb_garage:ResultsForVehicleSpawn", function(vehicle, garageNam
 	local GarageKey = GarageTypeMapping[vehicle.type]
 	local garage = Config[GarageKey][garageName]
 
-	local spawnPoint =
-		DetermineSpawnPosition(vehicle.type, garage.SpawnPoint, garage.SpawnPoint.Heading, garage.SpawnPoint.NumSpawns)
+	local spawnPoint
+	if garage.SpawnPoint then
+		-- Hangars: the aircraft appears at its own spot, not next to the menu
+		spawnPoint = fixedSpawnPosition(garage.SpawnPoint)
+	else
+		local menu = garage.GarageMenuLocation
+		spawnPoint = DetermineSpawnPosition(vehicle.type, menu, menu.Heading, menu.NumSpawns)
+	end
 	if spawnPoint == nil then
 		Notify.send(_U("spawn_point_occupied"))
 		-- Let the server put the vehicle back in the garage

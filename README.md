@@ -33,9 +33,11 @@
 - When the server refuses a garage action because the player is too far away, the server console now says how far, where the server thinks they are, and the likely fix. A common cause is noclip: the server keeps the last position it had until the player reconnects.
 - `Config.Notify` chooses who shows notifications: the framework's own (default), ox_lib or the game's feed. Others can be added as a small file in `Bridge/notify`.
 - `Config.VehicleKeys` chooses the vehicle keys resource: `auto` (default), jaksam's `vehicles_keys`, `qb-vehiclekeys` or `none`. Others can be added as a small file in `Bridge/keys`.
+- Hangars can have a `SpawnPoint` (`Pos`, `Heading`, `Clearance`) so aircraft appear somewhere open, away from the garage menu. If anything is within `Clearance` metres the spawn is refused.
 
 ### Changed
 
+- **Config change:** the garage menu point in `Configs/Garages.lua`, `Docks.lua` and `Aircraft.lua` is renamed from `SpawnPoint` to `GarageMenuLocation`. Rename it in your own configs when upgrading.
 - **ft_libs is no longer needed.** Markers, blips and prompts are drawn by the resource itself (`Client/zones.lua`) and look the same as before. Remove `ensure ft_libs` if nothing else uses it, re-copy your manifest and run `refresh`.
 - The framework layer (`FrameworkSpecific`, the Strategy/Context classes) is replaced by plain adapters in `Bridge/`: framework, queries, notifications and keys. See _Framework bridge_. Re-copy your manifest and run `refresh`.
 - `Config.RolePlayFramework` also accepts `auto`. The unused `none` and `custom` options and `Config.UsingEsxLegacy` have been removed (ESX is found automatically).

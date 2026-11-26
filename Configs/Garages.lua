@@ -6,7 +6,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(288.15, -343.09, 44.92),
 			Heading = 160.0,
@@ -27,7 +27,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(-324.71, -682.81, 32.95),
 			Heading = 360.0,
@@ -48,7 +48,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(657.646, 630.719, 128.911),
 			Heading = 340.0,
@@ -69,7 +69,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(-1517.1, -446.1, 35.44),
 			Heading = 195.12,
@@ -90,7 +90,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(150.64, 6578.44, 31.86),
 			Heading = 224.1,
@@ -111,7 +111,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(1716.62, 3593.21, 35.33),
 			Heading = 207.71,
@@ -132,7 +132,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(-1140.63, 2671.77, 18.09),
 			Heading = 310.5,
@@ -153,7 +153,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(-2977.238, 337.777, 14.77),
 			Heading = 160.0,
@@ -174,7 +174,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(450.54, -1972.29, 22.56),
 			Heading = 182.0,
@@ -194,7 +194,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.0, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(-75.19, 898.01, 235.56),
 			Heading = 122.58,
@@ -215,7 +215,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(1120.9813232422, 2668.8684082031, 38.048095703125),
 			Heading = 264.6,
@@ -231,7 +231,7 @@ Config.Garages = {
 	},
 	Garage_Groove = {
 		Type = 'car',
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(-73.27, -2000.03, 18.02),
 			Heading = 263.43,
@@ -252,7 +252,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(-1075.16, -1258.04, 5.28),
 			Heading = 144.887,
@@ -272,7 +272,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(-566.15, 328.0, 84.43),
 			Heading = 261.5,
@@ -293,7 +293,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(378.00622558594, 288.13024902344, 103.1661529541),
 			Heading = 62.22,
@@ -314,7 +314,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(1040.26, -769.18, 58.02),
 			Heading = 359.92,
@@ -335,7 +335,7 @@ Config.Garages = {
 		-- 	Marker = { w= 1.0, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_car_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
             Name = _U('garage_name'),
 			Pos = vector3(-462.22, -269.34, 35.78),
 			Heading = 25.0,
@@ -356,7 +356,7 @@ Config.Garages = {
         --     Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
         --     HelpPrompt = _U('open_car_garage')
         -- },
-        SpawnPoint = {
+        GarageMenuLocation = {
             Name = _U('garage_name'),
             Pos = vector3(-772.6, -237.1, 37.15),
             Heading = 214.87,

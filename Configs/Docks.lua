@@ -6,7 +6,7 @@ Config.Docks = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_boat_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
 			Name = _U('boat_garage_name'),
 			SpawnPos = vector3(-726.69, -1346.37, 1.0),
 			Pos = vector3(-733.58, -1338.62, 1.5),
@@ -28,7 +28,7 @@ Config.Docks = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_boat_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
 			Name = _U('boat_garage_name'),
 			SpawnPos = vector3(3873.5, 4464.47, 1.0),
 			Pos = vector3(3866.91, 4463.67, 2.73),
@@ -50,7 +50,7 @@ Config.Docks = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_boat_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
 			Name = _U('boat_garage_name'),
 			SpawnPos = vector3(1297.14, 4209.53, 31.0),
 			Pos = vector3(1299.35, 4216.45, 33.91),
@@ -72,7 +72,7 @@ Config.Docks = {
 		-- 	Marker = { w= 1.5, h= 1.0,r = 204, g = 204, b = 0},
 		-- 	HelpPrompt = _U('open_boat_garage')
 		-- },
-		SpawnPoint = {
+		GarageMenuLocation = {
 			Name = _U('boat_garage_name'),
 			SpawnPos = vector3(-1614.14, 5267.46, 1.0),
 			Pos = vector3(-1608.87, 5259.68, 3.97),

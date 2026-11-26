@@ -241,11 +241,11 @@ Security.RegisterNetEvent(
 	{ args = { "string", "string" }, cooldownMs = 1000 },
 	function(playerId, vehicleType, garageName)
 		local garage = getGarage(vehicleType, garageName)
-		if not garage or not garage.SpawnPoint then
+		if not garage or not garage.GarageMenuLocation then
 			Security.Flag(playerId, "htb_garage:GetPlayerVehicles", "unknown garage " .. garageName)
 			return
 		end
-		if not Security.IsPlayerNear(playerId, garage.SpawnPoint.Pos, sec.InteractionDistance) then
+		if not Security.IsPlayerNear(playerId, garage.GarageMenuLocation.Pos, sec.InteractionDistance) then
 			Security.Flag(playerId, "htb_garage:GetPlayerVehicles", "opened garage " .. garageName .. " from a distance")
 			return
 		end
@@ -275,11 +275,11 @@ Security.RegisterNetEvent(
 		end
 
 		local garage = getGarage(vehicle.type, garageName)
-		if not garage or not garage.SpawnPoint then
+		if not garage or not garage.GarageMenuLocation then
 			Security.Flag(playerId, eventName, "unknown garage " .. garageName)
 			return
 		end
-		if not Security.IsPlayerNear(playerId, garage.SpawnPoint.Pos, sec.InteractionDistance) then
+		if not Security.IsPlayerNear(playerId, garage.GarageMenuLocation.Pos, sec.InteractionDistance) then
 			Security.Flag(playerId, eventName, "took a vehicle out away from garage " .. garageName)
 			return
 		end
