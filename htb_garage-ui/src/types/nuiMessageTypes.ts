@@ -53,6 +53,16 @@ export interface SetupImpoundRetrieveVehicleData {
   vehicles: ImpoundVehicle[];
 }
 
+export interface SetupImpoundReleaseVehicleData {
+  type: "setupImpoundReleaseVehicle";
+  vehicles: ImpoundVehicle[];
+}
+
+export interface ImpoundReleaseCompleteData {
+  type: "impoundReleaseComplete";
+  plate: string;
+}
+
 // Union type for all message types
 export type NuiMessageData =
   | ToggleVisibilityData
@@ -63,7 +73,9 @@ export type NuiMessageData =
   | TransferCompleteData
   | EnableImpoundData
   | SetupImpoundStoreVehicleData
-  | SetupImpoundRetrieveVehicleData;
+  | SetupImpoundRetrieveVehicleData
+  | SetupImpoundReleaseVehicleData
+  | ImpoundReleaseCompleteData;
 
 export type MessageHandlers = {
   toggleVisibility: (msg: ToggleVisibilityData) => void;
@@ -77,4 +89,6 @@ export type MessageHandlers = {
   enableImpound: (msg: EnableImpoundData) => void;
   setupImpoundStoreVehicle: (msg: SetupImpoundStoreVehicleData) => void;
   setupImpoundRetrieveVehicle: (msg: SetupImpoundRetrieveVehicleData) => void;
+  setupImpoundReleaseVehicle: (msg: SetupImpoundReleaseVehicleData) => void;
+  impoundReleaseComplete: (msg: ImpoundReleaseCompleteData) => void;
 };

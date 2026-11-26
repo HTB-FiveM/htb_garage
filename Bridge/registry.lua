@@ -44,6 +44,7 @@ local contract = {
 			"SqlGetImpoundedPlayerVehicles",
 			"SqlGetActiveImpoundByPlate",
 			"SqlReleaseImpoundVehicle",
+			"SqlGetAllActiveImpounds",
 		},
 	},
 	notify = {

@@ -6,6 +6,7 @@ import type {
   MessageHandlers,
   SetVehiclesData,
   SetupImpoundRetrieveVehicleData,
+  SetupImpoundReleaseVehicleData,
 } from '@/types/nuiMessageTypes';
 import type { Impound } from '@/types/impoundTypes';
 
@@ -173,5 +174,44 @@ export default function initialiseDummyData(
         },
       ],
     } as SetupImpoundRetrieveVehicleData);
+  }
+
+  if (route === "/impoundRelease") {
+    handlers["enableImpound"]({
+      type: "enableImpound",
+      isVisible: true,
+    } as EnableImpoundData);
+
+    const held = (plate: string, ownerName: string | null, type: string, spawnName: string, allow: boolean) => ({
+      type,
+      plate,
+      displayName: "",
+      modelName: spawnName,
+      spawnName,
+      model: 0,
+      import: false,
+      priceToRelease: 1000,
+      expired: allow,
+      timeLeft: allow ? null : "5h 2m 10s",
+      impoundId: "DavisPound",
+      impoundName: "Davis Impound",
+      impoundVehicleId: 1,
+      canRetrieveHere: false,
+      allowPersonalUnimpound: allow,
+      allowReturn: false,
+      ownerName,
+      reasonForImpound: allow ? "Parked on the footpath" : "Used in an armed robbery",
+      ownedByOfficer: plate === "SEA 42",
+    });
+
+    handlers["setupImpoundReleaseVehicle"]({
+      type: "setupImpoundReleaseVehicle",
+      vehicles: [
+        held("HTB 001", "Harry Bastard", "car", "Adder", false),
+        held("ZEN 567", "Jane Doe", "car", "Zentorno", true),
+        held("SEA 42", "Harry Bastard", "boat", "Dinghy", false),
+        held("AIR1", null, "plane", "Luxor", false),
+      ],
+    } as SetupImpoundReleaseVehicleData);
   }
 }

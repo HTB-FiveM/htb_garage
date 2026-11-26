@@ -6,6 +6,7 @@
 - Impound
   - Screen for police and mechanics to impound vehicles
   - Screen for owners to retrieve their impounded vehicles
+  - `/ImpoundRelease` screen for police (or any job you choose) to find any impounded vehicle and release it to the impound's car park
 - 🚧 **Under Construction** - Personal property garages - enter you personal garage, walk up to your vehicles to drive away or inspect stats
 - 🚧 **Under Construction** - Job and garages - Both Vehicle Menu and full garage modes
 
@@ -23,6 +24,25 @@
 
 # Changelog
 
+## [2.3.0] – 2026-11-26
+
+### Added
+
+- `/ImpoundRelease` for jobs in `Config.AllowedImpoundReleaseJobs`. Search every impounded vehicle by owner name, plate or vehicle type: the list starts empty and filters as you type. **Release Vehicle** parks it, free and with the doors locked, in a free spot at the impound it's held at, including vehicles the owner isn't allowed to collect. The owner gets the keys and a notification if they're online. Released vehicles drop off the list, and the form closes once nothing is left. Adds the `SqlGetAllActiveImpounds` query.
+- Hangars can have a `SpawnPoint` (`Pos`, `Heading`, `Clearance`) so aircraft appear somewhere open, away from the garage menu. If anything is within `Clearance` metres the spawn is refused. Any garage can use it; without one, vehicles spawn next to the menu as before.
+
+### Changed
+
+- **Config change:** the garage menu point in `Configs/Garages.lua`, `Docks.lua` and `Aircraft.lua` is renamed from `SpawnPoint` to `GarageMenuLocation`. See _Upgrading to 2.3.0_.
+- Positions in `Configs/*.lua` are written as `vector3(x, y, z)`, and dock `DryPoint`s as `vector4(x, y, z, heading)`. The old `{ x = , y = , z = }` tables still work.
+- Staff can't release, or return without payment, a vehicle belonging to **any** of their characters (ESX multicharacter `char1:` / `char2:` identifiers are matched to the same person). In `/ImpoundRelease` those vehicles show a warning instead of the release button.
+
+### Fixed
+
+- The server didn't enforce "allow personal un-impound" or the hold time when an owner collected a vehicle; only the UI hid the button. Both are now checked by the server.
+- The impound form reset the release fee to 0 as it opened, so impounds were saved with no fee unless one was typed in. `Config.ImpoundDefaultRetrievePrice` now fills it in.
+- The impound list in the impound form is sorted by name (it came out in a random order).
+
 ## [2.2.0] – 2026-11-26
 
 ### Added
@@ -33,11 +53,9 @@
 - When the server refuses a garage action because the player is too far away, the server console now says how far, where the server thinks they are, and the likely fix. A common cause is noclip: the server keeps the last position it had until the player reconnects.
 - `Config.Notify` chooses who shows notifications: the framework's own (default), ox_lib or the game's feed. Others can be added as a small file in `Bridge/notify`.
 - `Config.VehicleKeys` chooses the vehicle keys resource: `auto` (default), jaksam's `vehicles_keys`, `qb-vehiclekeys` or `none`. Others can be added as a small file in `Bridge/keys`.
-- Hangars can have a `SpawnPoint` (`Pos`, `Heading`, `Clearance`) so aircraft appear somewhere open, away from the garage menu. If anything is within `Clearance` metres the spawn is refused.
 
 ### Changed
 
-- **Config change:** the garage menu point in `Configs/Garages.lua`, `Docks.lua` and `Aircraft.lua` is renamed from `SpawnPoint` to `GarageMenuLocation`. Rename it in your own configs when upgrading.
 - **ft_libs is no longer needed.** Markers, blips and prompts are drawn by the resource itself (`Client/zones.lua`) and look the same as before. Remove `ensure ft_libs` if nothing else uses it, re-copy your manifest and run `refresh`.
 - The framework layer (`FrameworkSpecific`, the Strategy/Context classes) is replaced by plain adapters in `Bridge/`: framework, queries, notifications and keys. See _Framework bridge_. Re-copy your manifest and run `refresh`.
 - `Config.RolePlayFramework` also accepts `auto`. The unused `none` and `custom` options and `Config.UsingEsxLegacy` have been removed (ESX is found automatically).
@@ -154,7 +172,7 @@ When retrieving if a time was specified with "Impound for" you will have to wait
 <img width="1664" height="890" alt="image" src="https://github.com/user-attachments/assets/91d074a6-99b9-45ab-aff3-ccfbc99032ee" />
 <img width="1308" height="647" alt="image" src="https://github.com/user-attachments/assets/32049282-1833-4549-b461-6be5dbf9a66e" />
 
-Impounds have dedicated parking spaces and releasing a vehicle will spawn it to a random unoccupied space:
+Impounds have dedicated parking spaces and releasing a vehicle will spawn it to a random unoccupied space. Staff can also release any impounded vehicle with `/ImpoundRelease`, which parks it locked in a free space at its impound:
 <img width="2509" height="1616" alt="image" src="https://github.com/user-attachments/assets/f89805ff-4ec8-4b24-b40b-e080074ca518" />
 <img width="2558" height="1738" alt="image" src="https://github.com/user-attachments/assets/1a31d539-76d2-4cd0-9a74-95c3e638055b" />
 
@@ -205,8 +223,15 @@ RegisterAdapter("notify", "okokNotify", {
 
 - Easiest: download `htb_garage-vX.Y.Z-esx.zip` or `htb_garage-vX.Y.Z-qbcore.zip` from the GitHub release. It already has the right `fxmanifest.lua` and the built UI, so just set `Config.RolePlayFramework` to match.
 - From the source code instead: rename `fxmanifest-esx.lua` or `fxmanifest-qb.lua` to `fxmanifest.lua` based on the Role Play framework you're running, and set `Config.RolePlayFramework` to match.
+- Check `Config.AllowedImpoundJobs` (who can impound) and `Config.AllowedImpoundReleaseJobs` (who can use `/ImpoundRelease`).
 - Check `Config.Notify` (who shows notifications) and `Config.VehicleKeys` (your keys resource). The defaults use your framework's notifications and whichever supported keys resource is running.
 - Optionally change how garage points look with `Config.Zones`: ground markers or none, the prompt as the framework's own (default), GTA's help box, floating text or ox_lib's text UI, name labels, blips, draw distance and marker transparency, for everything or per kind of point (car, boat, plane, impound).
+
+**Upgrading to 2.3.0**
+
+- **Rename `SpawnPoint` to `GarageMenuLocation`** in your own `Configs/Garages.lua`, `Docks.lua` and `Aircraft.lua`. A garage that still has `SpawnPoint` gets no marker, and the server refuses it as an unknown garage. In hangars, `SpawnPoint` now means where the aircraft appears.
+- **New setting** `Config.AllowedImpoundReleaseJobs` in `Config.lua`, e.g. `{ police = true }`. Without it nobody can use `/ImpoundRelease`.
+- No database changes and no new files: re-copy the manifest only if you're upgrading from before 2.2.0.
 
 **Upgrading from 2.0.x**
 

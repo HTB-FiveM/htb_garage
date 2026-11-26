@@ -76,4 +76,12 @@ Locales["en"] = {
 	["impound_invalid_details"] = "The impound details are not valid",
 	["transfer_too_far"] = "The buyer needs to be standing near you",
 	["impound_fee_not_enough"] = "Unable to charge retrieval fee due to lack of funds",
+	["impound_collect_denied"] = "This vehicle can only be released by the authorities",
+	["impound_collect_too_early"] = "This vehicle can't be collected for another %dh %dm",
+	["impound_release_not_auth"] = "You are not authorised to release impounded vehicles",
+	["impound_release_none"] = "There are no impounded vehicles",
+	["impound_release_own_vehicle"] = "You can't release your own vehicle. Another officer has to do it",
+	["impound_release_not_held"] = "That vehicle is no longer impounded",
+	["impound_release_done"] = "Vehicle %s has been released and is parked at %s",
+	["impound_release_owner"] = "Your vehicle %s has been released and is parked, locked, at %s",
 }

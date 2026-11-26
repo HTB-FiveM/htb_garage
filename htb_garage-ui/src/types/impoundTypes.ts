@@ -16,7 +16,7 @@ export interface ImpoundRetrieveVehicle {
   vehicles: ImpoundVehicle[];
 }
 
-export type ImpoundMode = "store" | "retrieve";
+export type ImpoundMode = "store" | "retrieve" | "release";
 export interface ImpoundStore {
   mode: ImpoundMode | null;
   availableImpounds: Impound[] | null;
@@ -24,6 +24,7 @@ export interface ImpoundStore {
 
   storeVehicle: ImpoundStoreVehicle | null;
   retrieveVehicle: ImpoundRetrieveVehicle | null;
+  releaseVehicles: ImpoundVehicle[];
 }
 
 export interface ImpoundVehicle {
@@ -42,4 +43,9 @@ export interface ImpoundVehicle {
   canRetrieveHere: boolean;
   allowPersonalUnimpound: boolean;
   allowReturn: boolean;
+  // Only on the /ImpoundRelease list
+  model?: number;
+  ownerName?: string | null;
+  reasonForImpound?: string | null;
+  ownedByOfficer?: boolean; // belongs to one of the operator's own characters
 }

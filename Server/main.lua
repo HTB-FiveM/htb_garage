@@ -81,6 +81,41 @@ local function isImpoundStaff(playerId)
 	return jobName ~= nil and Config.AllowedImpoundJobs[jobName] == true
 end
 
+-- Jobs that may release held vehicles with /ImpoundRelease
+local function isImpoundReleaseStaff(playerId)
+	local jobName = getPlayerJobName(playerId)
+	return jobName ~= nil and (Config.AllowedImpoundReleaseJobs or {})[jobName] == true
+end
+
+-- "char2:abc", "license:abc" and "abc" all come down to "abc": the person, not the character
+local function personId(identifier)
+	if type(identifier) ~= "string" then
+		return nil
+	end
+	local id = identifier:gsub("^char%d+:", ""):gsub("^%w+:", "")
+	return id ~= "" and id:lower() or nil
+end
+
+-- Corruption prevention: is the vehicle owned by this player, on any of their characters?
+-- ESX multicharacter stores "char1:<license>", "char2:<license>" ... so compare the person
+-- behind the identifier, and also against every identifier the connection has.
+local function ownsOnAnyCharacter(playerId, ownerIdentifier)
+	local owner = personId(ownerIdentifier)
+	if not owner then
+		return false
+	end
+	if personId(Framework.getIdentifier(playerId)) == owner then
+		return true
+	end
+	for _, identifier in ipairs(GetPlayerIdentifiers(playerId)) do
+		if personId(identifier) == owner then
+			return true
+		end
+	end
+	return false
+end
+
+
 -------------------------------------------------------------------------------------------
 -- Vehicle tracking (which owned vehicles are currently out in the world)
 -------------------------------------------------------------------------------------------
@@ -648,6 +683,10 @@ Security.RegisterNetEvent(
 				displayName = v.RetrievePoint.Name,
 			})
 		end
+		-- Config.Impounds has no order of its own, so list them by name
+		table.sort(impounds, function(a, b)
+			return tostring(a.displayName):lower() < tostring(b.displayName):lower()
+		end)
 
 		TriggerClientEvent("htb_garage:client:SetupForImpoundVehicleResults", playerId, {
 			impounds = impounds,
@@ -796,6 +835,19 @@ Security.RegisterNetEvent(
 				return
 			end
 
+			-- The UI hides the button in these cases; enforce them here too
+			if not isSet(impound.allowPersonalUnimpound) then
+				Security.Flag(playerId, eventName, "collected a vehicle the owner isn't allowed to collect")
+				notify(playerId, _U("impound_collect_denied"))
+				return
+			end
+			local h, m, s = GetTimeRemaining(ParseDateTime(impound.releaseDateTime))
+			if h > 0 or m > 0 or s > 0 then
+				Security.Flag(playerId, eventName, "collected a vehicle before its release time")
+				notify(playerId, _U("impound_collect_too_early", h, m))
+				return
+			end
+
 			-- Vehicles can only be collected from the lot they are held at
 			local lot = Config.Impounds[impound.impoundName]
 			if not lot then
@@ -862,8 +914,8 @@ Security.RegisterNetEvent(
 				return
 			end
 
-			-- Corruption prevention: staff can't waive the fee on their own vehicles
-			if impound.owner == Framework.getIdentifier(playerId) then
+			-- Corruption prevention: staff can't waive the fee on their own vehicles (any character)
+			if ownsOnAnyCharacter(playerId, impound.owner) then
 				notify(playerId, _U("return_not_auth"))
 				return
 			end
@@ -929,6 +981,162 @@ Security.RegisterNetEvent(
 		end
 
 		TriggerClientEvent("htb_garage:client:ReturnImpoundedPlayerVehicles", playerId, vehicles)
+	end
+)
+
+-------------------------------------------------------------------------------------------
+-- Impound release (/ImpoundRelease): staff in Config.AllowedImpoundReleaseJobs can release
+-- any held vehicle, including ones the owner isn't allowed to collect themselves. The
+-- vehicle is parked, locked, in a free spot at the impound it's held at.
+-------------------------------------------------------------------------------------------
+
+-- What CreateVehicleServerSetter needs; the releasing client works it out from the model
+local SERVER_VEHICLE_TYPES = {
+	automobile = true,
+	bike = true,
+	boat = true,
+	heli = true,
+	plane = true,
+	submarine = true,
+	trailer = true,
+	train = true,
+}
+
+local function findOnlinePlayer(identifier)
+	for _, id in ipairs(GetPlayers()) do
+		local playerId = tonumber(id)
+		if Framework.getIdentifier(playerId) == identifier then
+			return playerId
+		end
+	end
+	return nil
+end
+
+-- First of the lot's parking spots with no vehicle on it
+local function freeImpoundParkingSpot(lot)
+	local vehicles = GetAllVehicles()
+	for _, spot in ipairs(lot.SpawnPoints or {}) do
+		local p = spot.Point
+		local pos = vector3(p.x, p.y, p.z)
+		local taken = false
+		for _, vehicle in ipairs(vehicles) do
+			if #(GetEntityCoords(vehicle) - pos) < 3.0 then
+				taken = true
+				break
+			end
+		end
+		if not taken then
+			return p
+		end
+	end
+	return nil
+end
+
+Security.RegisterNetEvent("htb_garage:server:OpenImpoundRelease", { cooldownMs = 1000 }, function(playerId)
+	if not isImpoundReleaseStaff(playerId) then
+		notify(playerId, _U("impound_release_not_auth"))
+		return
+	end
+
+	local vehicles = MySQL.query.await(qu.SqlGetAllActiveImpounds.handle, {}) or {}
+	for _, veh in ipairs(vehicles) do
+		local h, m, s = GetTimeRemaining(ParseDateTime(veh.releaseDateTime))
+		veh.expired = h == 0 and m == 0 and s == 0
+		veh.timeLeft = not veh.expired and ("%dh %dm %ds"):format(h, m, s) or nil
+
+		local lot = Config.Impounds[veh.impoundId]
+		veh.impoundName = lot and lot.RetrievePoint.Name or veh.impoundId
+		veh.allowPersonalUnimpound = isSet(veh.allowPersonalUnimpound)
+		if veh.ownerName == "" then
+			veh.ownerName = nil
+		end
+		-- The form shows "another officer must release this" instead of the button
+		veh.ownedByOfficer = ownsOnAnyCharacter(playerId, veh.owner)
+		veh.owner = nil -- the identifier isn't needed by the client
+	end
+
+	TriggerClientEvent("htb_garage:client:ImpoundReleaseList", playerId, vehicles)
+end)
+
+Security.RegisterNetEvent(
+	"htb_garage:server:ImpoundReleaseVehicle",
+	{ args = { "string", "string" }, cooldownMs = 2000 },
+	function(playerId, plate, vehicleType)
+		local eventName = "htb_garage:server:ImpoundReleaseVehicle"
+		if not isImpoundReleaseStaff(playerId) then
+			notify(playerId, _U("impound_release_not_auth"))
+			return
+		end
+		if not SERVER_VEHICLE_TYPES[vehicleType] then
+			Security.Flag(playerId, eventName, "sent an unknown vehicle type " .. tostring(vehicleType))
+			return
+		end
+
+		Security.WithLock("vehicle:" .. Security.NormalisePlate(plate), function()
+			local impound = MySQL.single.await(qu.SqlGetActiveImpoundByPlate.handle, { ["@plate"] = plate })
+			if not impound then
+				notify(playerId, _U("impound_release_not_held"))
+				return
+			end
+
+			-- Corruption prevention: staff can't release their own vehicles (any character)
+			if ownsOnAnyCharacter(playerId, impound.owner) then
+				notify(playerId, _U("impound_release_own_vehicle"))
+				return
+			end
+
+			local lot = Config.Impounds[impound.impoundName]
+			local record = MySQL.single.await(qu.SqlGetVehicleByPlate.handle, { ["@plate"] = plate })
+			local props = record and decodeProps(record.vehicle)
+			local model = props and modelHash(props.model)
+			if not lot or not model then
+				notify(playerId, _U("vehicle_error"))
+				return
+			end
+
+			local spot = freeImpoundParkingSpot(lot)
+			if not spot then
+				notify(playerId, _U("spawn_point_occupied"))
+				return
+			end
+
+			-- An impounded vehicle shouldn't exist in the world; remove any stray copy
+			local stray = Security.FindVehicleByPlate(record.plate)
+			if stray then
+				DeleteEntity(stray)
+			end
+
+			local entity = CreateVehicleServerSetter(model, vehicleType, spot.x, spot.y, spot.z, spot.w + 0.0)
+			local waited = 0
+			while not DoesEntityExist(entity) and waited < 3000 do
+				Citizen.Wait(50)
+				waited = waited + 50
+			end
+			if not DoesEntityExist(entity) then
+				notify(playerId, _U("vehicle_error"))
+				return
+			end
+
+			SetVehicleNumberPlateText(entity, record.plate)
+			SetVehicleDoorsLocked(entity, 2)
+			if SetEntityOrphanMode then
+				SetEntityOrphanMode(entity, 2) -- keep it when the player near it leaves
+			end
+			-- Mods, colours, damage etc. are applied by whichever client owns it (Client/impound.lua)
+			Entity(entity).state:set("htb_garage:props", props, true)
+
+			MySQL.update.await(qu.SqlReleaseImpoundVehicle.handle, { ["@plate"] = record.plate })
+			setTracked(record.plate, NetworkGetNetworkIdFromEntity(entity))
+
+			local ownerId = findOnlinePlayer(impound.owner)
+			if ownerId then
+				Keys.give(ownerId, record.plate, "permanent")
+				notify(ownerId, _U("impound_release_owner", record.plate, lot.RetrievePoint.Name))
+			end
+
+			notify(playerId, _U("impound_release_done", record.plate, lot.RetrievePoint.Name))
+			TriggerClientEvent("htb_garage:client:ImpoundReleaseComplete", playerId, record.plate)
+		end)
 	end
 )
 

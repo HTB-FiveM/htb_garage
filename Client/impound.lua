@@ -84,7 +84,7 @@ RegisterNetEvent("htb_garage:client:SetupForImpoundVehicleResults")
 AddEventHandler("htb_garage:client:SetupForImpoundVehicleResults", function(data)
 	local impounds = {}
 
-	for a, imp in pairs(data.impounds) do
+	for _, imp in ipairs(data.impounds) do -- keep the server's order (by name)
 		table.insert(impounds, {
 			id = imp.impoundId,
 			displayName = imp.displayName,
@@ -188,4 +188,90 @@ RegisterNetEvent("htb_garage:client:VehicleReturnedToOwner")
 AddEventHandler("htb_garage:client:VehicleReturnedToOwner", function(message)
 	Notify.send(message)
 	ToggleGUI(false)
+end)
+
+----------------------------------------------------------------------------------------------------
+-- /ImpoundRelease: staff (Config.AllowedImpoundReleaseJobs) search every held vehicle and
+-- release it to a parking spot at the impound it's held at. The server checks the job.
+
+RegisterCommand("ImpoundRelease", function()
+	TriggerServerEvent("htb_garage:server:OpenImpoundRelease")
+end, false)
+
+RegisterNetEvent("htb_garage:client:ImpoundReleaseList")
+AddEventHandler("htb_garage:client:ImpoundReleaseList", function(vehicles)
+	if not vehicles or #vehicles < 1 then
+		Notify.send(_U("impound_release_none"))
+		return
+	end
+
+	for _, veh in ipairs(vehicles) do
+		veh.spawnName = GetDisplayNameFromVehicleModel(veh.model)
+		veh.modelName = GetLabelText(veh.spawnName)
+	end
+
+	SendNUIMessage({
+		type = "setupImpoundReleaseVehicle",
+		vehicles = vehicles,
+	})
+	ToggleGUI(true, "enableImpound", "/impoundRelease")
+end)
+
+-- The kind of entity the server must create for a model
+local function serverVehicleType(model)
+	if IsThisModelABoat(model) or IsThisModelAJetski(model) then
+		return "boat"
+	elseif IsThisModelAHeli(model) then
+		return "heli"
+	elseif IsThisModelAPlane(model) then
+		return "plane"
+	elseif IsThisModelABike(model) or IsThisModelABicycle(model) then
+		return "bike"
+	elseif IsThisModelATrain(model) then
+		return "train"
+	elseif GetVehicleClassFromName(model) == 14 then
+		return "boat" -- submersibles are class 14 too, close enough for spawning
+	end
+	return "automobile"
+end
+
+RegisterNUICallback("impoundRelease", function(vehicle, cb)
+	if type(vehicle) == "table" and type(vehicle.plate) == "string" and vehicle.model then
+		TriggerServerEvent("htb_garage:server:ImpoundReleaseVehicle", vehicle.plate, serverVehicleType(vehicle.model))
+	end
+	cb("ok")
+end)
+
+RegisterNetEvent("htb_garage:client:ImpoundReleaseComplete")
+AddEventHandler("htb_garage:client:ImpoundReleaseComplete", function(plate)
+	-- The list stays open so several vehicles can be released; drop this one from it
+	SendNUIMessage({ type = "impoundReleaseComplete", plate = plate })
+end)
+
+-- A released vehicle is created by the server, which can't apply mods, colours or damage.
+-- Whichever client owns it does that once, then clears the state.
+AddStateBagChangeHandler("htb_garage:props", nil, function(bagName, _, props)
+	if type(props) ~= "table" then
+		return
+	end
+	local entity = GetEntityFromStateBagName(bagName)
+	local waited = 0
+	while entity == 0 and waited < 5000 do
+		Wait(100)
+		waited = waited + 100
+		entity = GetEntityFromStateBagName(bagName)
+	end
+	-- The server hands it to a nearby player straight after it appears
+	waited = 0
+	while entity ~= 0 and not NetworkHasControlOfEntity(entity) and waited < 5000 do
+		Wait(100)
+		waited = waited + 100
+	end
+	if entity == 0 or not DoesEntityExist(entity) or not NetworkHasControlOfEntity(entity) then
+		return -- not ours; the owner applies them
+	end
+
+	SetVehicleProperties(entity, props)
+	SetVehicleDoorsLocked(entity, 2)
+	Entity(entity).state:set("htb_garage:props", nil, true)
 end)
