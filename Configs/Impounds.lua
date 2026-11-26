@@ -2,7 +2,7 @@ Config.Impounds = {
 	LosSantos = {
 		RetrievePoint = {
 			Name = "Los Santos",
-			Pos = { x = 409.706604, y = -1623.830322, z = 29.291950 },
+			Pos = vector3(409.706604, -1623.830322, 29.291950),
 			Marker = { w = 1.5, h = 1.0, r = 0, g = 204, b = 204 },
 			HelpPrompt = _U("take_from_pound"),
 		},
@@ -27,7 +27,7 @@ Config.Impounds = {
 	PaletoBay = {
 		RetrievePoint = {
 			Name = "Paleto Bay",
-			Pos = { x = -214.206589, y = 6217.846191, z = 31.487183 },
+			Pos = vector3(-214.206589, 6217.846191, 31.487183),
 			Marker = { w = 1.5, h = 1.0, r = 0, g = 204, b = 204 },
 			HelpPrompt = _U("take_from_pound"),
 		},
@@ -42,7 +42,7 @@ Config.Impounds = {
 	SandyShores = {
 		RetrievePoint = {
 			Name = "Sandy Shores",
-			Pos = { x = 1737.692261, y = 3712.153809, z = 34.115723 },
+			Pos = vector3(1737.692261, 3712.153809, 34.115723),
 			Marker = { w = 1.5, h = 1.0, r = 0, g = 204, b = 204 },
 			HelpPrompt = _U("take_from_pound"),
 		},

@@ -52,7 +52,7 @@ Config.Zones = {
 }
 
 Config.DocksEnabled = true
-Config.HangarsEnabled = false
+Config.HangarsEnabled = true
 
 Config.RetrieveVehiclePrice = 2500 -- pound price to get vehicle back TOO: Remove this
 Config.Locale = "en"

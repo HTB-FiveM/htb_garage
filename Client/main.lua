@@ -42,7 +42,7 @@ AddEventHandler("htb_garage:HandleWarpToDock", function(pos)
 		false --[[ boolean ]]
 	)
 
-	SetEntityHeading(ped, --[[ Entity ]] pos.h --[[ number ]])
+	SetEntityHeading(ped, --[[ Entity ]] pos.w --[[ number ]])
 end)
 
 -- garageName is the config key of the garage; the server looks up the zone itself
